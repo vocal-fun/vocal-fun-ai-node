@@ -1,5 +1,5 @@
 from typing import Optional
-import numpy as np
+from src.utils.audio_utils import AudioConverter
 
 class SpeechToText:
     def __init__(self):
@@ -7,13 +7,15 @@ class SpeechToText:
         pass
 
     async def process_audio(self, audio_chunk: bytes) -> Optional[str]:
-        """
-        Process audio chunk and convert to text.
-        To be implemented with actual STT model.
-        """
-        # Placeholder for STT implementation
-        return None
-
-    def reset(self):
-        """Reset any stateful components of the STT system"""
-        pass
+        """Process WebM audio chunk and convert to text"""
+        try:
+            # Convert WebM to WAV for processing
+            wav_data = await AudioConverter.webm_to_wav(audio_chunk)
+            
+            # TODO: Implement actual STT processing here
+            # For now, return None or placeholder
+            return None
+            
+        except Exception as e:
+            print(f"Error processing audio: {e}")
+            return None
