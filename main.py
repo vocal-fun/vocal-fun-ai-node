@@ -6,6 +6,7 @@ import base64
 import json
 import uuid
 import torch
+import random
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
@@ -31,13 +32,35 @@ model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
 
 # model_name = "mistralai/Mistral-7B-v0.1"  # Use the Mistral model name
 # tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
-# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="float16").to("cuda")
+# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="float16").to(device)
 
 # Load TTS model for speech synthesis
-tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True).to(device)
+tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
 # Store connected clients
 clients = {}
+
+client_personalities = {}
+
+PERSONALITY_MAP = {
+    "default": "voices/trump.wav",
+    "Vitalik": "voices/vitalik.wav",
+    "Trump": "voices/trump.wav",
+    "Elon Musk": "voices/trump.wav"
+}
+
+INITIAL_VOICE_LINES = {
+    "default": ["Hello there! How can I assist you today?"],
+    "Trump": [
+        "This is Trump speaking, the best voice, believe me!",
+        "Welcome, you're going to love this, it's fantastic!",
+        "Make America great again!!!"
+    ],
+    "Vitalik": [
+        "The ticker is ETH",
+        "Ultrasound money",
+    ]
+}
 
 # WebSocket manager class
 class ConnectionManager:
@@ -68,52 +91,89 @@ manager = ConnectionManager()
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     client_id = await manager.connect(websocket)
+    client_personalities[client_id] = "default"  # Default personality
     print(f"Client connected: {client_id}")
 
     try:
         while True:
-            # Receive transcript text from the client
-            transcript = await websocket.receive_text()
-            print(f"Received from {client_id}: {transcript}")
+            # Receive a message from the client
+            message = await websocket.receive_text()
+            message_data = json.loads(message)
 
-            # Generate AI response
-            inputs = tokenizer(transcript, return_tensors="pt").to("cuda")
-            outputs = model.generate(
-                inputs["input_ids"],
-                max_new_tokens=25,            # Limit response length
-                temperature=0.7,              # Control randomness
-                top_p=0.9,                    # Nucleus sampling
-                top_k=50,                     # Limit token pool
-                repetition_penalty=1.2,       # Penalize repeated tokens
-                eos_token_id=tokenizer.eos_token_id  # Stop at EOS token
-            )
-            ai_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            print(f"Generated response for {client_id}: {ai_response}")
+            if message_data["type"] == "personality":
+                # Handle personality selection
+                personality = message_data["data"]
+                if personality in PERSONALITY_MAP:
+                    client_personalities[client_id] = personality
+                    print(f"Client {client_id} selected personality: {personality}")
+                    await manager.send_response(client_id, {
+                        "message_type": "personality_update",
+                        "status": "personality updated"
+                    })
+                else:
+                    print(f"Invalid personality: {personality}")
+                    await manager.send_response(client_id, {
+                        "message_type": "error",
+                        "error": "Invalid personality"
+                    })
+                continue
 
-            # ai_response = transcript
+            elif message_data["type"] in ["start_vocal", "transcript"]:
+                # Handle start vocal or transcript
+                personality = client_personalities.get(client_id, "default")
+                speaker_wav_path = PERSONALITY_MAP.get(personality, None)
 
-            # Convert AI response to speech (TTS)
-            audio_path = f"response_{client_id}.wav"
-            tts.tts_to_file(text=ai_response, speaker_wav="voices/trump2.wav", language="en", file_path=audio_path)
+                if message_data["type"] == "start_vocal":
+                    # Use a random initial line
+                    voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
+                    text = random.choice(voice_lines)
+                else:
+                    # Generate AI response for transcript
+                    transcript = message_data["data"]
+                    inputs = tokenizer(transcript, return_tensors="pt").to(device)
+                    outputs = model.generate(
+                        inputs["input_ids"],
+                        max_new_tokens=25,
+                        temperature=0.7,
+                        top_p=0.9,
+                        top_k=50,
+                        repetition_penalty=1.2,
+                        eos_token_id=tokenizer.eos_token_id
+                    )
+                    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-            # Read the audio file and encode it as base64
-            with open(audio_path, "rb") as f:
-                audio_bytes = f.read()
-            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+                print(f"Generated text for {client_id}: {text}")
+                output_path = f"response_{client_id}.wav"
+                audio_base64 = generate_tts_response(text, speaker_wav_path, output_path)
 
-            # Create a combined response
-            response = {
-                "text": ai_response,
-                "audio_base64": audio_base64
-            }
-
-            # Send the response to the client
-            await manager.send_response(client_id, response)
-            print(f"Response sent to {client_id}")
+                # Send response to the client
+                await manager.send_response(client_id, {
+                    "message_type": "start_vocal_response" if message_data["type"] == "start_vocal" else "transcript_response",
+                    "text": text,
+                    "audio_base64": audio_base64
+                })
+                print(f"Response sent to {client_id}")
 
     except WebSocketDisconnect:
         print(f"Client disconnected: {client_id}")
         manager.disconnect(client_id)
+        client_personalities.pop(client_id, None)
     except Exception as e:
         print(f"Error for {client_id}: {e}")
         manager.disconnect(client_id)
+        client_personalities.pop(client_id, None)
+
+
+def generate_tts_response(text: str, speaker_wav_path: str, output_path: str) -> str:
+    """
+    Generate TTS audio for the given text and return the base64-encoded audio.
+    """
+    tts.tts_to_file(
+        text=text,
+        speaker_wav=speaker_wav_path,
+        language="en",
+        file_path=output_path
+    )
+    with open(output_path, "rb") as f:
+        audio_bytes = f.read()
+    return base64.b64encode(audio_bytes).decode("utf-8")
