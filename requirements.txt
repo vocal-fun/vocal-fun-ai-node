@@ -9,3 +9,4 @@ transformers
 accelerate
 optimum
 TTS
+huggingface_hub

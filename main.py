@@ -5,6 +5,10 @@ from TTS.api import TTS
 import base64
 import json
 import uuid
+import torch
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
 
 app = FastAPI()
 
@@ -20,10 +24,17 @@ app.add_middleware(
 # Load AI model (GPT-style) for text generation
 model_name = "bigscience/bloom-560m"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+
+# from huggingface_hub import login
+# login(token="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")
+
+# model_name = "mistralai/Mistral-7B-v0.1"  # Use the Mistral model name
+# tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="float16").to("cuda")
 
 # Load TTS model for speech synthesis
-tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2")
+tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2", gpu=True).to(device)
 
 # Store connected clients
 clients = {}
@@ -66,8 +77,16 @@ async def websocket_endpoint(websocket: WebSocket):
             print(f"Received from {client_id}: {transcript}")
 
             # Generate AI response
-            inputs = tokenizer(transcript, return_tensors="pt").to(model.device)
-            outputs = model.generate(inputs["input_ids"], max_new_tokens=100)
+            inputs = tokenizer(transcript, return_tensors="pt").to("cuda")
+            outputs = model.generate(
+                inputs["input_ids"],
+                max_new_tokens=25,            # Limit response length
+                temperature=0.7,              # Control randomness
+                top_p=0.9,                    # Nucleus sampling
+                top_k=50,                     # Limit token pool
+                repetition_penalty=1.2,       # Penalize repeated tokens
+                eos_token_id=tokenizer.eos_token_id  # Stop at EOS token
+            )
             ai_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
             print(f"Generated response for {client_id}: {ai_response}")
 
@@ -75,7 +94,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # Convert AI response to speech (TTS)
             audio_path = f"response_{client_id}.wav"
-            tts.tts_to_file(text=ai_response, speaker_wav="vitalik.wav", language="en", file_path=audio_path)
+            tts.tts_to_file(text=ai_response, speaker_wav="voices/trump2.wav", language="en", file_path=audio_path)
 
             # Read the audio file and encode it as base64
             with open(audio_path, "rb") as f:
