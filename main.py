@@ -41,6 +41,7 @@ tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 clients = {}
 
 client_personalities = {}
+voice_lines_cached = {}
 
 PERSONALITY_MAP = {
     "default": "voices/trump.wav",
@@ -52,8 +53,7 @@ PERSONALITY_MAP = {
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
     "Trump": [
-        "This is Trump speaking, the best voice, believe me!",
-        "Welcome, you're going to love this, it's fantastic!",
+        "Muslims are the real shit!",
         "Make America great again!!!"
     ],
     "Vitalik": [
@@ -143,8 +143,17 @@ async def websocket_endpoint(websocket: WebSocket):
                     text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
                 print(f"Generated text for {client_id}: {text}")
-                output_path = f"response_{client_id}.wav"
-                audio_base64 = generate_tts_response(text, speaker_wav_path, output_path)
+                    
+                if message_data["type"] == "start_vocal" and text in voice_lines_cached:
+                    # Use cached audio response
+                    print(f"Using cached audio for: {text}")
+                    audio_base64 = voice_lines_cached[text]
+                else:
+                    output_path = f"response_{client_id}.wav"
+                    audio_base64 = generate_tts_response(text, speaker_wav_path, output_path)
+
+                    if message_data["type"] == "start_vocal":
+                        voice_lines_cached[text] = audio_base64
 
                 # Send response to the client
                 await manager.send_response(client_id, {
