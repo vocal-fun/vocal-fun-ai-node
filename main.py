@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from TTS.api import TTS
+from transformers import AutoProcessor, BarkModel
 import base64
 import json
 import uuid
@@ -23,19 +24,34 @@ app.add_middleware(
 )
 
 # Load AI model (GPT-style) for text generation
-model_name = "bigscience/bloom-560m"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+# model_name = "bigscience/bloom-560m"
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+# model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
 
-# from huggingface_hub import login
-# login(token="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")
+from huggingface_hub import login
+login(token="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")
 
 # model_name = "mistralai/Mistral-7B-v0.1"  # Use the Mistral model name
 # tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 # model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="float16").to(device)
 
+# model_name = "EleutherAI/gpt-j-6B"  # Use the Mistral model name
+# tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
+# model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+
+# Specify the correct model path
+model_name = "openlm-research/open_llama_3b"
+
+# Load the SentencePiece tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+
+# Load the model
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="float16", device_map="auto")
+
 # Load TTS model for speech synthesis
-tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to("cuda")
+
+# tts = TTS(model_name="tts_models/en/multi-dataset/vits")
 
 # Store connected clients
 clients = {}
@@ -130,17 +146,18 @@ async def websocket_endpoint(websocket: WebSocket):
                 else:
                     # Generate AI response for transcript
                     transcript = message_data["data"]
+                    print(f"Transcript for {client_id}: {transcript}")
                     inputs = tokenizer(transcript, return_tensors="pt").to(device)
                     outputs = model.generate(
                         inputs["input_ids"],
-                        max_new_tokens=25,
+                        max_new_tokens=50,
                         temperature=0.7,
                         top_p=0.9,
                         top_k=50,
-                        repetition_penalty=1.2,
                         eos_token_id=tokenizer.eos_token_id
                     )
                     text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
 
                 print(f"Generated text for {client_id}: {text}")
                     
@@ -186,3 +203,4 @@ def generate_tts_response(text: str, speaker_wav_path: str, output_path: str) ->
     with open(output_path, "rb") as f:
         audio_bytes = f.read()
     return base64.b64encode(audio_bytes).decode("utf-8")
+

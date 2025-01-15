@@ -1,0 +1,31 @@
+INFO:     Started server process [30026]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 63954) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30026]
+Client connected: 33e4e4b5-c41b-46ad-92b0-c26ef99ef780
+Client disconnected: 33e4e4b5-c41b-46ad-92b0-c26ef99ef780
+INFO:     Started server process [30479]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 64024) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 64041) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30479]
+Client connected: bd431d97-d058-45ca-877a-f7aafce1f1bb
+Client disconnected: bd431d97-d058-45ca-877a-f7aafce1f1bb
+Client connected: fc729dd0-02f7-480d-992b-5c83b4cd1679
+Client disconnected: fc729dd0-02f7-480d-992b-5c83b4cd1679
