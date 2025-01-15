@@ -57,8 +57,8 @@ INITIAL_VOICE_LINES = {
         "Make America great again!!!"
     ],
     "Vitalik": [
-        "The ticker is ETH",
-        "Ultrasound money",
+        "Ultrasound money for the win!",
+        "Make Ethereum great again!!!",
     ]
 }
 
