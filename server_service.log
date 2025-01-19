@@ -7731,3 +7731,480 @@ INFO:     connection closed
 INFO:     ('172.27.32.1', 49373) - "WebSocket /ws" [accepted]
 INFO:     connection open
 INFO:     Shutting down
+INFO:     Started server process [24083]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 63274) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 63292) - "WebSocket /ws" [accepted]
+INFO:     connection open
+Client connected: 1bc586b5-2a5b-4b3a-8fed-6d5d31e402b8
+Client connected: 84983022-afd3-42f0-a094-718e395847fd
+INFO:     185.142.236.35:52134 - "GET / HTTP/1.1" 404 Not Found
+INFO:     185.142.236.35:52136 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [24083]
+Client disconnected: 84983022-afd3-42f0-a094-718e395847fd
+Client disconnected: 1bc586b5-2a5b-4b3a-8fed-6d5d31e402b8
+INFO:     Started server process [28586]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 64397) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 64398) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64399) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [28586]
+Client connected: c8e0a53a-e081-4cba-b697-6f91692cca14
+Client connected: 33116bff-8c7f-4107-95d0-2a47132483a2
+Error for 33116bff-8c7f-4107-95d0-2a47132483a2: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 9450168a-7819-419b-95e8-dca71f8ae706
+Error for 9450168a-7819-419b-95e8-dca71f8ae706: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client disconnected: c8e0a53a-e081-4cba-b697-6f91692cca14
+INFO:     Started server process [28790]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 64462) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 64463) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64464) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [28790]
+Client connected: 8ef46177-df92-4021-8be0-c087bef0378f
+Client connected: 73560d8b-5584-4e0b-b4b8-53877a8f4d53
+Error for 73560d8b-5584-4e0b-b4b8-53877a8f4d53: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 73dae579-f791-4825-b7a3-1d9a1f4328c5
+Error for 73dae579-f791-4825-b7a3-1d9a1f4328c5: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client disconnected: 8ef46177-df92-4021-8be0-c087bef0378f
+INFO:     Started server process [28990]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 64529) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 64530) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64531) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64532) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64533) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64534) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64535) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64536) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64545) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 64562) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64567) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64568) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+ERROR:    closing handshake failed
+Traceback (most recent call last):
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/server.py", line 244, in handler
+    await self.close()
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 768, in close
+    await asyncio.wait_for(
+  File "/opt/conda/lib/python3.10/asyncio/tasks.py", line 445, in wait_for
+    return fut.result()
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1241, in write_close_frame
+    await self.write_frame(True, OP_CLOSE, data, _state=State.CLOSING)
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1214, in write_frame
+    await self.drain()
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1203, in drain
+    await self.ensure_open()
+  File "/home/naman/vocal-fun-ai-node/venv/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 944, in ensure_open
+    raise self.connection_closed_exc()
+websockets.exceptions.ConnectionClosedError: sent 1000 (OK); no close frame received
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [28990]
+Client connected: 6127eedc-2229-4374-a069-be68f3f96d7c
+Client connected: a065ebc3-5922-428a-b79a-c2e19888736a
+Error for a065ebc3-5922-428a-b79a-c2e19888736a: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 89862b67-5557-48c1-bb2a-6da232b4edab
+Error for 89862b67-5557-48c1-bb2a-6da232b4edab: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 9f4e3247-b53d-4cf9-9e8d-2912b3f3b9c0
+Error for 9f4e3247-b53d-4cf9-9e8d-2912b3f3b9c0: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 9669122c-27f6-44fb-a5a0-6f531618a6bc
+Error for 9669122c-27f6-44fb-a5a0-6f531618a6bc: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 75a4d1c5-ffb9-479c-94b6-2c8f2827655f
+Error for 75a4d1c5-ffb9-479c-94b6-2c8f2827655f: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 76bbede9-b5e8-40a2-8774-2c96f39dd21e
+Error for 76bbede9-b5e8-40a2-8774-2c96f39dd21e: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 8ab483fb-778e-4e98-a806-cff5b50abe23
+Error for 8ab483fb-778e-4e98-a806-cff5b50abe23: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 5c704a62-1543-45b4-8236-2133b1f773a2
+Client connected: 2528a3bd-16c0-484d-890c-62442fca8157
+Error for 2528a3bd-16c0-484d-890c-62442fca8157: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 79af652a-cfaf-4f70-bce9-a3aad8067907
+Error for 79af652a-cfaf-4f70-bce9-a3aad8067907: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 1605c29d-419c-4805-8459-7f26df9b5aa8
+Error for 1605c29d-419c-4805-8459-7f26df9b5aa8: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client disconnected: 6127eedc-2229-4374-a069-be68f3f96d7c
+Client disconnected: 5c704a62-1543-45b4-8236-2133b1f773a2
+INFO:     Started server process [29177]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 64597) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64598) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64601) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64602) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64605) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64606) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64609) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64612) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64614) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64617) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64618) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64620) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64639) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 64658) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64693) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64718) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64764) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 64792) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29177]
+Client connected: dc9ae807-349a-493d-86b2-cc67a707a9b6
+Error for dc9ae807-349a-493d-86b2-cc67a707a9b6: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 3dafac9d-47df-4107-942e-e7b976c13c84
+Error for 3dafac9d-47df-4107-942e-e7b976c13c84: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: ac12a0db-0341-41b5-8332-52ea0f49fc98
+Error for ac12a0db-0341-41b5-8332-52ea0f49fc98: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: c914d47e-eef7-41d1-8a2a-42960d79b970
+Error for c914d47e-eef7-41d1-8a2a-42960d79b970: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 0d5804f0-69ef-4213-aacf-8dea38343f48
+Error for 0d5804f0-69ef-4213-aacf-8dea38343f48: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: e393f0c8-9f7e-41c8-9ba8-6c1a5fb83feb
+Error for e393f0c8-9f7e-41c8-9ba8-6c1a5fb83feb: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 774ad394-b44d-4209-989a-44ab0816ac97
+Error for 774ad394-b44d-4209-989a-44ab0816ac97: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 9684e898-bd72-4570-8599-43cfd83bc847
+Error for 9684e898-bd72-4570-8599-43cfd83bc847: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 2ec302fe-33ff-486d-9ac6-1aae0ccdbc6f
+Error for 2ec302fe-33ff-486d-9ac6-1aae0ccdbc6f: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: aa4e65bc-4645-4939-a345-03efd15a76e1
+Error for aa4e65bc-4645-4939-a345-03efd15a76e1: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 474551af-99af-4c4e-bb90-a7130723c6f2
+Error for 474551af-99af-4c4e-bb90-a7130723c6f2: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 11805ab3-674b-4509-ad6f-85cbb0fb082d
+Client disconnected: 11805ab3-674b-4509-ad6f-85cbb0fb082d
+Client connected: a5788b55-2190-490f-abf5-c886f033a4c5
+Client connected: c85a5bc1-2781-460f-bab5-e5f8e853705f
+Client disconnected: c85a5bc1-2781-460f-bab5-e5f8e853705f
+Client connected: c111df4e-0662-45ee-8ac6-e692a5ee1f61
+Client disconnected: c111df4e-0662-45ee-8ac6-e692a5ee1f61
+Client connected: 1067181e-86a8-4fe4-91bf-2f0d68a8d183
+Client disconnected: 1067181e-86a8-4fe4-91bf-2f0d68a8d183
+Client connected: b474e474-3730-44b8-8ff6-9ca33300f645
+Client disconnected: b474e474-3730-44b8-8ff6-9ca33300f645
+Client connected: 15d9a8a6-b542-44d3-ad7e-4f5408795bb6
+Client disconnected: a5788b55-2190-490f-abf5-c886f033a4c5
+Client disconnected: 15d9a8a6-b542-44d3-ad7e-4f5408795bb6
+INFO:     Started server process [33184]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 65159) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65160) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65161) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65178) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65179) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65180) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65187) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('49.37.249.47', 65215) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('49.37.249.47', 65232) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33184]
+Client connected: df7f885b-fa43-4fe3-9aba-4c702c5c7743
+Error for df7f885b-fa43-4fe3-9aba-4c702c5c7743: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+Client connected: 712f6a54-3363-4b5a-9bdd-32a5e70047df
+
+Request Latency Breakdown for 712f6a54-3363-4b5a-9bdd-32a5e70047df:
+Chat Service: 1.12ms
+Error for 712f6a54-3363-4b5a-9bdd-32a5e70047df: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 2b8dee9a-eb27-468c-b6b4-22f3b21a6478
+
+Request Latency Breakdown for 2b8dee9a-eb27-468c-b6b4-22f3b21a6478:
+Chat Service: 1.08ms
+Error for 2b8dee9a-eb27-468c-b6b4-22f3b21a6478: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: efc15e17-c4d3-4959-9dab-5cad1748e92e
+
+Request Latency Breakdown for efc15e17-c4d3-4959-9dab-5cad1748e92e:
+Chat Service: 1.11ms
+Error for efc15e17-c4d3-4959-9dab-5cad1748e92e: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: cf77e307-2dda-438c-bde9-261b2d15e0a8
+
+Request Latency Breakdown for cf77e307-2dda-438c-bde9-261b2d15e0a8:
+Chat Service: 1.11ms
+Error for cf77e307-2dda-438c-bde9-261b2d15e0a8: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: a4d35e29-7cb0-4035-9683-2087e0234fd7
+
+Request Latency Breakdown for a4d35e29-7cb0-4035-9683-2087e0234fd7:
+Chat Service: 1.64ms
+Error for a4d35e29-7cb0-4035-9683-2087e0234fd7: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+Client connected: 8f635f9c-2e57-44a9-bcbd-948bb2362105
+
+Request Latency Breakdown for 8f635f9c-2e57-44a9-bcbd-948bb2362105:
+Chat Service: 0.99ms
+TTS Service: 1464.84ms
+Total Time: 1465.85ms
+Client disconnected: 8f635f9c-2e57-44a9-bcbd-948bb2362105
+Client connected: 03574046-42e7-4d63-81af-08f245663e59
+Client connected: 0d790172-91f0-447e-9846-1b780479cf5b
+
+Request Latency Breakdown for 0d790172-91f0-447e-9846-1b780479cf5b:
+Chat Service: 1.00ms
+TTS Service: 3.92ms
+Total Time: 4.94ms
+
+Request Latency Breakdown for 0d790172-91f0-447e-9846-1b780479cf5b:
+Chat Service: 1.43ms
+TTS Service: 2.53ms
+Total Time: 3.98ms
+
+Request Latency Breakdown for 0d790172-91f0-447e-9846-1b780479cf5b:
+Chat Service: 3769.22ms
+TTS Service: 1658.13ms
+Total Time: 5427.37ms
+Client disconnected: 03574046-42e7-4d63-81af-08f245663e59
+Client disconnected: 0d790172-91f0-447e-9846-1b780479cf5b
+INFO:     Started server process [33933]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('49.37.249.47', 49228) - "WebSocket /ws" [accepted]
+Client connected: 7fbcdb3b-314f-4d85-83ce-2d7b807ae0fb
+INFO:     connection open
+INFO:     ('49.37.249.47', 49229) - "WebSocket /ws" [accepted]
+Client connected: 2a6677f9-7c90-420d-b02f-72148f1f23a6
+INFO:     connection open
+Error for 2a6677f9-7c90-420d-b02f-72148f1f23a6: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49230) - "WebSocket /ws" [accepted]
+Client connected: 2294070e-64fc-4023-a49f-4783f148af56
+INFO:     connection open
+Error for 2294070e-64fc-4023-a49f-4783f148af56: Cannot connect to host localhost:8001 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8001, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8001)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49231) - "WebSocket /ws" [accepted]
+Client connected: 1489b013-f9f0-4fb5-ab93-6d1fb7c9e492
+INFO:     connection open
+
+Request Latency Breakdown for 1489b013-f9f0-4fb5-ab93-6d1fb7c9e492:
+Chat Service: 1.18ms
+Error for 1489b013-f9f0-4fb5-ab93-6d1fb7c9e492: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49232) - "WebSocket /ws" [accepted]
+Client connected: bb71b95e-833d-43e1-b273-5d07c3ce9228
+INFO:     connection open
+
+Request Latency Breakdown for bb71b95e-833d-43e1-b273-5d07c3ce9228:
+Chat Service: 1.14ms
+Error for bb71b95e-833d-43e1-b273-5d07c3ce9228: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49235) - "WebSocket /ws" [accepted]
+Client connected: 4e2c0df7-c3d4-49df-93ad-36a5044aea8e
+INFO:     connection open
+
+Request Latency Breakdown for 4e2c0df7-c3d4-49df-93ad-36a5044aea8e:
+Chat Service: 1.35ms
+Error for 4e2c0df7-c3d4-49df-93ad-36a5044aea8e: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49236) - "WebSocket /ws" [accepted]
+Client connected: b4308cad-90b2-454b-ba3a-cd1ad2e013da
+INFO:     connection open
+
+Request Latency Breakdown for b4308cad-90b2-454b-ba3a-cd1ad2e013da:
+Chat Service: 1.27ms
+Error for b4308cad-90b2-454b-ba3a-cd1ad2e013da: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49237) - "WebSocket /ws" [accepted]
+Client connected: 225a9bb0-bf05-4acd-b030-07a5486cc354
+INFO:     connection open
+
+Request Latency Breakdown for 225a9bb0-bf05-4acd-b030-07a5486cc354:
+Chat Service: 1.24ms
+Error for 225a9bb0-bf05-4acd-b030-07a5486cc354: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49238) - "WebSocket /ws" [accepted]
+Client connected: fa045b35-06ba-46b0-bf74-185a3b6aa4ce
+INFO:     connection open
+
+Request Latency Breakdown for fa045b35-06ba-46b0-bf74-185a3b6aa4ce:
+Chat Service: 1.33ms
+Error for fa045b35-06ba-46b0-bf74-185a3b6aa4ce: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49237) - "WebSocket /ws" [accepted]
+Client connected: 02f97708-e9d1-4b47-8cf0-403ed63d0844
+INFO:     connection open
+
+Request Latency Breakdown for 02f97708-e9d1-4b47-8cf0-403ed63d0844:
+Chat Service: 1.16ms
+Error for 02f97708-e9d1-4b47-8cf0-403ed63d0844: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49238) - "WebSocket /ws" [accepted]
+Client connected: a064ddc5-1531-419b-985a-f5c1668f9ea3
+INFO:     connection open
+
+Request Latency Breakdown for a064ddc5-1531-419b-985a-f5c1668f9ea3:
+Chat Service: 1.22ms
+Error for a064ddc5-1531-419b-985a-f5c1668f9ea3: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49239) - "WebSocket /ws" [accepted]
+Client connected: 77388f83-97e4-4847-bab1-dba9e3260f22
+INFO:     connection open
+
+Request Latency Breakdown for 77388f83-97e4-4847-bab1-dba9e3260f22:
+Chat Service: 1.13ms
+Error for 77388f83-97e4-4847-bab1-dba9e3260f22: Cannot connect to host localhost:8002 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8002, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8002)]
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49240) - "WebSocket /ws" [accepted]
+Client connected: c1bf5a16-fb1a-4367-9920-557ad3a2edab
+INFO:     connection open
+
+Request Latency Breakdown for c1bf5a16-fb1a-4367-9920-557ad3a2edab:
+Chat Service: 1.13ms
+TTS Service: 1472.98ms
+Total Time: 1474.17ms
+Client disconnected: c1bf5a16-fb1a-4367-9920-557ad3a2edab
+INFO:     connection closed
+INFO:     ('49.37.249.47', 49266) - "WebSocket /ws" [accepted]
+Client connected: 7e0b070c-ca50-4518-9aff-46b7f17e12aa
+INFO:     connection open
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 1.13ms
+TTS Service: 3.95ms
+Total Time: 5.14ms
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 3904.82ms
+TTS Service: 1678.62ms
+Total Time: 5583.51ms
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 1097.15ms
+TTS Service: 2207.11ms
+Total Time: 3304.33ms
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 2835.02ms
+TTS Service: 2049.83ms
+Total Time: 4884.91ms
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 2915.97ms
+TTS Service: 2913.38ms
+Total Time: 5829.42ms
+
+Request Latency Breakdown for 7e0b070c-ca50-4518-9aff-46b7f17e12aa:
+Chat Service: 2906.56ms
+TTS Service: 2930.08ms
+Total Time: 5836.70ms
+INFO:     Shutting down
+Client disconnected: 7e0b070c-ca50-4518-9aff-46b7f17e12aa
+Client disconnected: 7fbcdb3b-314f-4d85-83ce-2d7b807ae0fb
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33933]

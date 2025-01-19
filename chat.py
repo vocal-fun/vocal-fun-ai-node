@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer,AutoModelForSeq2SeqLM, StoppingCriteriaList, StoppingCriteria
+from transformers import AutoModelForCausalLM, AutoTokenizer,AutoModelForSeq2SeqLM, StoppingCriteriaList, StoppingCriteria, BitsAndBytesConfig
 import random
 from typing import Dict
 from prompt_engine.chat_engine import ChatEngine, ChatEngineConfig
 from collections import defaultdict
+import bitsandbytes as bnb
 
 app = FastAPI()
 
@@ -58,8 +59,19 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+#model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
+# Load in 4-bit quantization
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    device_map="auto",
+    quantization_config=BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_quant_type="nf4",  # normalized float 4
+        bnb_4bit_use_double_quant=True,  # double quantization
+    )
+)
 
 # Custom stopping criteria for chat markers
 class ChatStoppingCriteria(StoppingCriteria):
@@ -90,11 +102,8 @@ MAIN_SYSTEM_PROMPT = "You are the Assistant chatting with a User. You only need 
 PERSONALITY_SYSTEM_PROMPTS = {
     "default": "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite responses to the user's questions.",
     "Trump": """You are acting as Donald Trump, the 45th President of the United States. You should:
-- Use simple, repetitive language and short sentences
 - Frequently use words like "tremendous", "huge", "fantastic", "believe me"
 - Be assertive and sometimes controversial
-- Often refer to yourself and your achievements
-- End statements with exclamation marks!
 - Express strong opinions and be unapologetic about them""",
     "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
 - Speak in a technical, precise manner about blockchain and cryptocurrency
@@ -244,13 +253,13 @@ async def generate_response(data: dict):
             transcript
         )
         
-        print(formatted_input)
+        #print(formatted_input)
 
         inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
 
         outputs = model.generate(
             inputs["input_ids"],
-            max_new_tokens=80,
+            max_new_tokens=50,
             temperature=0.7,
             top_p=0.9,
             top_k=50,
@@ -265,7 +274,7 @@ async def generate_response(data: dict):
         # Only decode from the last assistant marker
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        print(full_response)
+        #print(full_response)
         
         # Extract only the relevant part of the response
         text = extract_assistant_response2(full_response, transcript)
@@ -280,8 +289,8 @@ async def generate_response(data: dict):
         })
         
         # Keep only last 2 conversations
-        if len(conversation_history[client_id]) > 2:
-            conversation_history[client_id] = conversation_history[client_id][-2:]
+        if len(conversation_history[client_id]) > 1:
+            conversation_history[client_id] = conversation_history[client_id][-1:]
        
         print(f"Client {client_id} OUTPUT {text}")
 

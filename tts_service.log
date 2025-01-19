@@ -33291,3 +33291,79 @@ INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [3375]
+/home/naman/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [24054]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51484 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55744 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36614 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49142 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44092 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41916 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50156 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [24054]
+/home/naman/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+/home/naman/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [29146]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46638 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47582 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47582 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47582 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57212 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57212 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57228 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54840 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43240 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52758 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33110 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44392 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51882 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43232 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55568 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42536 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29146]
+/home/naman/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [33137]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:41990 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51810 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51810 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52488 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33137]
+/home/naman/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [33902]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46292 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36828 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37546 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32964 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38488 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58606 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50744 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33902]

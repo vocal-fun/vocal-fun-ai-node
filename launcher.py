@@ -20,17 +20,17 @@ class ServiceLauncher:
         self.show_combined_logs = show_combined_logs
         self.services: Dict[str, dict] = {
             'server': {
-                'command': ['uvicorn', 'server:app', '--host', '0.0.0.0', '--port', '8000'],
+                'command': ['uvicorn', 'server:app', '--host', '0.0.0.0', '--port', '8000', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             },
             'chat': {
-                'command': ['uvicorn', 'chat:app', '--host', '0.0.0.0', '--port', '8001'],
+                'command': ['uvicorn', 'chat:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             },
             'tts': {
-                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8002'],
+                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8002', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             }
@@ -57,7 +57,8 @@ class ServiceLauncher:
                         stderr=subprocess.STDOUT,
                         preexec_fn=os.setsid,
                         bufsize=1,
-                        universal_newlines=True
+                        universal_newlines=True,
+                        env={**os.environ, 'PYTHONUNBUFFERED': '1'}
                     )
                     
                     # Start log reader thread

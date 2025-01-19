@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import aiohttp
 import json
 import uuid
+import time
 from typing import Dict
 
 app = FastAPI()
@@ -54,9 +55,9 @@ async def websocket_endpoint(websocket: WebSocket):
             while True:
                 message = await websocket.receive_text()
                 message_data = json.loads(message)
+                start_time = time.time()
 
                 if message_data["type"] == "personality":
-                    # Forward personality selection to chat service
                     async with session.post(
                         f"{CHAT_SERVICE_URL}/update_personality",
                         json={"client_id": client_id, "personality": message_data["data"]}
@@ -68,7 +69,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         })
 
                 elif message_data["type"] in ["start_vocal", "transcript"]:
-                    # First, get response from chat service
+                    # Chat service timing
+                    chat_start = time.time()
                     async with session.post(
                         f"{CHAT_SERVICE_URL}/generate_response",
                         json={
@@ -78,8 +80,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         }
                     ) as response:
                         chat_result = await response.json()
-                        
-                    # Then, get audio from TTS service
+                    chat_latency = (time.time() - chat_start) * 1000
+                    print(f"\nRequest Latency Breakdown for {client_id}:")
+                    print(f"Chat Service: {chat_latency:.2f}ms")
+
+                    # TTS service timing
+                    tts_start = time.time()
                     async with session.post(
                         f"{TTS_SERVICE_URL}/generate_audio",
                         json={
@@ -90,6 +96,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         }
                     ) as response:
                         tts_result = await response.json()
+                    tts_latency = (time.time() - tts_start) * 1000
+                    print(f"TTS Service: {tts_latency:.2f}ms")
+
+                    # Total latency
+                    total_latency = (time.time() - start_time) * 1000
+                    print(f"Total Time: {total_latency:.2f}ms")
 
                     # Send combined response back to client
                     await manager.send_response(client_id, {
