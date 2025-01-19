@@ -12,4 +12,5 @@ huggingface_hub
 sentencepiece
 bitsandbytes
 prompt-engine-py
+wheel
 flash-attn
