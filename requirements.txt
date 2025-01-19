@@ -12,3 +12,4 @@ huggingface_hub
 sentencepiece
 bitsandbytes
 prompt-engine-py
+flash-attn
