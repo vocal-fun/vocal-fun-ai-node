@@ -84,18 +84,19 @@ conversation_history = defaultdict(list)
 # Initialize stopping criteria
 stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
+MAIN_SYSTEM_PROMPT = "You are the Assistant chatting with a User. You only need to answer as an Assistant. Do not answer as User and do not try to act as a User. Do not use emojis. You always reply as 'Assistant'. Do not reply as anyone else or in any other wording"
+
 # Personality-specific system prompts
 PERSONALITY_SYSTEM_PROMPTS = {
     "default": "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite responses to the user's questions.",
-    "Trump": """You are the Assistant chatting with a User. You only need to answer as an Assistant. Do not answer as User and do not try to act as a User. You are acting as Donald Trump, the 45th President of the United States. You should:
+    "Trump": """You are acting as Donald Trump, the 45th President of the United States. You should:
 - Use simple, repetitive language and short sentences
 - Frequently use words like "tremendous", "huge", "fantastic", "believe me"
 - Be assertive and sometimes controversial
 - Often refer to yourself and your achievements
 - End statements with exclamation marks!
-- Occasionally go off on tangents about unrelated topics
 - Express strong opinions and be unapologetic about them""",
-    "Vitalik": """You are Vitalik Buterin, the founder of Ethereum. You should:
+    "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
 - Speak in a technical, precise manner about blockchain and cryptocurrency
 - Use complex terminology when discussing technical subjects
 - Show deep knowledge of cryptography and distributed systems
@@ -126,6 +127,7 @@ def format_conversation(personality: str, conversation_history: list, current_me
     """Format the conversation with personality-specific system prompt and history"""
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
     
+    system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
     # Format with clear separators and newlines
     formatted_text = [
         f"### System:\n{system_prompt}\n",
@@ -150,7 +152,25 @@ def format_conversation(personality: str, conversation_history: list, current_me
 # Add required imports at the top
 import re  # Add this with other imports
 
-def extract_assistant_response(full_response: str) -> str:
+def extract_assistant_response2(conversation, prompt):
+    # Split the conversation into lines
+    lines = conversation.split('\n')
+    
+    # Find the line containing the user prompt
+    for i, line in enumerate(lines):
+        if f"User: {prompt}" in line:
+            # Check if the assistant's response is on the same or next line
+            if i + 1 < len(lines) and lines[i + 1].startswith("Assistant:"):
+                # Response is on the same line as "Assistant:"
+                return lines[i + 1].replace("Assistant:", "").strip()
+            elif i + 2 < len(lines) and lines[i + 2].startswith("Assistant:"):
+                # Response is on the next line after "Assistant:"
+                return lines[i + 2].strip()
+    
+    return conversation
+
+
+def extract_assistant_response(full_response: str, transcript) -> str:
     """Extract only the first assistant response and clean it thoroughly"""
     try:
         # Find everything after the last 'Assistant:' but before any 'User:', 'Human:', etc.
@@ -168,7 +188,8 @@ def extract_assistant_response(full_response: str) -> str:
         response = response.replace('###', '')         # Remove section markers
         response = re.sub(r'\s+', ' ', response)      # Normalize whitespace
         
-        response = re.sub(r'\s*(?:User|USER|Human|HUMAN|user)s?:?\s*$', '', response, flags=re.IGNORECASE)
+        response = re.sub(r'\s*(?:User|USER|Human|HUMAN|user|USERS|Users)s?:?\s*$', '', response, flags=re.IGNORECASE)
+        response = extract_assistant_response2(response, transcript)
 
         return response.strip()
 
@@ -229,7 +250,7 @@ async def generate_response(data: dict):
 
         outputs = model.generate(
             inputs["input_ids"],
-            max_new_tokens=70,
+            max_new_tokens=80,
             temperature=0.7,
             top_p=0.9,
             top_k=50,
@@ -247,7 +268,7 @@ async def generate_response(data: dict):
         print(full_response)
         
         # Extract only the relevant part of the response
-        text = extract_assistant_response(full_response)
+        text = extract_assistant_response2(full_response, transcript)
         
         # Clean up any character speaking prefixes
         text = re.sub(r'^.*?:', '', text).strip()  # Remove "Donald Trump:" or similar prefixes

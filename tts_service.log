@@ -33020,3 +33020,274 @@ INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [231740]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [435]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:39406 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38006 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38006 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45828 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [435]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [753]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50700 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50700 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44526 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [753]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [857]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:37874 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37874 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:52976 - "POST /generate_audio HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 373, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/applications.py", line 208, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 181, in __call__
+    raise exc from None
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 159, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 78, in __call__
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/exceptions.py", line 82, in __call__
+    raise exc from None
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/exceptions.py", line 71, in __call__
+    await self.app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 580, in __call__
+    await route.handle(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 241, in handle
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 52, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/routing.py", line 226, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/routing.py", line 159, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/tts.py", line 81, in generate_audio
+    tts.tts_to_file(
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py", line 376, in tts_to_file
+    wav = self.tts(
+          ^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py", line 322, in tts
+    wav = self.synthesizer.tts(
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/utils/synthesizer.py", line 422, in tts
+    outputs = self.tts_model.synthesize(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/tts/models/xtts.py", line 405, in synthesize
+    return self.full_inference(text, speaker_wav, language, **settings)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/tts/models/xtts.py", line 474, in full_inference
+    return self.inference(
+           ^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/tts/models/xtts.py", line 522, in inference
+    assert text_tokens.shape[-1] < self.args.gpt_max_text_tokens, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError:  ❗ XTTS can only generate text with a maximum of 400 tokens.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [857]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [963]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54832 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59218 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:36106 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:55902 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:51442 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45592 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:33374 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:35546 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45396 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:53954 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [963]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [1072]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:41170 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1072]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [2445]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:40480 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38510 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56992 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2445]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [2554]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:43106 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49658 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49658 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51178 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58044 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58044 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2554]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [2662]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58488 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58488 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34994 - "POST /generate_audio HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 373, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/applications.py", line 208, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 181, in __call__
+    raise exc from None
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 159, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 78, in __call__
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/exceptions.py", line 82, in __call__
+    raise exc from None
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/exceptions.py", line 71, in __call__
+    await self.app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 580, in __call__
+    await route.handle(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 241, in handle
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/starlette/routing.py", line 52, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/routing.py", line 226, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.12/site-packages/fastapi/routing.py", line 159, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/tts.py", line 81, in generate_audio
+    tts.tts_to_file(
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py", line 376, in tts_to_file
+    wav = self.tts(
+          ^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py", line 322, in tts
+    wav = self.synthesizer.tts(
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/utils/synthesizer.py", line 326, in tts
+    raise ValueError(
+ValueError: You need to define either `text` (for sythesis) or a `reference_wav` (for voice conversion) to use the Coqui TTS API.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2662]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [3269]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:48370 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48370 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48370 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48376 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48376 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3269]
+/home/n0x/vocal-fun-ai-node/coqui-ai-TTS/TTS/api.py:91: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [3375]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:38922 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38922 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35728 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47692 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59142 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60826 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55448 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37902 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39046 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:35654 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:53660 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3375]
