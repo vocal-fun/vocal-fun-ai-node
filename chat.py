@@ -130,18 +130,19 @@ INITIAL_VOICE_LINES = {
 # Model initialization
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
 # Load model with optimizations
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    device_map="auto",
-    quantization_config=BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-    )
-)
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_name,
+#     device_map="auto",
+#     quantization_config=BitsAndBytesConfig(
+#         load_in_4bit=True,
+#         bnb_4bit_compute_dtype=torch.float16,
+#         bnb_4bit_quant_type="nf4",
+#         bnb_4bit_use_double_quant=True,
+#     )
+# )
 
 # # Apply torch compile
 # model = torch.compile(model)
