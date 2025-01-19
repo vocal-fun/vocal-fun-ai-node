@@ -182,6 +182,19 @@ def format_conversation(personality: str, conversation_history: list, current_me
     
     return "\n".join(formatted_text)
 
+def remove_emojis(text):
+    # Unicode ranges for emojis
+    emoji_pattern = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        u"\U00002702-\U000027B0"  # dingbats
+        u"\U000024C2-\U0001F251" 
+        "]+", flags=re.UNICODE)
+    
+    return emoji_pattern.sub(r'', text)
+
 def extract_assistant_response2(conversation, prompt):
     # Split the conversation into lines
     lines = conversation.split('\n')
@@ -293,6 +306,7 @@ async def generate_response(data: dict):
         post_start = time.time()
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
         text = extract_assistant_response2(full_response, transcript)
+        text = remove_emojis(text)
         text = re.sub(r'^.*?:', '', text).strip()
         
         conversation_manager.add_conversation(client_id, transcript, text)
