@@ -13,4 +13,3 @@ sentencepiece
 bitsandbytes
 prompt-engine-py
 wheel
-flash-attn
