@@ -6603,3 +6603,901 @@ Client connected: ce64645e-a201-4dc9-8648-d38618650ef0
 Client connected: 061343d2-2b6a-44b5-a8e1-185e278c0427
 Client disconnected: ce64645e-a201-4dc9-8648-d38618650ef0
 Client disconnected: 061343d2-2b6a-44b5-a8e1-185e278c0427
+INFO:     Started server process [228530]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 57782) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 57783) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 57856) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 57878) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228530]
+Client connected: 771c1cc0-37fa-47f5-b945-ac606ba6585c
+Client connected: 08b2b4be-bb7f-4384-a49f-08ff6abb2443
+Client disconnected: 08b2b4be-bb7f-4384-a49f-08ff6abb2443
+Client connected: 1ce264ba-c81b-4b73-839d-e0d697d3b6bf
+Error for 1ce264ba-c81b-4b73-839d-e0d697d3b6bf: 500, message='Attempt to decode JSON with unexpected mimetype: text/plain; charset=utf-8', url='http://localhost:8001/generate_response'
+Client connected: 1a1a3984-4e6b-4028-8644-286ac6f9f5b4
+Client disconnected: 1a1a3984-4e6b-4028-8644-286ac6f9f5b4
+Client disconnected: 771c1cc0-37fa-47f5-b945-ac606ba6585c
+INFO:     Started server process [228705]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58041) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58039) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58091) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58115) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228705]
+Client connected: fadeecb9-b8c6-4ab8-97d9-86c29be0f219
+Client connected: 3dce6b5b-33f0-4b69-afe4-eaf9eaf83a8f
+Client disconnected: fadeecb9-b8c6-4ab8-97d9-86c29be0f219
+Client connected: cf1776d9-6ab8-424d-ba63-a6d893c1e0dc
+Error for cf1776d9-6ab8-424d-ba63-a6d893c1e0dc: 500, message='Attempt to decode JSON with unexpected mimetype: text/plain; charset=utf-8', url='http://localhost:8001/generate_response'
+Client connected: e702e3c9-bf94-49d4-a52f-6ee48951f914
+Client disconnected: 3dce6b5b-33f0-4b69-afe4-eaf9eaf83a8f
+Client disconnected: e702e3c9-bf94-49d4-a52f-6ee48951f914
+INFO:     Started server process [228864]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58143) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58144) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58146) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58147) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58148) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58150) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58151) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58156) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58157) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58158) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58160) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58161) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58162) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58164) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58172) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58173) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58175) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58177) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58178) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58180) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58184) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58185) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58187) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58189) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58190) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58192) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58194) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58195) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58197) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228864]
+Client connected: 7fb97760-91fc-4cc2-a94d-3a55ba6058b0
+Client connected: f86d3174-2239-46a6-b70e-44096b28f4b5
+Error for 7fb97760-91fc-4cc2-a94d-3a55ba6058b0: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 2605ebdd-af4f-47ca-a294-5b8d04eeb149
+Error for 2605ebdd-af4f-47ca-a294-5b8d04eeb149: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 36c29857-4ea9-48a8-9bce-1be67174fb61
+Error for 36c29857-4ea9-48a8-9bce-1be67174fb61: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: fd826039-ff12-45fa-8574-98866acc3e6e
+Error for fd826039-ff12-45fa-8574-98866acc3e6e: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 8c6ad3e5-ec98-49c1-9705-eca3a9f40a3f
+Error for 8c6ad3e5-ec98-49c1-9705-eca3a9f40a3f: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 468df583-225b-44d9-a174-d3cc4e7747cc
+Error for 468df583-225b-44d9-a174-d3cc4e7747cc: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 5c6d42fa-d594-4dbc-ab9e-cdb8efaa7454
+Error for 5c6d42fa-d594-4dbc-ab9e-cdb8efaa7454: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 12adab79-b0cc-4a65-a7e0-70c48f7b5007
+Error for 12adab79-b0cc-4a65-a7e0-70c48f7b5007: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 80ea6e94-5e5a-457a-95ed-b4ac2c975412
+Error for 80ea6e94-5e5a-457a-95ed-b4ac2c975412: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 10f90fc4-a8f6-4444-8dde-1dec30883d5f
+Error for 10f90fc4-a8f6-4444-8dde-1dec30883d5f: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 4f515f1c-1b1d-4207-9108-9547fb4864a2
+Error for 4f515f1c-1b1d-4207-9108-9547fb4864a2: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 764fd752-53e7-4bd1-91ad-b3d96190877b
+Error for 764fd752-53e7-4bd1-91ad-b3d96190877b: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 90df172a-befa-4399-9d61-81bb096b8e47
+Error for 90df172a-befa-4399-9d61-81bb096b8e47: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 11b92288-8525-4e72-9366-98d40935fd2d
+Error for 11b92288-8525-4e72-9366-98d40935fd2d: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: f14a8d37-838d-4799-8bf6-72690505921a
+Error for f14a8d37-838d-4799-8bf6-72690505921a: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 69652449-e9b3-487a-bd8e-186b1f10fbd6
+Error for 69652449-e9b3-487a-bd8e-186b1f10fbd6: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 564238a6-8c51-45e4-a5a0-39964edec131
+Error for 564238a6-8c51-45e4-a5a0-39964edec131: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 7546d0d1-faa4-49e6-b408-3958505f7324
+Error for 7546d0d1-faa4-49e6-b408-3958505f7324: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: db965db0-d3dd-4dd2-adf9-106cd234ab1e
+Error for db965db0-d3dd-4dd2-adf9-106cd234ab1e: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 88118a32-5d0e-441e-82d1-3c1c56d5f089
+Error for 88118a32-5d0e-441e-82d1-3c1c56d5f089: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 299943e4-7847-4c83-bd39-9592ca1d0928
+Error for 299943e4-7847-4c83-bd39-9592ca1d0928: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: f74ddf79-295a-44a8-a07b-a725af3ef6e2
+Error for f74ddf79-295a-44a8-a07b-a725af3ef6e2: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: baf8eda2-58c7-4586-bc15-51dca18184d7
+Error for baf8eda2-58c7-4586-bc15-51dca18184d7: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 0368ebfe-4638-40eb-8183-c7d37bae6ba7
+Error for 0368ebfe-4638-40eb-8183-c7d37bae6ba7: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: ea97500e-b940-4f95-8a19-f55530bf1ecb
+Error for ea97500e-b940-4f95-8a19-f55530bf1ecb: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 218b7f28-bdc3-4cf3-8aa6-1e54cebb95e2
+Error for 218b7f28-bdc3-4cf3-8aa6-1e54cebb95e2: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 4bfe52c6-acd0-4338-adc3-4bdcadd99c37
+Error for 4bfe52c6-acd0-4338-adc3-4bdcadd99c37: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 5fbbaabb-b56b-4390-90c5-2d7340e185ab
+Error for 5fbbaabb-b56b-4390-90c5-2d7340e185ab: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client disconnected: f86d3174-2239-46a6-b70e-44096b28f4b5
+INFO:     Started server process [229083]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58246) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58248) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58249) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58251) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58253) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58254) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58256) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229083]
+Client connected: 20916ff0-4050-4ef1-8a71-84e581bae8b1
+Client connected: 09bf574d-c2cb-437a-8955-dc9a575d3b88
+Error for 09bf574d-c2cb-437a-8955-dc9a575d3b88: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: db059a5d-4cb0-4745-8eee-dd47cb3887cb
+Error for db059a5d-4cb0-4745-8eee-dd47cb3887cb: Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]
+Client connected: fb060dd0-bf66-4fa7-b9de-ede1315afb00
+Error for fb060dd0-bf66-4fa7-b9de-ede1315afb00: Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]
+Client connected: bdd908b5-3e4f-4695-aba8-11ce1b8a09ff
+Error for bdd908b5-3e4f-4695-aba8-11ce1b8a09ff: Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]
+Client connected: 79105361-1e65-438a-a1f2-fddb88f5bdc3
+Error for 79105361-1e65-438a-a1f2-fddb88f5bdc3: Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]
+Client connected: 0048fc4d-9e91-4c0f-adfb-caaf717035b5
+Client disconnected: 20916ff0-4050-4ef1-8a71-84e581bae8b1
+Client disconnected: 0048fc4d-9e91-4c0f-adfb-caaf717035b5
+INFO:     Started server process [229219]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58452) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58453) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58456) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58457) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58459) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58461) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58462) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58464) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58468) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58469) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58471) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58488) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58493) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58538) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229219]
+Client connected: 2130303e-3dbf-4567-8df7-89bdb541a45c
+Client connected: c7a036a8-26c6-4790-8947-3ed67c1d03ba
+Error for c7a036a8-26c6-4790-8947-3ed67c1d03ba: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: aa9c48aa-b7b3-40a4-897d-9fee0239992a
+Error for aa9c48aa-b7b3-40a4-897d-9fee0239992a: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: aec35d35-87d6-4135-ae22-5712c9338b90
+Error for aec35d35-87d6-4135-ae22-5712c9338b90: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: ffe90b88-ecf1-4888-a304-a83c33528244
+Error for ffe90b88-ecf1-4888-a304-a83c33528244: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 69e493ec-faae-46c2-98a6-5e3ce5f4362f
+Error for 69e493ec-faae-46c2-98a6-5e3ce5f4362f: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: f8a53c9d-011a-4b88-a0e0-2325cc599793
+Error for f8a53c9d-011a-4b88-a0e0-2325cc599793: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: fff4bdd4-73e8-4d19-95fd-df57e54251c1
+Error for fff4bdd4-73e8-4d19-95fd-df57e54251c1: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 57a8ccd8-0404-4486-8ab8-8cb3df80dd17
+Error for 57a8ccd8-0404-4486-8ab8-8cb3df80dd17: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: cd52e226-a523-44d8-a75d-fa18f0711744
+Error for cd52e226-a523-44d8-a75d-fa18f0711744: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: d6c2151f-28c3-4b4d-b3b7-8786a1265d9a
+Client disconnected: d6c2151f-28c3-4b4d-b3b7-8786a1265d9a
+Client connected: 9d41fc2e-6bea-42e6-a7ea-ffe01fbff1b1
+Client disconnected: 9d41fc2e-6bea-42e6-a7ea-ffe01fbff1b1
+Client connected: a0fd4a77-0c79-4361-9e70-be0926f6bf7d
+Client disconnected: a0fd4a77-0c79-4361-9e70-be0926f6bf7d
+Client connected: ad87e1c8-ac4a-4ac7-ac1d-a2e2e1df0873
+Client disconnected: ad87e1c8-ac4a-4ac7-ac1d-a2e2e1df0873
+Client disconnected: 2130303e-3dbf-4567-8df7-89bdb541a45c
+INFO:     Started server process [229324]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58638) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58640) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58658) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229324]
+Client connected: 04299b9f-77a6-4ae2-a7e1-835fb46cd82a
+Client connected: 4507cfb1-14c6-4dd2-a8a7-6bbffdabd630
+Client disconnected: 4507cfb1-14c6-4dd2-a8a7-6bbffdabd630
+Client connected: 5b13031f-91f7-4145-a94e-e7aebf0efcb0
+Client disconnected: 5b13031f-91f7-4145-a94e-e7aebf0efcb0
+Client disconnected: 04299b9f-77a6-4ae2-a7e1-835fb46cd82a
+INFO:     Started server process [229448]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58768) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58769) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58770) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58772) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58773) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58774) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58776) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58777) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58778) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58782) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58783) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58784) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58786) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58787) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58789) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58790) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58791) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58793) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58794) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58800) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229448]
+Client connected: 65b6a68d-d751-4255-b4e9-4874d7b2ab8a
+Client connected: 3221185d-0a34-4377-9965-983892f102a9
+Error for 65b6a68d-d751-4255-b4e9-4874d7b2ab8a: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: abae834a-8f21-4d1c-a490-76dd82c5787b
+Error for abae834a-8f21-4d1c-a490-76dd82c5787b: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 9b0bd77b-1bdc-48c9-b788-fb1d9a74ce5b
+Error for 9b0bd77b-1bdc-48c9-b788-fb1d9a74ce5b: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: d4bfe4a2-85db-4a9e-a4bf-066ddc103e3c
+Error for d4bfe4a2-85db-4a9e-a4bf-066ddc103e3c: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: b39556a1-f678-4b73-a9cf-53165d374db9
+Error for b39556a1-f678-4b73-a9cf-53165d374db9: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: de0be532-c5a7-4224-9a22-c3eb371f7075
+Error for de0be532-c5a7-4224-9a22-c3eb371f7075: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: cc44c70a-2518-4c33-91ab-d20b72fc7d15
+Error for cc44c70a-2518-4c33-91ab-d20b72fc7d15: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: d82ef851-3c08-4201-83b7-d360f896680c
+Error for d82ef851-3c08-4201-83b7-d360f896680c: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 6b15db53-9f0d-471e-853d-ced1d1228991
+Error for 6b15db53-9f0d-471e-853d-ced1d1228991: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 859fdb06-2432-441f-89bd-202904b5f3fb
+Error for 859fdb06-2432-441f-89bd-202904b5f3fb: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 31fa9f17-b235-48cb-89e9-1e7a4bd708c6
+Error for 31fa9f17-b235-48cb-89e9-1e7a4bd708c6: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 33c61294-ece6-492e-b4ce-9cd0114f3a92
+Error for 33c61294-ece6-492e-b4ce-9cd0114f3a92: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 250e9cb5-320a-49e0-97de-046f192d6ad4
+Error for 250e9cb5-320a-49e0-97de-046f192d6ad4: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 523cb5f6-a99b-4edd-893f-a97ce73a1a27
+Error for 523cb5f6-a99b-4edd-893f-a97ce73a1a27: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 1c1f9055-c805-4f09-9c1d-4056782381b5
+Error for 1c1f9055-c805-4f09-9c1d-4056782381b5: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 42fdf757-52d0-46ea-b9b5-43981e7a6b0e
+Error for 42fdf757-52d0-46ea-b9b5-43981e7a6b0e: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: dd445184-17b8-4248-a211-86724648625c
+Error for dd445184-17b8-4248-a211-86724648625c: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 71663b3a-be4c-4536-94c3-4d6787d59e4f
+Client disconnected: 71663b3a-be4c-4536-94c3-4d6787d59e4f
+Client connected: 79458612-9515-46b7-81ff-254ff72cf7be
+Client disconnected: 3221185d-0a34-4377-9965-983892f102a9
+Client disconnected: 79458612-9515-46b7-81ff-254ff72cf7be
+INFO:     Started server process [229571]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 58926) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 58927) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 58947) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229571]
+Client connected: f55f6c82-30a3-44ce-a7ca-693612ec1478
+Client connected: 9a9ccbc7-c006-4b30-a386-849e50c2c636
+Client disconnected: 9a9ccbc7-c006-4b30-a386-849e50c2c636
+Client connected: b98833c1-3d35-4e41-a31d-61542f591a77
+Client disconnected: f55f6c82-30a3-44ce-a7ca-693612ec1478
+Client disconnected: b98833c1-3d35-4e41-a31d-61542f591a77
+INFO:     Started server process [229695]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 59052) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 59054) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59055) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59057) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59061) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59062) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59064) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59066) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59067) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59069) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59070) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59073) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229695]
+Client connected: f5f61aa3-4cc0-424a-9c73-263a7c3d0feb
+Client connected: b82bbc6e-11fc-4ba5-b43d-eff812fa7d63
+Error for b82bbc6e-11fc-4ba5-b43d-eff812fa7d63: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 26e23749-699b-425a-a97c-d3b54d988679
+Error for 26e23749-699b-425a-a97c-d3b54d988679: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 6a650472-3cfc-407e-945e-5815f97a93c8
+Error for 6a650472-3cfc-407e-945e-5815f97a93c8: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 2211b829-0b12-4299-b013-9460783f0222
+Error for 2211b829-0b12-4299-b013-9460783f0222: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 270e0d33-c0ac-4cdb-9211-e692c8f767bb
+Error for 270e0d33-c0ac-4cdb-9211-e692c8f767bb: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 6eb16311-aeb4-4ff8-ad76-44a12726aa4c
+Error for 6eb16311-aeb4-4ff8-ad76-44a12726aa4c: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 185a0d79-80f0-4090-a165-dc26d492b8bb
+Error for 185a0d79-80f0-4090-a165-dc26d492b8bb: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 53835707-0318-4368-bb53-60dabeb97646
+Error for 53835707-0318-4368-bb53-60dabeb97646: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: dd7d27d8-8eb9-491f-8d47-6debb5646bd0
+Error for dd7d27d8-8eb9-491f-8d47-6debb5646bd0: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 867a2bda-62b9-4d8b-81b0-5c296a5ce623
+Client disconnected: 867a2bda-62b9-4d8b-81b0-5c296a5ce623
+Client connected: cdacc176-c427-4e0a-b469-c211428bc77c
+Client disconnected: cdacc176-c427-4e0a-b469-c211428bc77c
+Client disconnected: f5f61aa3-4cc0-424a-9c73-263a7c3d0feb
+INFO:     Started server process [229854]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 59239) - "WebSocket /ws" [accepted]
+INFO:     ('172.23.112.1', 59240) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229854]
+Client connected: 59255a51-2c6c-4444-842c-8b3b8ae07865
+Client connected: 51c39b4d-8d7c-4ee7-8464-5319e2021173
+Client disconnected: 51c39b4d-8d7c-4ee7-8464-5319e2021173
+Client disconnected: 59255a51-2c6c-4444-842c-8b3b8ae07865
+INFO:     Started server process [230644]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 59392) - "WebSocket /ws" [accepted]
+INFO:     ('172.23.112.1', 59393) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59405) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230644]
+Client connected: ef296231-925e-4ac3-bbb3-1158ac0b3262
+Client connected: 928300cb-395b-4d3e-a6a8-e18b91ef2455
+Client disconnected: ef296231-925e-4ac3-bbb3-1158ac0b3262
+Client connected: 45d6c194-d128-4b46-b607-c6572fb4ee65
+Client disconnected: 45d6c194-d128-4b46-b607-c6572fb4ee65
+Client disconnected: 928300cb-395b-4d3e-a6a8-e18b91ef2455
+INFO:     Started server process [230777]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 59631) - "WebSocket /ws" [accepted]
+INFO:     ('172.23.112.1', 59632) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59652) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59655) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 59681) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230777]
+Client connected: 4de7d779-cec3-4140-ba1b-02135649eec1
+Client connected: 0c8d53c2-dc64-4a28-b7fc-6a5eba65efab
+Client disconnected: 0c8d53c2-dc64-4a28-b7fc-6a5eba65efab
+Client connected: b5d40caa-1ff3-42be-8990-86210b771a40
+Client disconnected: b5d40caa-1ff3-42be-8990-86210b771a40
+Client connected: 83db8956-ba68-4fb3-aaee-bd83a5bd6c8c
+Client disconnected: 83db8956-ba68-4fb3-aaee-bd83a5bd6c8c
+Client connected: 3dc10d1b-a453-4002-9fb7-19dc4b9fbf39
+Client disconnected: 3dc10d1b-a453-4002-9fb7-19dc4b9fbf39
+Client disconnected: 4de7d779-cec3-4140-ba1b-02135649eec1
+INFO:     Started server process [230883]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60037) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60035) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60061) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60064) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230883]
+Client connected: e2dd7dbd-3bf5-4812-95f1-e2f14eac8f90
+Client connected: 77997623-1e56-4ee4-a482-021d79a3d46f
+Client disconnected: e2dd7dbd-3bf5-4812-95f1-e2f14eac8f90
+Client connected: 44726da3-1d24-40e2-b145-bdd8b67160da
+Client disconnected: 44726da3-1d24-40e2-b145-bdd8b67160da
+Client connected: 0ed43d3d-be3d-4214-95a7-67bd711ae828
+Client disconnected: 0ed43d3d-be3d-4214-95a7-67bd711ae828
+Client disconnected: 77997623-1e56-4ee4-a482-021d79a3d46f
+INFO:     Started server process [231025]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60175) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60176) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231025]
+Client connected: b84ebb80-adfb-4246-b949-2c972f6f41f5
+Client connected: bfffd6e4-eb4f-499a-9e36-7f1fbd644db1
+Client disconnected: b84ebb80-adfb-4246-b949-2c972f6f41f5
+Client disconnected: bfffd6e4-eb4f-499a-9e36-7f1fbd644db1
+INFO:     Started server process [231124]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60231) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60232) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60251) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231124]
+Client connected: edf4190b-d18a-47da-a069-dfca38c66e8e
+Client connected: d81a7044-6d97-4b75-904f-a7e5adaa18d8
+Client disconnected: d81a7044-6d97-4b75-904f-a7e5adaa18d8
+Client connected: 825db0d2-7d36-460e-aaaf-14b2f1881e2c
+Client disconnected: edf4190b-d18a-47da-a069-dfca38c66e8e
+Client disconnected: 825db0d2-7d36-460e-aaaf-14b2f1881e2c
+INFO:     Started server process [231229]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60384) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60385) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60405) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231229]
+Client connected: 9d3b4255-e9a9-4cf1-8ab1-cc9e9f39f197
+Client connected: d2d686bb-ba37-439e-a79b-ae928eb76933
+Client disconnected: d2d686bb-ba37-439e-a79b-ae928eb76933
+Client connected: 9bac9593-8e4c-4b05-99d1-ed8372668f81
+Client disconnected: 9bac9593-8e4c-4b05-99d1-ed8372668f81
+Client disconnected: 9d3b4255-e9a9-4cf1-8ab1-cc9e9f39f197
+INFO:     Started server process [231371]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60730) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60731) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60747) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60754) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231371]
+Client connected: 6a4bdbf6-9a58-46ed-9eac-9b360e4eb535
+Client connected: f4a813d2-7bb4-4199-b507-376505bff17a
+Client disconnected: 6a4bdbf6-9a58-46ed-9eac-9b360e4eb535
+Client connected: b520b029-f21f-432b-b20d-3bc6e3683a6b
+Error for b520b029-f21f-432b-b20d-3bc6e3683a6b: 500, message='Attempt to decode JSON with unexpected mimetype: text/plain; charset=utf-8', url='http://localhost:8002/generate_audio'
+Client connected: de1f2670-9cf9-4aff-b8f1-f0e9bfe03a04
+Client disconnected: de1f2670-9cf9-4aff-b8f1-f0e9bfe03a04
+Client disconnected: f4a813d2-7bb4-4199-b507-376505bff17a
+INFO:     Started server process [231465]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60859) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60858) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231465]
+Client connected: 0046fbe0-b1ce-41b8-9dd7-e1d8d60de78e
+Client connected: b70a5384-a26c-4cdb-9488-db30d2179718
+Client disconnected: 0046fbe0-b1ce-41b8-9dd7-e1d8d60de78e
+Client disconnected: b70a5384-a26c-4cdb-9488-db30d2179718
+INFO:     Started server process [231551]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 60932) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 60933) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60956) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 60975) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231551]
+Client connected: 82dc1308-f524-4b96-8c77-93a9779c1365
+Client connected: 32ab3905-2573-48c1-9d39-701aed4073be
+Client disconnected: 82dc1308-f524-4b96-8c77-93a9779c1365
+Client connected: 26cf0229-e583-444e-913e-96b382476104
+Error for 26cf0229-e583-444e-913e-96b382476104: 500, message='Attempt to decode JSON with unexpected mimetype: text/plain; charset=utf-8', url='http://localhost:8002/generate_audio'
+Client connected: d6b14073-5253-4ab8-9d82-3ab2c96792b6
+Client disconnected: 32ab3905-2573-48c1-9d39-701aed4073be
+Client disconnected: d6b14073-5253-4ab8-9d82-3ab2c96792b6
+INFO:     Started server process [231653]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 61023) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 61024) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61043) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61065) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231653]
+Client connected: 2ca73c10-1693-466f-ba3c-0d8cd5ed7e35
+Client connected: bd9e9e38-4d0b-437b-99e3-18afcae2457a
+Client disconnected: 2ca73c10-1693-466f-ba3c-0d8cd5ed7e35
+Client connected: 941b57b8-7e17-4b18-a799-47486931ceca
+Error for 941b57b8-7e17-4b18-a799-47486931ceca: 500, message='Attempt to decode JSON with unexpected mimetype: text/plain; charset=utf-8', url='http://localhost:8002/generate_audio'
+Client connected: 0ba088e4-5b1e-48a8-a149-9feb9c135f84
+Client disconnected: bd9e9e38-4d0b-437b-99e3-18afcae2457a
+Client disconnected: 0ba088e4-5b1e-48a8-a149-9feb9c135f84
+INFO:     Started server process [231775]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     ('172.23.112.1', 61114) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     ('172.23.112.1', 61115) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61116) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61118) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61120) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61121) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61123) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61125) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61128) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61130) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61132) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61133) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61135) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('172.23.112.1', 61144) - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231775]
+Client connected: a4d93cb3-4df7-4aa9-98b5-546f64ee9a82
+Client connected: 9284fd65-306e-4b86-8a5f-6c80e7c380d0
+Error for 9284fd65-306e-4b86-8a5f-6c80e7c380d0: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: acf656a7-0f07-4547-96bc-ca21d8140110
+Error for acf656a7-0f07-4547-96bc-ca21d8140110: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 7b978666-abf0-49fb-8460-b5dfbf67953a
+Error for 7b978666-abf0-49fb-8460-b5dfbf67953a: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 7b138809-5035-416e-ba45-19a7404b633f
+Error for 7b138809-5035-416e-ba45-19a7404b633f: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 6f5b207f-a66d-41de-9454-b8eb09fc164e
+Error for 6f5b207f-a66d-41de-9454-b8eb09fc164e: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 6e7b56da-6444-43b4-b70d-250a50fa46d1
+Error for 6e7b56da-6444-43b4-b70d-250a50fa46d1: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 39f5915f-37d7-4b7c-b130-1bd8a717a9ed
+Error for 39f5915f-37d7-4b7c-b130-1bd8a717a9ed: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 19f4b0d1-4bc1-402e-aff6-52d41261371f
+Error for 19f4b0d1-4bc1-402e-aff6-52d41261371f: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 0f4dced6-068b-471e-aab3-ebbbee2f74f9
+Error for 0f4dced6-068b-471e-aab3-ebbbee2f74f9: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 67232d15-d09d-4115-8ea3-98e4b767c677
+Error for 67232d15-d09d-4115-8ea3-98e4b767c677: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 0f933a61-d589-439a-ac02-c12923832f63
+Error for 0f933a61-d589-439a-ac02-c12923832f63: Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+Client connected: 7113c0ca-7ca6-40d1-822d-cdd72da065c0
+Client disconnected: 7113c0ca-7ca6-40d1-822d-cdd72da065c0
+Client connected: f28de821-97f6-45dd-8ef9-52264cef81ae
+Client disconnected: f28de821-97f6-45dd-8ef9-52264cef81ae
+Client disconnected: a4d93cb3-4df7-4aa9-98b5-546f64ee9a82

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer,AutoModelForSeq2SeqLM
+from transformers import AutoModelForCausalLM, AutoTokenizer,AutoModelForSeq2SeqLM, StoppingCriteriaList, StoppingCriteria
 import random
 from typing import Dict
 from prompt_engine.chat_engine import ChatEngine, ChatEngineConfig
@@ -60,16 +60,34 @@ model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
+
+# Custom stopping criteria for chat markers
+class ChatStoppingCriteria(StoppingCriteria):
+    def __init__(self, tokenizer, stops=None):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.stops = stops or ["User:", "USER:", "Human:", "HUMAN:"]
+    
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        # Look at the last generated tokens (up to 10 tokens) to check for stop sequences
+        last_tokens = input_ids[0, -10:].cpu()  # Get last 10 tokens
+        decoded = self.tokenizer.decode(last_tokens)
+        
+        return any(stop in decoded for stop in self.stops)
+
 # Store client personalities and initial voice lines
 client_personalities: Dict[str, str] = {}
 
 # Store conversation history for each client
 conversation_history = defaultdict(list)
 
+# Initialize stopping criteria
+stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
+
 # Personality-specific system prompts
 PERSONALITY_SYSTEM_PROMPTS = {
     "default": "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite responses to the user's questions.",
-    "Trump": """You are Donald Trump, the 45th President of the United States. You should:
+    "Trump": """You are the Assistant chatting with a User. You only need to answer as an Assistant. Do not answer as User and do not try to act as a User. You are acting as Donald Trump, the 45th President of the United States. You should:
 - Use simple, repetitive language and short sentences
 - Frequently use words like "tremendous", "huge", "fantastic", "believe me"
 - Be assertive and sometimes controversial
@@ -91,6 +109,7 @@ CHAT_TEMPLATE = """{{ if .System }}{{ .System }}{{ end }}{{ if .Prompt }}
 USER: {{ .Prompt }}
 ASSISTANT: {{ end }}"""
 
+
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
     "Trump": [
@@ -106,11 +125,56 @@ INITIAL_VOICE_LINES = {
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
     """Format the conversation with personality-specific system prompt and history"""
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
-    formatted_history = ""
-    for msg in conversation_history[-2:]:  # Only include last 2 messages
-        formatted_history += f"USER: {msg['user']}\nASSISTANT: {msg['assistant']}\n"
     
-    return f"{system_prompt}\n{formatted_history}USER: {current_message}\nASSISTANT:"
+    # Format with clear separators and newlines
+    formatted_text = [
+        f"### System:\n{system_prompt}\n",
+        "### Conversation:\n"
+    ]
+    
+    # Add conversation history
+    for msg in conversation_history[-2:]:
+        formatted_text.extend([
+            f"User: {msg['user']}",
+            f"Assistant: {msg['assistant']}\n"
+        ])
+    
+    # Add current message with clear end marker
+    formatted_text.extend([
+        f"User: {current_message}",
+        "Assistant: "
+    ])
+    
+    return "\n".join(formatted_text)
+
+# Add required imports at the top
+import re  # Add this with other imports
+
+def extract_assistant_response(full_response: str) -> str:
+    """Extract only the first assistant response and clean it thoroughly"""
+    try:
+        # Find everything after the last 'Assistant:' but before any 'User:', 'Human:', etc.
+        response = re.split(r'(?i)Assistant:', full_response)[-1]
+        
+        # Cut off at any user/human markers
+        user_markers = ['User:', 'USER:', 'Human:', 'HUMAN:']
+        for marker in user_markers:
+            if marker in response:
+                response = response.split(marker)[0]
+        
+        # Clean up the response
+        response = re.sub(r'\([^)]*\)', '', response)  # Remove parentheticals
+        response = re.sub(r'^.*?:', '', response)      # Remove speaker prefixes
+        response = response.replace('###', '')         # Remove section markers
+        response = re.sub(r'\s+', ' ', response)      # Normalize whitespace
+        
+        response = re.sub(r'\s*(?:User|USER|Human|HUMAN|user)s?:?\s*$', '', response, flags=re.IGNORECASE)
+
+        return response.strip()
+
+    except Exception as e:
+        print(f"Error extracting response: {e}")
+        return full_response.strip()
 
 @app.post("/update_personality")
 async def update_personality(data: dict):
@@ -159,23 +223,34 @@ async def generate_response(data: dict):
             transcript
         )
         
+        print(formatted_input)
+
         inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
 
         outputs = model.generate(
             inputs["input_ids"],
-            max_new_tokens=50,
+            max_new_tokens=70,
             temperature=0.7,
             top_p=0.9,
             top_k=50,
             repetition_penalty=1.2,
-            no_repeat_ngram_size=3,  # Prevents repeated trigrams
+            no_repeat_ngram_size=3,
             eos_token_id=tokenizer.eos_token_id,
             do_sample=True,
             pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-            stopping_criteria=["USER:", "ASSISTANT:"]  # Add stopping criteria for chat markers
+            stopping_criteria=stopping_criteria
         )
 
-        text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # Only decode from the last assistant marker
+        full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        print(full_response)
+        
+        # Extract only the relevant part of the response
+        text = extract_assistant_response(full_response)
+        
+        # Clean up any character speaking prefixes
+        text = re.sub(r'^.*?:', '', text).strip()  # Remove "Donald Trump:" or similar prefixes
         
         # Update conversation history
         conversation_history[client_id].append({

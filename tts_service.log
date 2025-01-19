@@ -32555,3 +32555,468 @@ INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [227684]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [228511]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55608 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55608 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38466 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38466 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228511]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [228673]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:32846 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54984 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228673]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [228811]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [228811]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229031]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53828 - "POST /generate_audio HTTP/1.1" 200 OK
+The text length exceeds the character limit of 250 for language 'en', this might cause truncated audio.
+INFO:     127.0.0.1:52168 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229031]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229170]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52038 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38242 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38242 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45152 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45152 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36994 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33294 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36154 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229170]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229291]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36950 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36516 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229291]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229413]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42056 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34824 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34824 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60418 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38932 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229413]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229536]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58486 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58940 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229536]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229660]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53158 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53162 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53162 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46628 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229660]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [229802]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [229802]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [230592]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47246 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47246 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33466 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53118 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41182 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230592]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [230723]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:33628 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33628 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33644 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33644 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43896 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42158 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42158 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37858 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37862 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230723]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [230848]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:33432 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33432 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33432 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33444 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33444 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44134 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [230848]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231072]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42540 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42540 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36184 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59408 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231072]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231194]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36988 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36988 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55750 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35228 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60122 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50408 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231194]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231320]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50008 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50008 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36980 - "POST /generate_audio HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/protocols/http/h11_impl.py", line 373, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/home/n0x/vocal-fun-ai-node/./tts.py", line 81, in generate_audio
+    tts.tts_to_file(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 377, in tts_to_file
+    wav = self.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 323, in tts
+    wav = self.synthesizer.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/utils/synthesizer.py", line 326, in tts
+    raise ValueError(
+ValueError: You need to define either `text` (for sythesis) or a `reference_wav` (for voice conversion) to use the Coqui TTS API.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231320]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231499]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49800 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49800 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52748 - "POST /generate_audio HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/protocols/http/h11_impl.py", line 373, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/home/n0x/vocal-fun-ai-node/./tts.py", line 81, in generate_audio
+    tts.tts_to_file(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 377, in tts_to_file
+    wav = self.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 323, in tts
+    wav = self.synthesizer.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/utils/synthesizer.py", line 326, in tts
+    raise ValueError(
+ValueError: You need to define either `text` (for sythesis) or a `reference_wav` (for voice conversion) to use the Coqui TTS API.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231499]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231618]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54298 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39600 - "POST /generate_audio HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/protocols/http/h11_impl.py", line 373, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/home/n0x/vocal-fun-ai-node/./tts.py", line 81, in generate_audio
+    tts.tts_to_file(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 377, in tts_to_file
+    wav = self.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py", line 323, in tts
+    wav = self.synthesizer.tts(
+  File "/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/utils/synthesizer.py", line 326, in tts
+    raise ValueError(
+ValueError: You need to define either `text` (for sythesis) or a `reference_wav` (for voice conversion) to use the Coqui TTS API.
+INFO:     127.0.0.1:48458 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231618]
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+/home/n0x/vocal-fun-ai-node/venv/lib/python3.10/site-packages/TTS/api.py:92: UserWarning: `gpu` will be deprecated. Please use `tts.to(device)` instead.
+  warnings.warn("`gpu` will be deprecated. Please use `tts.to(device)` instead.")
+INFO:     Started server process [231740]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:44120 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58190 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58190 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58720 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53612 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45998 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36386 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48578 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33734 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55124 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42260 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39172 - "POST /generate_audio HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [231740]
