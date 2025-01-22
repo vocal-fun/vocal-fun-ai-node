@@ -3,11 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from TTS.api import TTS
 import base64
 import os
+import time
+import torch
+import torchaudio
+from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.models.xtts import Xtts
 
 # from tortoise.api import TextToSpeech
 # from tortoise.utils.audio import load_voice, load_audio
 # import torch
-# import torchaudio
 # import torchaudio.transforms as T
 # import numpy as np
 
@@ -21,22 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# tts = TextToSpeech( kv_cache=True, half=True, device='cuda' if torch.cuda.is_available() else 'cpu')
-
-
-# tts = TextToSpeech(device='cuda' if torch.cuda.is_available() else 'cpu')
-
-# TTS initialization
-# tts = TTS(model_name="tts_models/multilingual/multi-dataset/bark").to("cuda")
-# 
-tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True).to("cuda")
-
-# from TTS.tts.configs.bark_config import BarkConfig
-# from TTS.tts.models.bark import Bark
-
-# config = BarkConfig()
-# model = Bark.init_from_config(config)
-# model.load_checkpoint(config, checkpoint_dir="/home/n0x/.local/tts/tts_models--multilingual--multi-dataset--bark", eval=True)
+print("Loading model...")
+config = XttsConfig()
+config.load_json("/home/ec2-user/.local/share/tts/tts_models--multilingual--multi-dataset--xtts_v2/config.json")
+model = Xtts.init_from_config(config)
+model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/tts_models--multilingual--multi-dataset--xtts_v2", use_deepspeed=False)
+model.cuda()
 
 
 PERSONALITY_MAP = {
@@ -65,40 +59,23 @@ async def generate_audio(data: dict):
         
     output_path = f"response_{client_id}.wav"
 
-    # clips_paths = [speaker_wav_path]
-    # reference_clips = [load_audio(p, 22050) for p in clips_paths]
-    # pcm_audio = tts.tts_with_preset(text, voice_samples=reference_clips, preset='ultra_fast')
+    print("Computing speaker latents...")
+    gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=speaker_wav_path)
 
-    # # Save with correct dimensions [channels, samples]
-    # torchaudio.save(
-    #     output_path,
-    #     pcm_audio.squeeze(0),
-    #     24000  # Sample rate
-    # )
+    print("Inference...")
+    t0 = time.time()
 
 
-    # Generate TTS audio
-    tts.tts_to_file(
-        text=text,
-        speaker_wav=speaker_wav_path,
-        language="en",
-        file_path=output_path,
-        split_sentences=False
+    print("Inference...")
+    out = model.inference(
+        text,
+        "en",
+        gpt_cond_latent,
+        speaker_embedding,
+        temperature=0.7,
     )
-    
-    # tts.tts_with_vc_to_file(
-    #     text,
-    #     speaker_wav=speaker_wav_path,
-    #     # language="en",
-    #     file_path=output_path,
-    #     speaker="p225"
-    # )
-
-    # tts.tts_to_file(text=text,
-    #             file_path=output_path,
-    #             voice_dir="voices/",
-    #             speaker="trump")
-
+    print(f"Time to first chunck: {time.time() - t0}")
+    torchaudio.save(output_path, torch.tensor(out["wav"]).unsqueeze(0), 24000)
     # Read and encode audio
     with open(output_path, "rb") as f:
         audio_bytes = f.read()
