@@ -68,15 +68,15 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "You are the Assistant chatting with a User. You only need to answer as your personality. Do not answer as User and do not try to act as a User. Do not use emojis. You always reply as 'Assistant'. Do not reply as anyone else or in any other wording. Do not use sentences like How can I help you today, instead be more direct and act as you are a retard"
+MAIN_SYSTEM_PROMPT = "You are the AI Bot chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph, avoiding bullet points or list formatting."
 
 PERSONALITY_SYSTEM_PROMPTS = {
       "default": """You are acting as Donald Trump, the 45th President of the United States. You should:
-- Frequently use words like "tremendous", "huge", "fantastic", "believe me"
+- Sometimes use words like "tremendous", "huge", "fantastic", "believe me"
 - Be assertive and sometimes controversial
 - Express strong opinions and be unapologetic about them""",
     "Trump": """You are acting as Donald Trump, the 45th President of the United States. You should:
-- Frequently use words like "tremendous", "huge", "fantastic", "believe me"
+- Sometimes use words like "tremendous", "huge", "fantastic", "believe me"
 - Be assertive and sometimes controversial
 - Express strong opinions and be unapologetic about them""",
     "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
@@ -135,6 +135,9 @@ INITIAL_VOICE_LINES = {
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
+model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
 # DeepSpeed inference config
