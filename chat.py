@@ -200,32 +200,33 @@ def remove_emojis(text):
     return emoji_pattern.sub(r'', text)
 
 def extract_assistant_response2(conversation, prompt):
-    """Extract assistant response including multi-line responses"""
-    # Split the conversation into lines
+    """Extract only the first Assistant response after the user prompt"""
     lines = conversation.split('\n')
     
     # Find the line containing the user prompt
-    response_lines = []
-    collecting = False
-    
     for i, line in enumerate(lines):
-        # Start collecting after we find the user prompt
         if f"User: {prompt}" in line:
-            collecting = True
-            continue
-            
-        # If we're collecting and find another User prompt, stop
-        if collecting and any(line.strip().startswith(f"{marker}") for marker in ["User:", "USER:", "Human:", "HUMAN:"]):
-            break
-            
-        # If we're collecting and find the Assistant marker, start adding lines
-        if collecting and (line.strip().startswith("Assistant:") or response_lines):
-            current_line = line.replace("Assistant:", "").strip()
-            if current_line:  # Only add non-empty lines
-                response_lines.append(current_line)
+            # Look at subsequent lines to find the first Assistant response
+            for j in range(i + 1, len(lines)):
+                current_line = lines[j].strip()
+                
+                # If we hit another User prompt before finding Assistant response, return empty
+                if any(marker in current_line for marker in ["User:", "USER:", "Human:", "HUMAN:", "user:", "USER"]):
+                    return ""
+                
+                # Found Assistant response line
+                if current_line.startswith("Assistant:"):
+                    response = current_line.replace("Assistant:", "").strip()
+                    # If response continues on next line
+                    if not response and j + 1 < len(lines):
+                        response = lines[j + 1].strip()
+                    return response
+                
+                # If previous line was just "Assistant:" marker, this line is the response
+                if j > 0 and lines[j - 1].strip() == "Assistant:":
+                    return current_line.strip()
     
-    # Join all collected lines with proper spacing
-    return " ".join(response_lines).strip() if response_lines else ""
+    return ""  # Return empty string if no valid response found
 
 def extract_assistant_response(full_response: str, transcript: str) -> str:
     """Extract and clean the assistant's response"""
