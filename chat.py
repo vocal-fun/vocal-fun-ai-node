@@ -128,7 +128,7 @@ INITIAL_VOICE_LINES = {
 # model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
 # Model initialization
-model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
+model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
@@ -283,6 +283,7 @@ async def generate_response(data: dict):
             conversation_manager.get_history(client_id),
             transcript
         )
+        formatted_input = transcript
         inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
         print(f"Tokenization time: {(time.time() - token_start) * 1000:.2f}ms")
 
@@ -306,8 +307,9 @@ async def generate_response(data: dict):
         # Post-processing time
         post_start = time.time()
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        text = extract_assistant_response2(full_response, transcript)
-        text = remove_emojis(text)
+        text = full_response
+        # text = extract_assistant_response2(full_response, transcript)
+        # text = remove_emojis(text)
         text = re.sub(r'^.*?:', '', text).strip()
         
         conversation_manager.add_conversation(client_id, transcript, text)
