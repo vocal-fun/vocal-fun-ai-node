@@ -200,23 +200,32 @@ def remove_emojis(text):
     return emoji_pattern.sub(r'', text)
 
 def extract_assistant_response2(conversation, prompt):
+    """Extract assistant response including multi-line responses"""
     # Split the conversation into lines
     lines = conversation.split('\n')
     
     # Find the line containing the user prompt
-    for i, line in enumerate(lines):
-        if f"User: {prompt}" in line:
-            # Look at subsequent lines to find Assistant response
-            for j in range(i + 1, min(i + 4, len(lines))):  # Check next few lines
-                current_line = lines[j].strip()
-                if current_line.startswith("Assistant:"):
-                    # Return everything after "Assistant:" on this line
-                    return current_line.replace("Assistant:", "").strip()
-                elif current_line and lines[j-1].strip() == "Assistant:":
-                    # Return the full line if previous line was just "Assistant:"
-                    return current_line.strip()
+    response_lines = []
+    collecting = False
     
-    return ""  # Return empty string if no response found
+    for i, line in enumerate(lines):
+        # Start collecting after we find the user prompt
+        if f"User: {prompt}" in line:
+            collecting = True
+            continue
+            
+        # If we're collecting and find another User prompt, stop
+        if collecting and any(line.strip().startswith(f"{marker}") for marker in ["User:", "USER:", "Human:", "HUMAN:"]):
+            break
+            
+        # If we're collecting and find the Assistant marker, start adding lines
+        if collecting and (line.strip().startswith("Assistant:") or response_lines):
+            current_line = line.replace("Assistant:", "").strip()
+            if current_line:  # Only add non-empty lines
+                response_lines.append(current_line)
+    
+    # Join all collected lines with proper spacing
+    return " ".join(response_lines).strip() if response_lines else ""
 
 def extract_assistant_response(full_response: str, transcript: str) -> str:
     """Extract and clean the assistant's response"""
