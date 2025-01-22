@@ -206,15 +206,17 @@ def extract_assistant_response2(conversation, prompt):
     # Find the line containing the user prompt
     for i, line in enumerate(lines):
         if f"User: {prompt}" in line:
-            # Check if the assistant's response is on the same or next line
-            if i + 1 < len(lines) and lines[i + 1].startswith("Assistant:"):
-                # Response is on the same line as "Assistant:"
-                return lines[i + 1].replace("Assistant:", "").strip()
-            elif i + 2 < len(lines) and lines[i + 2].startswith("Assistant:"):
-                # Response is on the next line after "Assistant:"
-                return lines[i + 2].strip()
+            # Look at subsequent lines to find Assistant response
+            for j in range(i + 1, min(i + 4, len(lines))):  # Check next few lines
+                current_line = lines[j].strip()
+                if current_line.startswith("Assistant:"):
+                    # Return everything after "Assistant:" on this line
+                    return current_line.replace("Assistant:", "").strip()
+                elif current_line and lines[j-1].strip() == "Assistant:":
+                    # Return the full line if previous line was just "Assistant:"
+                    return current_line.strip()
     
-    return conversation
+    return ""  # Return empty string if no response found
 
 def extract_assistant_response(full_response: str, transcript: str) -> str:
     """Extract and clean the assistant's response"""
@@ -309,8 +311,9 @@ async def generate_response(data: dict):
         # Post-processing time
         post_start = time.time()
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(full_response)
         text = extract_assistant_response2(full_response, transcript)
-        # text = remove_emojis(text)
+        text = remove_emojis(text)
         text = re.sub(r'^.*?:', '', text).strip()
         
         conversation_manager.add_conversation(client_id, transcript, text)

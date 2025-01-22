@@ -40,9 +40,9 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True).to("cuda")
 
 
 PERSONALITY_MAP = {
-    "default": "voices/vitalik.wav",
+    "default": "voices/trump.wav",
     "Vitalik": "voices/vitalik.wav",
-    "Trump": "voices/vitalik.wav",
+    "Trump": "voices/trump.wav",
     "Elon Musk": "voices/vitalik.wav"
 }
 
