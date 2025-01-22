@@ -67,7 +67,7 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "You are the Assistant chatting with a User. You only need to answer as an Assistant. Do not answer as User and do not try to act as a User. Do not use emojis. You always reply as 'Assistant'. Do not reply as anyone else or in any other wording. Do not use sentences like How can I help you today, instead be more direct and act as you are a retard"
+MAIN_SYSTEM_PROMPT = "You are the Assistant chatting with a User. You only need to answer as your personality. Do not answer as User and do not try to act as a User. Do not use emojis. You always reply as 'Assistant'. Do not reply as anyone else or in any other wording. Do not use sentences like How can I help you today, instead be more direct and act as you are a retard"
 
 PERSONALITY_SYSTEM_PROMPTS = {
       "default": """You are acting as Donald Trump, the 45th President of the United States. You should:
@@ -91,7 +91,6 @@ PERSONALITY_SYSTEM_PROMPTS = {
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
     "Trump": [
-        "Muslims are the real shit!",
         "Make America great again!!!"
     ],
     "Vitalik": [
@@ -167,7 +166,7 @@ CACHED_SYSTEM_PROMPTS = {
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
     """Format the conversation with personality-specific system prompt and history"""
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
-    system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
+    # system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
     
     formatted_text = [
         f"### System:\n{system_prompt}\n",
