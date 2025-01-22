@@ -166,7 +166,7 @@ CACHED_SYSTEM_PROMPTS = {
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
     """Format the conversation with personality-specific system prompt and history"""
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
-    # system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
+    system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
     
     formatted_text = [
         f"### System:\n{system_prompt}\n",
