@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Dict, List
 import asyncio
+import deepspeed
 
 app = FastAPI()
 
@@ -132,8 +133,26 @@ INITIAL_VOICE_LINES = {
 
 # Model initialization
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
+model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
+model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
+
+# DeepSpeed inference config
+ds_config = {
+    "tensor_parallel": {"tp_size": 1},
+    "dtype": "fp16",
+    "replace_with_kernel_inject": True,
+    "replace_method": "auto"
+}
+
+# Initialize model with DeepSpeed inference
+model = AutoModelForCausalLM.from_pretrained(model_name,
+                                            torch_dtype=torch.float16, 
+                                            device_map="auto")
+# model = deepspeed.init_inference(
+#     model,
+#     config=ds_config
+# )
 
 # Load model with optimizations
 # model = AutoModelForCausalLM.from_pretrained(
@@ -347,7 +366,8 @@ async def generate_response(data: dict):
                 use_cache=True,
                 do_sample=True,
                 pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-                stopping_criteria=stopping_criteria
+                stopping_criteria=stopping_criteria,
+                output_scores=False
             )
             print(f"Generation time: {(time.time() - gen_start) * 1000:.2f}ms")
 
