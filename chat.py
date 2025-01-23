@@ -136,7 +136,7 @@ model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
 model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
@@ -152,10 +152,10 @@ ds_config = {
 model = AutoModelForCausalLM.from_pretrained(model_name,
                                             torch_dtype=torch.float16, 
                                             device_map="auto")
-model = deepspeed.init_inference(
-    model,
-    config=ds_config
-)
+# model = deepspeed.init_inference(
+#     model,
+#     config=ds_config
+# )
 
 # Load model with optimizations
 # model = AutoModelForCausalLM.from_pretrained(
