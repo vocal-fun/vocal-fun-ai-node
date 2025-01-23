@@ -4,7 +4,8 @@ import aiohttp
 import json
 import uuid
 import time
-from typing import Dict
+import asyncio
+from typing import Dict, Optional
 
 app = FastAPI()
 
@@ -18,12 +19,13 @@ app.add_middleware(
 
 # Configuration
 CHAT_SERVICE_URL = "http://localhost:8001"
-TTS_SERVICE_URL = "http://localhost:8002"
+TTS_SERVICE_URL = "ws://localhost:8002/tts_stream"
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
         self.client_personalities: Dict[str, str] = {}
+        self.tts_sessions: Dict[str, aiohttp.ClientWebSocketResponse] = {}
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -32,11 +34,22 @@ class ConnectionManager:
         self.client_personalities[client_id] = "default"
         return client_id
 
-    def disconnect(self, client_id: str):
+    async def disconnect(self, client_id: str):
         if client_id in self.active_connections:
             del self.active_connections[client_id]
         if client_id in self.client_personalities:
             del self.client_personalities[client_id]
+        # Clean up TTS session if exists
+        await self.close_tts_session(client_id)
+
+    async def close_tts_session(self, client_id: str):
+        if client_id in self.tts_sessions:
+            try:
+                await self.tts_sessions[client_id].close()
+            except Exception as e:
+                print(f"Error closing TTS session for {client_id}: {e}")
+            finally:
+                del self.tts_sessions[client_id]
 
     async def send_response(self, client_id: str, response: dict):
         if client_id in self.active_connections:
@@ -44,6 +57,54 @@ class ConnectionManager:
             await websocket.send_text(json.dumps(response))
 
 manager = ConnectionManager()
+
+async def handle_tts_stream(client_id: str, text: str, personality: str, session: aiohttp.ClientSession) -> None:
+    try:
+        # Close any existing TTS session for this client
+        await manager.close_tts_session(client_id)
+        
+        # Establish new TTS WebSocket connection
+        async with session.ws_connect(TTS_SERVICE_URL, timeout=30) as ws:
+            manager.tts_sessions[client_id] = ws
+            
+            # Start TTS stream
+            await ws.send_json({
+                "text": text,
+                "personality": personality
+            })
+
+            async for msg in ws:
+                if msg.type == aiohttp.WSMsgType.TEXT:
+                    data = json.loads(msg.data)
+                    # Forward stream data to client
+                    await manager.send_response(client_id, {
+                        "message_type": "tts_stream",
+                        "stream_data": data
+                    })
+                    
+                    # If this is the last chunk, break
+                    if data.get("type") == "stream_end":
+                        break
+                elif msg.type == aiohttp.WSMsgType.ERROR:
+                    print(f"TTS WebSocket error for {client_id}: {ws.exception()}")
+                    break
+                elif msg.type == aiohttp.WSMsgType.CLOSED:
+                    break
+
+    except asyncio.TimeoutError:
+        print(f"TTS stream timeout for client {client_id}")
+        await manager.send_response(client_id, {
+            "message_type": "tts_stream",
+            "stream_data": {"type": "error", "error": "TTS stream timeout"}
+        })
+    except Exception as e:
+        print(f"Error in TTS stream for {client_id}: {e}")
+        await manager.send_response(client_id, {
+            "message_type": "tts_stream",
+            "stream_data": {"type": "error", "error": str(e)}
+        })
+    finally:
+        await manager.close_tts_session(client_id)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -84,35 +145,23 @@ async def websocket_endpoint(websocket: WebSocket):
                     print(f"\nRequest Latency Breakdown for {client_id}:")
                     print(f"Chat Service: {chat_latency:.2f}ms")
 
-                    # TTS service timing
-                    tts_start = time.time()
-                    async with session.post(
-                        f"{TTS_SERVICE_URL}/generate_audio",
-                        json={
-                            "client_id": client_id,
-                            "text": chat_result["text"],
-                            "personality": manager.client_personalities[client_id],
-                            "message_type": message_data["type"]
-                        }
-                    ) as response:
-                        tts_result = await response.json()
-                    tts_latency = (time.time() - tts_start) * 1000
-                    print(f"TTS Service: {tts_latency:.2f}ms")
-
-                    # Total latency
-                    total_latency = (time.time() - start_time) * 1000
-                    print(f"Total Time: {total_latency:.2f}ms")
-
-                    # Send combined response back to client
+                    # Send text response immediately
                     await manager.send_response(client_id, {
-                        "message_type": f"{message_data['type']}_response",
-                        "text": chat_result["text"],
-                        "audio_base64": tts_result["audio_base64"]
+                        "message_type": f"{message_data['type']}_text",
+                        "text": chat_result["text"]
                     })
+
+                    # Handle TTS streaming
+                    await handle_tts_stream(
+                        client_id,
+                        chat_result["text"],
+                        manager.client_personalities[client_id],
+                        session
+                    )
 
         except WebSocketDisconnect:
             print(f"Client disconnected: {client_id}")
-            manager.disconnect(client_id)
+            await manager.disconnect(client_id)
         except Exception as e:
             print(f"Error for {client_id}: {e}")
-            manager.disconnect(client_id)
+            await manager.disconnect(client_id)

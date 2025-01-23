@@ -1,19 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from TTS.api import TTS
+from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.models.xtts import Xtts
 import base64
 import os
 import time
 import torch
 import torchaudio
-from TTS.tts.configs.xtts_config import XttsConfig
-from TTS.tts.models.xtts import Xtts
-
-# from tortoise.api import TextToSpeech
-# from tortoise.utils.audio import load_voice, load_audio
-# import torch
-# import torchaudio.transforms as T
-# import numpy as np
+import asyncio
+from typing import Dict
 
 app = FastAPI()
 
@@ -32,7 +27,6 @@ model = Xtts.init_from_config(config)
 model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/tts_models--multilingual--multi-dataset--xtts_v2", use_deepspeed=True)
 model.cuda()
 
-
 PERSONALITY_MAP = {
     "default": "voices/trump.wav",
     "Vitalik": "voices/vitalik.wav",
@@ -40,53 +34,103 @@ PERSONALITY_MAP = {
     "Elon Musk": "voices/vitalik.wav"
 }
 
-# Cache for voice lines
+# Cache for voice lines and speaker latents
 voice_lines_cached = {}
+speaker_latents_cache = {}
 
+async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
+    try:
+        await websocket.send_json({
+            "type": "stream_start",
+            "timestamp": time.time()
+        })
 
-@app.post("/generate_audio")
-async def generate_audio(data: dict):
-    client_id = data["client_id"]
-    text = data["text"]
-    personality = data["personality"]
-    message_type = data["message_type"]
-    
-    speaker_wav_path = PERSONALITY_MAP.get(personality, PERSONALITY_MAP["default"])
-    
-    # Check cache for start_vocal messages
-    if message_type == "start_vocal" and text in voice_lines_cached:
-        return {"audio_base64": voice_lines_cached[text]}
+        speaker_wav_path = PERSONALITY_MAP.get(personality, PERSONALITY_MAP["default"])
         
-    output_path = f"response_{client_id}.wav"
+        # Get or compute speaker latents
+        if personality not in speaker_latents_cache:
+            print("Computing speaker latents...")
+            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=speaker_wav_path)
+            speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
+        else:
+            gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
 
-    print("Computing speaker latents...")
-    gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=speaker_wav_path)
+        print("Starting streaming inference...")
+        t0 = time.time()
+        
+        chunks = model.inference_stream(
+            text,
+            "en",
+            gpt_cond_latent,
+            speaker_embedding,
+            temperature=0.7
+        )
 
-    print("Inference...")
-    t0 = time.time()
+        for i, chunk in enumerate(chunks):
+            if i == 0:
+                print(f"Time to first chunk: {time.time() - t0}")
+            
+            # Convert chunk to bytes
+            chunk_tensor = chunk.squeeze().unsqueeze(0).cpu()
+            buffer = torch.zeros(1, chunk_tensor.shape[1], dtype=torch.float32)
+            buffer[0, :chunk_tensor.shape[1]] = chunk_tensor
+            
+            temp_path = f"temp_chunk_{i}.wav"
+            torchaudio.save(temp_path, buffer, 24000)
+            
+            with open(temp_path, "rb") as f:
+                chunk_bytes = f.read()
+            os.remove(temp_path)
+            
+            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+            
+            # Send chunk and wait for small delay to prevent overwhelming the connection
+            await websocket.send_json({
+                "type": "audio_chunk",
+                "chunk": chunk_base64,
+                "chunk_id": i,
+                "timestamp": time.time()
+            })
+            await asyncio.sleep(0.01)  # Small delay between chunks
+            
+            print(f"Sent chunk {i} of audio length {chunk.shape[-1]}")
 
+        # Send end of stream message
+        await websocket.send_json({
+            "type": "stream_end",
+            "timestamp": time.time()
+        })
 
-    print("Inference...")
-    out = model.inference(
-        text,
-        "en",
-        gpt_cond_latent,
-        speaker_embedding,
-        temperature=0.7,
-    )
-    print(f"Time to first chunck: {time.time() - t0}")
-    torchaudio.save(output_path, torch.tensor(out["wav"]).unsqueeze(0), 24000)
-    # Read and encode audio
-    with open(output_path, "rb") as f:
-        audio_bytes = f.read()
-    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+    except WebSocketDisconnect:
+        print("WebSocket disconnected during streaming")
+    except Exception as e:
+        print(f"Error in stream_audio_chunks: {e}")
+        try:
+            await websocket.send_json({
+                "type": "error",
+                "error": str(e)
+            })
+        except:
+            pass
+
+@app.websocket("/tts_stream")
+async def tts_stream(websocket: WebSocket):
+    await websocket.accept()
     
-    # Cache if it's a start_vocal message
-    if message_type == "start_vocal":
-        voice_lines_cached[text] = audio_base64
-        
-    # Cleanup
-    if os.path.exists(output_path):
-        os.remove(output_path)
-        
-    return {"audio_base64": audio_base64}
+    try:
+        while True:
+            data = await websocket.receive_json()
+            
+            if not isinstance(data, dict):
+                continue
+                
+            text = data.get("text")
+            personality = data.get("personality", "default")
+            
+            if text:
+                await stream_audio_chunks(websocket, text, personality)
+            
+    except WebSocketDisconnect:
+        print("WebSocket connection closed normally")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
