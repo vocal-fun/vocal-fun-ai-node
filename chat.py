@@ -68,7 +68,7 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "You are the AI Bot chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph, avoiding bullet points or list formatting. Use vulgar and offensive language."
+MAIN_SYSTEM_PROMPT = "You are the AI Bot chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph. DO NOT USE BULLET POINTS OR LIST FORMATTING. Use vulgar and offensive language."
 
 PERSONALITY_SYSTEM_PROMPTS = {
       "default": """You are acting as Donald Trump, the 45th President of the United States. You should:
@@ -134,9 +134,9 @@ INITIAL_VOICE_LINES = {
 # Model initialization
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
-model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+# model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
+# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
