@@ -180,6 +180,8 @@ model = AutoModelForCausalLM.from_pretrained(model_name,
 conversation_manager = ConversationManager(max_history=1)
 stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
+client_selected_personality = {}
+
 # Cache system prompts tokenization
 CACHED_SYSTEM_PROMPTS = {
     personality: tokenizer(
@@ -305,6 +307,7 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
 async def update_personality(data: dict):
     client_id = data["client_id"]
     personality = data["personality"]
+    client_selected_personality[client_id] = personality
     
     # Initialize with voice line
     voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
@@ -322,6 +325,8 @@ async def generate_response(data: dict):
     client_id = data["client_id"]
     message_type = data["type"]
     personality = data.get("personality", "default")
+    #get personality from client_selected_personality
+    personality = client_selected_personality.get(client_id, "default")
 
     if message_type == "start_vocal":
         history = conversation_manager.get_history(client_id)
