@@ -377,7 +377,7 @@ async def generate_response(data: dict):
                 use_cache=True,
                 do_sample=True,
                 pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-                # stopping_criteria=stopping_criteria,
+                stopping_criteria=stopping_criteria,
                 output_scores=False
             )
             print(f"Generation time: {(time.time() - gen_start) * 1000:.2f}ms")
