@@ -152,10 +152,10 @@ ds_config = {
 model = AutoModelForCausalLM.from_pretrained(model_name,
                                             torch_dtype=torch.float16, 
                                             device_map="auto")
-# model = deepspeed.init_inference(
-#     model,
-#     config=ds_config
-# )
+model = deepspeed.init_inference(
+    model,
+    config=ds_config
+)
 
 # Load model with optimizations
 # model = AutoModelForCausalLM.from_pretrained(
