@@ -68,7 +68,7 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "You are the AI Bot chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph. DO NOT USE BULLET POINTS OR LIST FORMATTING. DO NOT USE PERCENTAGES. Use vulgar and offensive language."
+MAIN_SYSTEM_PROMPT = "You are {p} chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph. DO NOT USE BULLET POINTS OR LIST FORMATTING. DO NOT USE PERCENTAGES. Use vulgar and offensive language."
 
 PERSONALITY_SYSTEM_PROMPTS = {
       "default": """You are acting as Donald Trump, the 45th President of the United States. You should:
@@ -190,9 +190,9 @@ CACHED_SYSTEM_PROMPTS = {
 }
 
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
-    """Format the conversation with personality-specific system prompt and history"""
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
     system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
+    system_prompt = system_prompt.replace("{p}", personality)
     
     formatted_text = [
         f"### System:\n{system_prompt}\n",
@@ -202,12 +202,12 @@ def format_conversation(personality: str, conversation_history: list, current_me
     for msg in conversation_history[-2:]:
         formatted_text.extend([
             f"User: {msg['user']}",
-            f"Assistant: {msg['assistant']}\n"
+            f"{personality}: {msg['assistant']}\n"
         ])
     
     formatted_text.extend([
         f"User: {current_message}",
-        "Assistant: "
+        f"{personality}: "
     ])
     
     return "\n".join(formatted_text)
@@ -253,34 +253,24 @@ def remove_emojis(text):
     
     return text.strip()
 
-def extract_assistant_response2(conversation, prompt):
-    """Extract only the first Assistant response after the user prompt"""
+def extract_assistant_response2(conversation, prompt, personality):
     lines = conversation.split('\n')
     
-    # Find the line containing the user prompt
     for i, line in enumerate(lines):
         if f"User: {prompt}" in line:
-            # Look at subsequent lines to find the first Assistant response
             for j in range(i + 1, len(lines)):
                 current_line = lines[j].strip()
                 
-                # If we hit another User prompt before finding Assistant response, return empty
-                if any(marker in current_line for marker in ["User:", "USER:", "Human:", "HUMAN:", "user:", "USER"]):
-                    return ""
-                
-                # Found Assistant response line
-                if current_line.startswith("Assistant:"):
-                    response = current_line.replace("Assistant:", "").strip()
-                    # If response continues on next line
+                if current_line.startswith(f"{personality}:"):
+                    response = current_line.replace(f"{personality}:", "").strip()
                     if not response and j + 1 < len(lines):
                         response = lines[j + 1].strip()
                     return response
                 
-                # If previous line was just "Assistant:" marker, this line is the response
-                if j > 0 and lines[j - 1].strip() == "Assistant:":
+                if j > 0 and lines[j - 1].strip() == f"{personality}:":
                     return current_line.strip()
     
-    return ""  # Return empty string if no valid response found
+    return ""
 
 def extract_assistant_response(full_response: str, transcript: str) -> str:
     """Extract and clean the assistant's response"""
@@ -383,7 +373,7 @@ async def generate_response(data: dict):
             full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
             print(f"Full response (attempt {retry_count + 1}): {full_response}")
             
-            text = extract_assistant_response2(full_response, transcript)
+            text = extract_assistant_response2(full_response, transcript, personality)
             text = remove_emojis(text) if text else ""
             text = re.sub(r'^.*?:', '', text).strip() if text else ""
             
