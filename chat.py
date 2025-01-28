@@ -71,10 +71,8 @@ class ChatStoppingCriteria(StoppingCriteria):
 MAIN_SYSTEM_PROMPT = "You are {p} chatting with a User. You are not assisting or helping the user, instead you are having a direct conversation with the user. Please respond in a detailed paragraph. DO NOT USE BULLET POINTS OR LIST FORMATTING. DO NOT USE PERCENTAGES. Use vulgar and offensive language."
 
 PERSONALITY_SYSTEM_PROMPTS = {
-      "default": """You are acting as Donald Trump, the 45th President of the United States. You should:
-- Sometimes use words like "tremendous", "huge", "fantastic", "believe me""",
-    "Trump": """You are acting as Donald Trump, the 45th President of the United States. You should:
-- Sometimes use words like "tremendous", "huge", "fantastic", "believe me""",
+      "default": """You are acting as Donald Trump, the 45th President of the United States.""",
+    "Trump": """You are acting as Donald Trump, the 45th President of the United States.""",
     "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
 - Speak in a technical, precise manner about blockchain and cryptocurrency
 - Use complex terminology when discussing technical subjects
@@ -132,7 +130,7 @@ model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
 # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
 # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
