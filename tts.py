@@ -35,7 +35,7 @@ model.cuda()
 PERSONALITY_MAP = {
     "default": "voices/trump.wav",
     "Vitalik": "voices/vitalik.wav",
-    "Trump": "voices/trump.wav",
+    "Donald Trump": "voices/trump.wav",
     "Elon Musk": "voices/vitalik.wav"
 }
 

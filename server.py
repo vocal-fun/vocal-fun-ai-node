@@ -29,6 +29,8 @@ class AudioSession:
         self.session_id = session_id
         self.audio_chunks = []
         self.is_speaking = False
+        self.agent_id = ""
+        self.agent_name = ""
         self.websocket: Optional[WebSocket] = None
         self.tts_websocket: Optional[aiohttp.ClientWebSocketResponse] = None
 
@@ -78,7 +80,7 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
             # Get chat response
             async with http_session.post(
                 CHAT_SERVICE_URL,
-                json={"text": text, "session_id": session.session_id}
+                json={"text": text, "session_id": session.session_id, "personality": session.agent_name}
             ) as response:
                 chat_result = await response.json()
                 chat_response = chat_result['response']
@@ -87,7 +89,8 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
             async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
                 session.tts_websocket = ws
                 await ws.send_json({
-                    "text": chat_response
+                    "text": chat_response,
+                    "personality": session.agent_name
                 })
 
                 async for msg in ws:
@@ -146,6 +149,20 @@ async def process_audio_to_response(session: AudioSession) -> None:
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     session = await manager.connect(websocket, session_id)
     print(f"Client connected: {session_id}")
+
+     # Wait for the first message (which should contain agentId and userId)
+    data = await websocket.receive_text()
+    message = json.loads(data)
+
+    # Extract agentId and userId from the message
+    agent_id = message.get("agentId")
+    user_id = message.get("userId")
+    agent_name = message.get("agentName")
+
+    session.agent_id = agent_id
+    session.agent_name = agent_name
+
+    print(f"Received agentId: {agent_id}, userId: {user_id}")
     
     try:
         while True:

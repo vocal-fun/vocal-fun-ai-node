@@ -85,7 +85,7 @@ PERSONALITY_SYSTEM_PROMPTS = {
 
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
-    "Trump": [
+    "Donald Trump": [
         "Make America great again!!!"
     ],
     "Vitalik": [
@@ -308,8 +308,9 @@ async def generate_response(data: dict):
     
     session_id = data["session_id"]
     user_message = data["text"]
+    personality = data.get("personality", "default")
 
-    personality = client_selected_personality.get(session_id, "default")
+    print(f"Client {session_id} INPUT {user_message} PERSONALITY {personality}")
 
     history = conversation_manager.get_history(session_id)
 
