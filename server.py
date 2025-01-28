@@ -8,6 +8,7 @@ import numpy as np
 from typing import Dict, Optional
 import os
 from datetime import datetime
+from speechdetector import AudioSpeechDetector
 
 app = FastAPI()
 
@@ -162,6 +163,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     session.agent_id = agent_id
     session.agent_name = agent_name
 
+    speech_detector = AudioSpeechDetector()
+
     print(f"Received agentId: {agent_id}, userId: {user_id}")
     
     try:
@@ -179,7 +182,21 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         if len(binary_data) > 0:
                             # Convert binary data to numpy array
                             audio_data = np.frombuffer(binary_data, dtype=np.int16)
+                            
+                            # Add to session audio chunks
                             session.audio_chunks.append(audio_data)
+                            
+                            # Detect speech with our new detector
+                            detection_result = speech_detector.add_audio_chunk(audio_data)
+                            
+                            if detection_result['action'] == 'process':
+                                print(f"Detected speech end: {detection_result['reason']}")
+                                # Speech end detected, process the audio
+                                await process_audio_to_response(session)
+                                
+                                # Reset audio chunks
+                                session.audio_chunks = []
+                            
                             print(f"Received audio chunk: {len(audio_data)} samples")
                     except Exception as e:
                         print(f"Error processing audio data: {e}")
