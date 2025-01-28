@@ -25,7 +25,7 @@ class ServiceLauncher:
                 'required': True
             },
             'stt': {
-                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
+                'command': ['uvicorn', 'stt:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             },
