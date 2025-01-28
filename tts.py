@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
@@ -11,6 +11,7 @@ import torchaudio
 import asyncio
 from typing import Dict
 import uuid
+from fastapi.background import BackgroundTasks
 
 
 app = FastAPI()
@@ -141,8 +142,9 @@ async def tts_stream(websocket: WebSocket):
 
 @app.get("/tts")
 async def generate_tts(
+    background_tasks: BackgroundTasks,
     text: str = Query(..., description="Text to convert to speech"),
-    personality: str = Query("default", description="Voice personality to use")
+    personality: str = Query("default", description="Voice personality to use"),
 ):
     try:
         # Get the appropriate voice file path
@@ -177,12 +179,14 @@ async def generate_tts(
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
         
+        # Make sure we use the background_tasks
+        background_tasks.add_task(os.remove, filename)
+
         # Return the file and ensure it's deleted after sending
         return FileResponse(
             filename,
             media_type="audio/wav",
-            filename="tts_output.wav",
-            background=BackgroundTask(lambda: os.remove(filename))
+            filename="tts_output.wav"
         )
 
     except Exception as e:
