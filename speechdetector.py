@@ -4,7 +4,7 @@ import time
 class AudioSpeechDetector:
     def __init__(self, 
                  sample_rate=16000, 
-                 energy_threshold=0.01,  # RMS energy threshold
+                 energy_threshold=0.1,  # Percentage of max possible energy
                  min_speech_duration=0.3,  # seconds
                  max_silence_duration=1.5,  # seconds
                  max_recording_duration=10.0,
@@ -13,7 +13,7 @@ class AudioSpeechDetector:
         Initialize speech detector with configurable parameters
         
         :param sample_rate: Audio sample rate (Hz)
-        :param energy_threshold: RMS energy threshold for speech detection
+        :param energy_threshold: Percentage of max possible energy for speech detection
         :param min_speech_duration: Minimum duration of speech to be considered valid (seconds)
         :param max_silence_duration: Maximum duration of silence within speech (seconds)
         :param max_recording_duration: Maximum duration of continuous recording
@@ -45,14 +45,23 @@ class AudioSpeechDetector:
         if self.debug:
             print(f"[SpeechDetector] {message}")
     
-    def _calculate_rms_energy(self, audio_chunk):
+    def _calculate_normalized_energy(self, audio_chunk):
         """
-        Calculate Root Mean Square (RMS) energy of the audio chunk
+        Calculate normalized energy of the audio chunk
         
         :param audio_chunk: NumPy array of audio samples
-        :return: RMS energy of the chunk
+        :return: Normalized energy (0-1 range)
         """
-        return np.sqrt(np.mean(np.square(audio_chunk.astype(float))))
+        # Assuming 16-bit audio, max possible value is 32768
+        max_possible_amplitude = 32768.0
+        
+        # Calculate peak amplitude
+        peak_amplitude = np.max(np.abs(audio_chunk))
+        
+        # Calculate normalized energy as percentage of max possible
+        normalized_energy = peak_amplitude / max_possible_amplitude
+        
+        return normalized_energy
     
     def add_audio_chunk(self, audio_chunk):
         """
@@ -71,13 +80,13 @@ class AudioSpeechDetector:
         if self.start_recording_time is None:
             self.start_recording_time = current_time
         
-        # Calculate RMS energy
-        chunk_energy = self._calculate_rms_energy(audio_chunk)
+        # Calculate normalized energy
+        chunk_energy = self._calculate_normalized_energy(audio_chunk)
         
         # Detailed logging
         self._log(f"Chunk Analysis: " +
                   f"Total Samples: {len(audio_chunk)}, " +
-                  f"RMS Energy: {chunk_energy:.6f}, " +
+                  f"Normalized Energy: {chunk_energy:.6f}, " +
                   f"Threshold: {self.energy_threshold}")
         
         # Check if chunk energy is above threshold (indicating speech)
@@ -115,7 +124,7 @@ class AudioSpeechDetector:
             
             # Calculate speech duration based on energy
             speech_chunks = [chunk for chunk in self.current_audio_chunks 
-                             if self._calculate_rms_energy(chunk) > self.energy_threshold]
+                             if self._calculate_normalized_energy(chunk) > self.energy_threshold]
             full_speech_audio = np.concatenate(speech_chunks) if speech_chunks else np.array([])
             
             speech_duration_full = len(full_speech_audio) / self.sample_rate
