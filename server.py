@@ -2,10 +2,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import aiohttp
 import json
-import uuid
-import time
 import asyncio
+import wave
+import numpy as np
 from typing import Dict, Optional
+import os
+from datetime import datetime
 
 app = FastAPI()
 
@@ -17,151 +19,151 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration
-CHAT_SERVICE_URL = "http://localhost:8001"
-TTS_SERVICE_URL = "ws://localhost:8002/tts_stream"
+# Service URLs
+STT_SERVICE_URL = "http://localhost:8001/transcribe"
+CHAT_SERVICE_URL = "http://localhost:8002/chat"
+TTS_SERVICE_URL = "ws://localhost:8003/tts_stream"
+
+class AudioSession:
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.audio_chunks = []
+        self.is_speaking = False
+        self.websocket: Optional[WebSocket] = None
+        self.tts_websocket: Optional[aiohttp.ClientWebSocketResponse] = None
+
+    async def save_audio(self) -> str:
+        if not self.audio_chunks:
+            return ""
+            
+        # Create timestamps directory if it doesn't exist
+        os.makedirs("audio_files", exist_ok=True)
+        
+        # Create WAV file with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"audio_files/{self.session_id}_{timestamp}.wav"
+        
+        # Convert audio chunks to numpy array
+        audio_data = np.concatenate(self.audio_chunks)
+        
+        # Save as WAV file
+        with wave.open(filename, 'wb') as wav_file:
+            wav_file.setnchannels(1)  # Mono
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(16000)  # Sample rate
+            wav_file.writeframes(audio_data.tobytes())
+        
+        self.audio_chunks = []  # Clear the chunks
+        return filename
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-        self.client_personalities: Dict[str, str] = {}
-        self.tts_sessions: Dict[str, aiohttp.ClientWebSocketResponse] = {}
+        self.active_sessions: Dict[str, AudioSession] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, session_id: str):
         await websocket.accept()
-        client_id = str(uuid.uuid4())
-        self.active_connections[client_id] = websocket
-        self.client_personalities[client_id] = "default"
-        return client_id
+        if session_id not in self.active_sessions:
+            self.active_sessions[session_id] = AudioSession(session_id)
+        self.active_sessions[session_id].websocket = websocket
+        return self.active_sessions[session_id]
 
-    async def disconnect(self, client_id: str):
-        if client_id in self.active_connections:
-            del self.active_connections[client_id]
-        if client_id in self.client_personalities:
-            del self.client_personalities[client_id]
-        # Clean up TTS session if exists
-        await self.close_tts_session(client_id)
-
-    async def close_tts_session(self, client_id: str):
-        if client_id in self.tts_sessions:
-            try:
-                await self.tts_sessions[client_id].close()
-            except Exception as e:
-                print(f"Error closing TTS session for {client_id}: {e}")
-            finally:
-                del self.tts_sessions[client_id]
-
-    async def send_response(self, client_id: str, response: dict):
-        if client_id in self.active_connections:
-            websocket = self.active_connections[client_id]
-            await websocket.send_text(json.dumps(response))
+    async def disconnect(self, session_id: str):
+        if session_id in self.active_sessions:
+            session = self.active_sessions[session_id]
+            if session.tts_websocket:
+                await session.tts_websocket.close()
+            del self.active_sessions[session_id]
 
 manager = ConnectionManager()
 
-async def handle_tts_stream(client_id: str, text: str, personality: str, session: aiohttp.ClientSession) -> None:
+async def process_audio_to_response(session: AudioSession) -> None:
     try:
-        # Close any existing TTS session for this client
-        await manager.close_tts_session(client_id)
-        
-        # Establish new TTS WebSocket connection
-        async with session.ws_connect(TTS_SERVICE_URL, timeout=30) as ws:
-            manager.tts_sessions[client_id] = ws
-            
-            # Start TTS stream
-            await ws.send_json({
-                "text": text,
-                "personality": personality
-            })
+        # Save collected audio to file
+        audio_file = await session.save_audio()
+        if not audio_file:
+            return
 
-            async for msg in ws:
-                if msg.type == aiohttp.WSMsgType.TEXT:
-                    data = json.loads(msg.data)
-                    # Forward stream data to client
-                    await manager.send_response(client_id, {
-                        "message_type": "tts_stream",
-                        "stream_data": data
-                    })
-                    
-                    # If this is the last chunk, break
-                    if data.get("type") == "stream_end":
-                        break
-                elif msg.type == aiohttp.WSMsgType.ERROR:
-                    print(f"TTS WebSocket error for {client_id}: {ws.exception()}")
-                    break
-                elif msg.type == aiohttp.WSMsgType.CLOSED:
-                    break
+        async with aiohttp.ClientSession() as http_session:
+            # Step 1: Get transcription
+            files = {'audio_file': open(audio_file, 'rb')}
+            async with http_session.post(STT_SERVICE_URL, data=files) as response:
+                transcript_result = await response.json()
+                transcript = transcript_result['text']
 
-    except asyncio.TimeoutError:
-        print(f"TTS stream timeout for client {client_id}")
-        await manager.send_response(client_id, {
-            "message_type": "tts_stream",
-            "stream_data": {"type": "error", "error": "TTS stream timeout"}
-        })
-    except Exception as e:
-        print(f"Error in TTS stream for {client_id}: {e}")
-        await manager.send_response(client_id, {
-            "message_type": "tts_stream",
-            "stream_data": {"type": "error", "error": str(e)}
-        })
-    finally:
-        await manager.close_tts_session(client_id)
+            # Step 2: Get chat response
+            async with http_session.post(
+                CHAT_SERVICE_URL,
+                json={"text": transcript, "session_id": session.session_id}
+            ) as response:
+                chat_result = await response.json()
+                chat_response = chat_result['response']
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    client_id = await manager.connect(websocket)
-    print(f"Client connected: {client_id}")
+            # Step 3: Stream TTS response
+            async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
+                session.tts_websocket = ws
+                await ws.send_json({
+                    "text": chat_response
+                })
 
-    async with aiohttp.ClientSession() as session:
-        try:
-            while True:
-                message = await websocket.receive_text()
-                message_data = json.loads(message)
-                start_time = time.time()
-
-                if message_data["type"] == "personality":
-                    async with session.post(
-                        f"{CHAT_SERVICE_URL}/update_personality",
-                        json={"client_id": client_id, "personality": message_data["data"]}
-                    ) as response:
-                        result = await response.json()
-                        await manager.send_response(client_id, {
-                            "message_type": "personality_update",
-                            "status": result["status"]
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        data = json.loads(msg.data)
+                        # Forward TTS stream data to client
+                        await session.websocket.send_json({
+                            "type": "tts_stream",
+                            "data": data
                         })
+                        
+                        if data.get("type") == "stream_end":
+                            await session.websocket.send_json({
+                                "type": "tts_stream_end"
+                            })
+                            break
+                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
+                        break
 
-                elif message_data["type"] in ["start_vocal", "transcript"]:
-                    # Chat service timing
-                    chat_start = time.time()
-                    async with session.post(
-                        f"{CHAT_SERVICE_URL}/generate_response",
-                        json={
-                            "client_id": client_id,
-                            "type": message_data["type"],
-                            "data": message_data.get("data", "")
-                        }
-                    ) as response:
-                        chat_result = await response.json()
-                    chat_latency = (time.time() - chat_start) * 1000
-                    print(f"\nRequest Latency Breakdown for {client_id}:")
-                    print(f"Chat Service: {chat_latency:.2f}ms")
+    except Exception as e:
+        print(f"Error processing audio: {e}")
+        if session.websocket:
+            await session.websocket.send_json({
+                "type": "error",
+                "error": str(e)
+            })
+    finally:
+        # Cleanup
+        if os.path.exists(audio_file):
+            os.remove(audio_file)
 
-                    # Send text response immediately
-                    await manager.send_response(client_id, {
-                        "message_type": f"{message_data['type']}_text",
-                        "text": chat_result["text"]
-                    })
-
-                    # Handle TTS streaming
-                    await handle_tts_stream(
-                        client_id,
-                        chat_result["text"],
-                        manager.client_personalities[client_id],
-                        session
-                    )
-
-        except WebSocketDisconnect:
-            print(f"Client disconnected: {client_id}")
-            await manager.disconnect(client_id)
-        except Exception as e:
-            print(f"Error for {client_id}: {e}")
-            await manager.disconnect(client_id)
+@app.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    session = await manager.connect(websocket, session_id)
+    
+    try:
+        while True:
+            message = await websocket.receive()
+            
+            if message["type"] == "websocket.disconnect":
+                break
+                
+            if message["type"] == "bytes":
+                # Handle incoming audio bytes
+                audio_data = np.frombuffer(message["bytes"], dtype=np.int16)
+                session.audio_chunks.append(audio_data)
+                
+            elif message["type"] == "text":
+                data = json.loads(message["text"])
+                
+                if data["type"] == "speech_start":
+                    session.is_speaking = True
+                    session.audio_chunks = []  # Clear any previous chunks
+                    
+                elif data["type"] == "speech_end":
+                    session.is_speaking = False
+                    # Process the collected audio
+                    await process_audio_to_response(session)
+                    
+    except WebSocketDisconnect:
+        await manager.disconnect(session_id)
+    except Exception as e:
+        print(f"Error in websocket connection: {e}")
+        await manager.disconnect(session_id)

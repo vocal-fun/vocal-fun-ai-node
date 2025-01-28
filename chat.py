@@ -36,24 +36,24 @@ class ConversationManager:
         self.max_history = max_history
         self.cached_tokens = {}
 
-    def add_conversation(self, client_id: str, user_text: str, assistant_text: str):
-        if client_id not in self.history:
-            self.history[client_id] = []
+    def add_conversation(self, session_id: str, user_text: str, assistant_text: str):
+        if session_id not in self.history:
+            self.history[session_id] = []
         
-        self.history[client_id].append({
+        self.history[session_id].append({
             'user': user_text,
             'assistant': assistant_text,
             'tokens': None
         })
         
-        if len(self.history[client_id]) > self.max_history:
-            self.history[client_id] = self.history[client_id][-self.max_history:]
+        if len(self.history[session_id]) > self.max_history:
+            self.history[session_id] = self.history[session_id][-self.max_history:]
 
-    def get_history(self, client_id: str) -> List[dict]:
-        return self.history.get(client_id, [])
+    def get_history(self, session_id: str) -> List[dict]:
+        return self.history.get(session_id, [])
 
-    def clear_history(self, client_id: str):
-        self.history[client_id] = []
+    def clear_history(self, session_id: str):
+        self.history[session_id] = []
 
 # Custom stopping criteria for chat markers
 class ChatStoppingCriteria(StoppingCriteria):
@@ -301,104 +301,89 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
         print(f"Error extracting response: {e}")
         return full_response.strip()
 
-@app.post("/update_personality")
-async def update_personality(data: dict):
-    client_id = data["client_id"]
-    personality = data["personality"]
-    client_selected_personality[client_id] = personality
-    
-    # Initialize with voice line
-    voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
-    initial_message = random.choice(voice_lines)
-    
-    conversation_manager.clear_history(client_id)
-    conversation_manager.add_conversation(client_id, "Hello", initial_message)
-    
-    return {"status": "personality updated"}
 
-@app.post("/generate_response")
+@app.post("/chat")
 async def generate_response(data: dict):
     start_time = time.time()
     
-    client_id = data["client_id"]
-    message_type = data["type"]
-    personality = data.get("personality", "default")
-    #get personality from client_selected_personality
-    personality = client_selected_personality.get(client_id, "default")
+    session_id = data["session_id"]
+    user_message = data["text"]
 
-    if message_type == "start_vocal":
-        history = conversation_manager.get_history(client_id)
-        if history:
-            text = history[0]["assistant"]
-        else:
-            voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
-            text = random.choice(voice_lines)
-            conversation_manager.add_conversation(client_id, "Hello", text)
+    personality = client_selected_personality.get(session_id, "default")
+
+    history = conversation_manager.get_history(session_id)
+
+    if history:
+        text = history[0]["assistant"]
     else:
-        transcript = data["data"]
-        print(f"Client {client_id} TRANSCRIPT {transcript}")
+        voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
+        text = random.choice(voice_lines)
+        conversation_manager.add_conversation(session_id, "Hello", text)
         
-        max_retries = 3
-        retry_count = 0
-        text = ""
+    transcript = user_message
+    print(f"Client {session_id} TRANSCRIPT {transcript}")
+    
+    max_retries = 3
+    retry_count = 0
+    text = ""
 
-        while retry_count < max_retries and not text:
-            # Tokenization time
-            token_start = time.time()
-            formatted_input = format_conversation(
-                personality,
-                conversation_manager.get_history(client_id),
-                transcript
-            )
-            inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
-            print(f"Tokenization time: {(time.time() - token_start) * 1000:.2f}ms")
+    while retry_count < max_retries and not text:
+        # Tokenization time
+        token_start = time.time()
+        formatted_input = format_conversation(
+            personality,
+            conversation_manager.get_history(session_id),
+            transcript
+        )
+        inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
+        print(f"Tokenization time: {(time.time() - token_start) * 1000:.2f}ms")
 
-            # Generation time
-            gen_start = time.time()
-            outputs = model.generate(
-                inputs["input_ids"],
-                max_new_tokens=50,
-                temperature=0.7 + (retry_count * 0.1),  # Gradually increase temperature on retries
-                top_p=0.9,
-                top_k=50,
-                repetition_penalty=1.2,
-                no_repeat_ngram_size=3,
-                use_cache=True,
-                do_sample=True,
-                pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-                stopping_criteria=stopping_criteria,
-                output_scores=False
-            )
-            print(f"Generation time: {(time.time() - gen_start) * 1000:.2f}ms")
+        # Generation time
+        gen_start = time.time()
+        outputs = model.generate(
+            inputs["input_ids"],
+            max_new_tokens=50,
+            temperature=0.7 + (retry_count * 0.1),  # Gradually increase temperature on retries
+            top_p=0.9,
+            top_k=50,
+            repetition_penalty=1.2,
+            no_repeat_ngram_size=3,
+            use_cache=True,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
+            stopping_criteria=stopping_criteria,
+            output_scores=False
+        )
+        print(f"Generation time: {(time.time() - gen_start) * 1000:.2f}ms")
 
-            # Post-processing time
-            post_start = time.time()
-            full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            print(f"Full response (attempt {retry_count + 1}): {full_response}")
-            
-            text = extract_assistant_response2(full_response, transcript, personality)
-            text = remove_emojis(text) if text else ""
-            text = re.sub(r'^.*?:', '', text).strip() if text else ""
-            
-            if not text:
-                print(f"Empty response on attempt {retry_count + 1}, retrying...")
-                retry_count += 1
-                # Add a small delay between retries
-                await asyncio.sleep(0.1)
-            
-            print(f"Post-processing time: {(time.time() - post_start) * 1000:.2f}ms")
-
+        # Post-processing time
+        post_start = time.time()
+        full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(f"Full response (attempt {retry_count + 1}): {full_response}")
+        
+        text = extract_assistant_response2(full_response, transcript, personality)
+        text = remove_emojis(text) if text else ""
+        text = re.sub(r'^.*?:', '', text).strip() if text else ""
+        
         if not text:
-            fallback_responses = [
-                "I understand what you're saying. Could you rephrase that?",
-                "That's an interesting point. Could you elaborate?",
-                "I see what you mean. Let's explore that further.",
-            ]
-            text = random.choice(fallback_responses)
-            print("Using fallback response:", text)
+            print(f"Empty response on attempt {retry_count + 1}, retrying...")
+            retry_count += 1
+            # Add a small delay between retries
+            await asyncio.sleep(0.1)
+        
+        print(f"Post-processing time: {(time.time() - post_start) * 1000:.2f}ms")
 
-        conversation_manager.add_conversation(client_id, transcript, text)
-        print(f"Client {client_id} OUTPUT {text}")
-        print(f"Total time: {(time.time() - start_time) * 1000:.2f}ms")
+    if not text:
+        fallback_responses = [
+            "I understand what you're saying. Could you rephrase that?",
+            "That's an interesting point. Could you elaborate?",
+            "I see what you mean. Let's explore that further.",
+        ]
+        text = random.choice(fallback_responses)
+        print("Using fallback response:", text)
 
-    return {"text": text}
+    conversation_manager.add_conversation(session_id, transcript, text)
+    print(f"Client {session_id} OUTPUT {text}")
+    print(f"Total time: {(time.time() - start_time) * 1000:.2f}ms")
+
+    return {"response": text}

@@ -24,13 +24,18 @@ class ServiceLauncher:
                 'process': None,
                 'required': True
             },
+            'stt': {
+                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
+                'process': None,
+                'required': True
+            },
             'chat': {
-                'command': ['uvicorn', 'chat:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
+                'command': ['uvicorn', 'chat:app', '--host', '0.0.0.0', '--port', '8002', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             },
             'tts': {
-                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8002', '--log-level', 'info', '--access-log'],
+                'command': ['uvicorn', 'tts:app', '--host', '0.0.0.0', '--port', '8003', '--log-level', 'info', '--access-log'],
                 'process': None,
                 'required': True
             }
