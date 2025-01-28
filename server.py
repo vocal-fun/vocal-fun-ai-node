@@ -125,26 +125,11 @@ async def process_audio_to_response(session: AudioSession) -> None:
             return
 
         async with aiohttp.ClientSession() as http_session:
-            # Step 1: Get transcription
-            async with http_session.post(
-                STT_SERVICE_URL,
-                data={'audio_file': open(audio_file, 'rb')}
-            ) as response:
-                if response.status == 404:
-                    print(f"STT service not found at {STT_SERVICE_URL}")
-                    return
-                    
-                if response.status != 200:
-                    print(f"STT service error: {response.status}")
-                    return
-                    
+            # Get transcription
+            files = {'audio_file': open(audio_file, 'rb')}
+            async with http_session.post(STT_SERVICE_URL, data=files) as response:
                 transcript_result = await response.json()
-                if 'error' in transcript_result:
-                    print(f"STT error: {transcript_result['error']}")
-                    return
-                    
                 transcript = transcript_result['text']
-                print(f"Transcribed text: {transcript}")
 
             # Process the transcript through chat and TTS
             await process_text_to_response(session, transcript)
