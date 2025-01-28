@@ -77,6 +77,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 async def process_audio_to_response(session: AudioSession) -> None:
+    print("Processing audio...")
     try:
         # Save collected audio to file
         audio_file = await session.save_audio()
@@ -137,6 +138,7 @@ async def process_audio_to_response(session: AudioSession) -> None:
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     session = await manager.connect(websocket, session_id)
+    print(f"Client connected: {session_id}")
     
     try:
         while True:
@@ -146,11 +148,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 break
                 
             if message["type"] == "bytes":
+                print(f"Received audio chunk of length {len(message['bytes'])}")
                 # Handle incoming audio bytes
                 audio_data = np.frombuffer(message["bytes"], dtype=np.int16)
                 session.audio_chunks.append(audio_data)
                 
             elif message["type"] == "text":
+                print(f"Received text message: {message['text']}")
                 data = json.loads(message["text"])
                 
                 if data["type"] == "speech_start":
