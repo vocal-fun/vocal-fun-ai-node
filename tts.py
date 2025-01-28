@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query,HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query,HTTPException, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
@@ -9,6 +9,7 @@ import time
 import torch
 import torchaudio
 import asyncio
+import io
 from typing import Dict
 import uuid
 from fastapi.background import BackgroundTasks
@@ -142,9 +143,8 @@ async def tts_stream(websocket: WebSocket):
 
 @app.get("/tts")
 async def generate_tts(
-    background_tasks: BackgroundTasks,
     text: str = Query(..., description="Text to convert to speech"),
-    personality: str = Query("default", description="Voice personality to use"),
+    personality: str = Query("default", description="Voice personality to use")
 ):
     try:
         # Get the appropriate voice file path
@@ -171,25 +171,22 @@ async def generate_tts(
             temperature=0.7
         )
 
-        # Create a unique filename for this generation
-        filename = f"tts_output_{uuid.uuid4()}.wav"
+        # Convert audio tensor to WAV format in memory
+        buffer = io.BytesIO()
+        torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
+        buffer.seek(0)
         
-        # Save the audio to a temporary file
-        torchaudio.save(filename, torch.tensor(audio["wav"]).unsqueeze(0), 24000)
+        # Convert to base64
+        audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
         
-        # Make sure we use the background_tasks
-        background_tasks.add_task(os.remove, filename)
-
-        # Return the file and ensure it's deleted after sending
-        return FileResponse(
-            filename,
-            media_type="audio/wav",
-            filename="tts_output.wav"
-        )
+        # Return base64 encoded audio data
+        return JSONResponse({
+            "audio": audio_base64,
+            "sample_rate": 24000,
+            "format": "wav"
+        })
 
     except Exception as e:
-        if os.path.exists(filename):
-            os.remove(filename)
         raise HTTPException(status_code=500, detail=str(e))
