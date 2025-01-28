@@ -175,7 +175,7 @@ async def generate_tts(
         filename = f"tts_output_{uuid.uuid4()}.wav"
         
         # Save the audio to a temporary file
-        torchaudio.save(filename, audio.squeeze().unsqueeze(0).cpu(), 24000)
+        torchaudio.save(filename, torch.tensor(audio["wav"]).unsqueeze(0), 24000)
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
         
