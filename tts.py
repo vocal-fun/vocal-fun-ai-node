@@ -1,8 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query,HTTPException, JSONResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 import base64
 import os
 import time
