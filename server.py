@@ -173,14 +173,30 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 break
                 
             if message["type"] == "websocket.receive":
-                if "bytes" in message:
-                    print(f"Received audio chunk of length {len(message['bytes'])}")
-                    audio_data = np.frombuffer(message['bytes'], dtype=np.int16)
-                    session.audio_chunks.append(audio_data)
+                if "bytes" in message and message["bytes"]:
+                    try:
+                        # Ensure we have valid binary data
+                        binary_data = message["bytes"]
+                        print(f"Received audio chunk of length {len(binary_data)}")
+                        
+                        # Convert to numpy array with proper error handling
+                        try:
+                            audio_data = np.frombuffer(binary_data, dtype=np.int16)
+                            if len(audio_data) > 0:  # Only append if we have valid data
+                                session.audio_chunks.append(audio_data)
+                            else:
+                                print("Received empty audio chunk")
+                        except ValueError as e:
+                            print(f"Error converting audio data: {e}")
+                            continue
+                            
+                    except Exception as e:
+                        print(f"Error processing binary data: {e}")
+                        continue
                 
                 elif "text" in message:
                     try:
-                        data = json.loads(message['text'])
+                        data = json.loads(message["text"])
                         print(f"Received text message: {data}")
                         
                         if data["type"] == "speech_start":
@@ -189,16 +205,22 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                             
                         elif data["type"] == "speech_end":
                             session.is_speaking = False
-                            await process_audio_to_response(session)
+                            if session.audio_chunks:  # Only process if we have audio data
+                                await process_audio_to_response(session)
+                            else:
+                                print("No audio chunks to process")
 
                         elif data["type"] == "transcript":
-                            # Direct transcript processing
                             await process_text_to_response(session, data["text"])
                     except json.JSONDecodeError as e:
                         print(f"Error decoding JSON: {e}")
-                    
+                        
     except WebSocketDisconnect:
+        print(f"Client disconnected: {session_id}")
         await manager.disconnect(session_id)
     except Exception as e:
         print(f"Error in websocket connection: {e}")
+        await manager.disconnect(session_id)
+    finally:
+        print(f"Cleaning up session: {session_id}")
         await manager.disconnect(session_id)
