@@ -8,6 +8,9 @@ import numpy as np
 from typing import Dict, Optional
 import os
 from datetime import datetime
+import base64
+import subprocess
+import time
 
 app = FastAPI()
 
@@ -212,6 +215,39 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
                         elif data["type"] == "transcript":
                             await process_text_to_response(session, data["text"])
+
+                        elif data["type"] == "audio_data":
+                            try:
+                                # Decode base64 to binary
+                                binary_data = base64.b64decode(data["data"])
+                                
+                                # Save as temporary WebM file
+                                temp_file = f"temp_{session_id}_{int(time.time())}.webm"
+                                with open(temp_file, "wb") as f:
+                                    f.write(binary_data)
+                                
+                                # Use ffmpeg to convert WebM to WAV (16-bit PCM)
+                                output_file = temp_file.replace(".webm", ".wav")
+                                subprocess.run([
+                                    "ffmpeg", "-i", temp_file,
+                                    "-acodec", "pcm_s16le",
+                                    "-ar", "16000",
+                                    "-ac", "1",
+                                    "-y",  # Overwrite output file if exists
+                                    output_file
+                                ], check=True)
+                                
+                                # Read the WAV file
+                                with wave.open(output_file, 'rb') as wav_file:
+                                    audio_data = np.frombuffer(wav_file.readframes(wav_file.getnframes()), dtype=np.int16)
+                                    session.audio_chunks.append(audio_data)
+                                
+                                # Clean up temp files
+                                os.remove(temp_file)
+                                os.remove(output_file)
+                                
+                            except Exception as e:
+                                print(f"Error processing audio data: {e}")
                     except json.JSONDecodeError as e:
                         print(f"Error decoding JSON: {e}")
                         
