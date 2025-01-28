@@ -36,24 +36,19 @@ class AudioSession:
         if not self.audio_chunks:
             return ""
             
-        # Create timestamps directory if it doesn't exist
         os.makedirs("audio_files", exist_ok=True)
-        
-        # Create WAV file with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"audio_files/{self.session_id}_{timestamp}.wav"
         
-        # Convert audio chunks to numpy array
         audio_data = np.concatenate(self.audio_chunks)
         
-        # Save as WAV file
         with wave.open(filename, 'wb') as wav_file:
-            wav_file.setnchannels(1)  # Mono
-            wav_file.setsampwidth(2)  # 16-bit
-            wav_file.setframerate(16000)  # Sample rate
+            wav_file.setnchannels(1)
+            wav_file.setsampwidth(2)
+            wav_file.setframerate(16000)
             wav_file.writeframes(audio_data.tobytes())
         
-        self.audio_chunks = []  # Clear the chunks
+        self.audio_chunks = []
         return filename
 
 class ConnectionManager:
@@ -76,30 +71,19 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-async def process_audio_to_response(session: AudioSession) -> None:
-    print("Processing audio...")
+async def process_text_to_response(session: AudioSession, text: str) -> None:
+    print(f"Processing text: {text}")
     try:
-        # Save collected audio to file
-        audio_file = await session.save_audio()
-        if not audio_file:
-            return
-
         async with aiohttp.ClientSession() as http_session:
-            # Step 1: Get transcription
-            files = {'audio_file': open(audio_file, 'rb')}
-            async with http_session.post(STT_SERVICE_URL, data=files) as response:
-                transcript_result = await response.json()
-                transcript = transcript_result['text']
-
-            # Step 2: Get chat response
+            # Get chat response
             async with http_session.post(
                 CHAT_SERVICE_URL,
-                json={"text": transcript, "session_id": session.session_id}
+                json={"text": text, "session_id": session.session_id}
             ) as response:
                 chat_result = await response.json()
                 chat_response = chat_result['response']
 
-            # Step 3: Stream TTS response
+            # Stream TTS response
             async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
                 session.tts_websocket = ws
                 await ws.send_json({
@@ -109,7 +93,6 @@ async def process_audio_to_response(session: AudioSession) -> None:
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.TEXT:
                         data = json.loads(msg.data)
-                        # Forward TTS stream data to client
                         await session.websocket.send_json({
                             "type": "tts_stream",
                             "data": data
@@ -124,6 +107,31 @@ async def process_audio_to_response(session: AudioSession) -> None:
                         break
 
     except Exception as e:
+        print(f"Error processing text: {e}")
+        if session.websocket:
+            await session.websocket.send_json({
+                "type": "error",
+                "error": str(e)
+            })
+
+async def process_audio_to_response(session: AudioSession) -> None:
+    print("Processing audio...")
+    try:
+        audio_file = await session.save_audio()
+        if not audio_file:
+            return
+
+        async with aiohttp.ClientSession() as http_session:
+            # Get transcription
+            files = {'audio_file': open(audio_file, 'rb')}
+            async with http_session.post(STT_SERVICE_URL, data=files) as response:
+                transcript_result = await response.json()
+                transcript = transcript_result['text']
+
+            # Process the transcript through chat and TTS
+            await process_text_to_response(session, transcript)
+
+    except Exception as e:
         print(f"Error processing audio: {e}")
         if session.websocket:
             await session.websocket.send_json({
@@ -131,7 +139,6 @@ async def process_audio_to_response(session: AudioSession) -> None:
                 "error": str(e)
             })
     finally:
-        # Cleanup
         if os.path.exists(audio_file):
             os.remove(audio_file)
 
@@ -143,28 +150,31 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     try:
         while True:
             message = await websocket.receive()
+            print(f"Received message type: {message['type']}")
             
             if message["type"] == "websocket.disconnect":
                 break
                 
             if message["type"] == "bytes":
                 print(f"Received audio chunk of length {len(message['bytes'])}")
-                # Handle incoming audio bytes
                 audio_data = np.frombuffer(message["bytes"], dtype=np.int16)
                 session.audio_chunks.append(audio_data)
                 
             elif message["type"] == "text":
-                print(f"Received text message: {message['text']}")
                 data = json.loads(message["text"])
+                print(f"Received text message: {data}")
                 
                 if data["type"] == "speech_start":
                     session.is_speaking = True
-                    session.audio_chunks = []  # Clear any previous chunks
+                    session.audio_chunks = []
                     
                 elif data["type"] == "speech_end":
                     session.is_speaking = False
-                    # Process the collected audio
                     await process_audio_to_response(session)
+
+                elif data["type"] == "transcript":
+                    # Direct transcript processing
+                    await process_text_to_response(session, data["text"])
                     
     except WebSocketDisconnect:
         await manager.disconnect(session_id)
