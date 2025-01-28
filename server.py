@@ -155,26 +155,30 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "websocket.disconnect":
                 break
                 
-            if message["type"] == "bytes":
-                print(f"Received audio chunk of length {len(message['bytes'])}")
-                audio_data = np.frombuffer(message["bytes"], dtype=np.int16)
-                session.audio_chunks.append(audio_data)
+            if message["type"] == "websocket.receive":
+                if "bytes" in message:
+                    print(f"Received audio chunk of length {len(message['bytes'])}")
+                    audio_data = np.frombuffer(message['bytes'], dtype=np.int16)
+                    session.audio_chunks.append(audio_data)
                 
-            elif message["type"] == "text":
-                data = json.loads(message["text"])
-                print(f"Received text message: {data}")
-                
-                if data["type"] == "speech_start":
-                    session.is_speaking = True
-                    session.audio_chunks = []
-                    
-                elif data["type"] == "speech_end":
-                    session.is_speaking = False
-                    await process_audio_to_response(session)
+                elif "text" in message:
+                    try:
+                        data = json.loads(message['text'])
+                        print(f"Received text message: {data}")
+                        
+                        if data["type"] == "speech_start":
+                            session.is_speaking = True
+                            session.audio_chunks = []
+                            
+                        elif data["type"] == "speech_end":
+                            session.is_speaking = False
+                            await process_audio_to_response(session)
 
-                elif data["type"] == "transcript":
-                    # Direct transcript processing
-                    await process_text_to_response(session, data["text"])
+                        elif data["type"] == "transcript":
+                            # Direct transcript processing
+                            await process_text_to_response(session, data["text"])
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON: {e}")
                     
     except WebSocketDisconnect:
         await manager.disconnect(session_id)
