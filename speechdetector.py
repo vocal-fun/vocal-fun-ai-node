@@ -4,26 +4,23 @@ import time
 class AudioSpeechDetector:
     def __init__(self, 
                  sample_rate=16000, 
-                 silence_threshold=-50,  # Lowered sensitivity
-                 absolute_silence_threshold=-70,  # Additional absolute silence check
-                 min_speech_duration=0.3,  # Reduced minimum speech duration
-                 max_silence_duration=1.5,  # Increased silence duration
+                 energy_threshold=0.01,  # RMS energy threshold
+                 min_speech_duration=0.3,  # seconds
+                 max_silence_duration=1.5,  # seconds
                  max_recording_duration=10.0,
                  debug=True):
         """
         Initialize speech detector with configurable parameters
         
         :param sample_rate: Audio sample rate (Hz)
-        :param silence_threshold: Decibel level below which is considered relative silence 
-        :param absolute_silence_threshold: Absolute low-energy threshold
+        :param energy_threshold: RMS energy threshold for speech detection
         :param min_speech_duration: Minimum duration of speech to be considered valid (seconds)
         :param max_silence_duration: Maximum duration of silence within speech (seconds)
         :param max_recording_duration: Maximum duration of continuous recording
         :param debug: Enable debug logging
         """
         self.sample_rate = sample_rate
-        self.silence_threshold = silence_threshold
-        self.absolute_silence_threshold = absolute_silence_threshold
+        self.energy_threshold = energy_threshold
         self.min_speech_duration = min_speech_duration
         self.max_silence_duration = max_silence_duration
         self.max_recording_duration = max_recording_duration
@@ -48,6 +45,15 @@ class AudioSpeechDetector:
         if self.debug:
             print(f"[SpeechDetector] {message}")
     
+    def _calculate_rms_energy(self, audio_chunk):
+        """
+        Calculate Root Mean Square (RMS) energy of the audio chunk
+        
+        :param audio_chunk: NumPy array of audio samples
+        :return: RMS energy of the chunk
+        """
+        return np.sqrt(np.mean(np.square(audio_chunk.astype(float))))
+    
     def add_audio_chunk(self, audio_chunk):
         """
         Add an audio chunk and check for speech detection conditions
@@ -65,36 +71,20 @@ class AudioSpeechDetector:
         if self.start_recording_time is None:
             self.start_recording_time = current_time
         
-        # Store the chunk
-        self.current_audio_chunks.append(audio_chunk)
-        
-        # Convert audio to decibels with error handling
-        try:
-            audio_db = 20 * np.log10(np.abs(audio_chunk) + np.finfo(float).eps)
-        except Exception as e:
-            self._log(f"Error converting to decibels: {e}")
-            return {"action": "continue"}
-        
-        # Detect speech using two thresholds
-        relative_speech_mask = audio_db > self.silence_threshold
-        absolute_speech_mask = audio_db > self.absolute_silence_threshold
-        
-        # Combine masks for more robust detection
-        speech_mask = relative_speech_mask & absolute_speech_mask
-        
-        # Calculate speech characteristics
-        total_samples = len(audio_chunk)
-        speech_samples = np.sum(speech_mask)
-        speech_duration = speech_samples / self.sample_rate
+        # Calculate RMS energy
+        chunk_energy = self._calculate_rms_energy(audio_chunk)
         
         # Detailed logging
         self._log(f"Chunk Analysis: " +
-                  f"Total Samples: {total_samples}, " +
-                  f"Speech Samples: {speech_samples}, " +
-                  f"Speech Duration: {speech_duration:.3f}s")
+                  f"Total Samples: {len(audio_chunk)}, " +
+                  f"RMS Energy: {chunk_energy:.6f}, " +
+                  f"Threshold: {self.energy_threshold}")
         
-        # Check if there's speech in this chunk
-        if speech_samples > 0:
+        # Check if chunk energy is above threshold (indicating speech)
+        if chunk_energy > self.energy_threshold:
+            # Store the chunk
+            self.current_audio_chunks.append(audio_chunk)
+            
             self.last_speech_time = current_time
             self.consecutive_silence_chunks = 0
             self._log("Speech detected in chunk")
@@ -123,13 +113,12 @@ class AudioSpeechDetector:
             # Combine audio chunks
             full_audio = np.concatenate(self.current_audio_chunks) if self.current_audio_chunks else np.array([])
             
-            # Verify speech duration in full recording
-            full_audio_db = 20 * np.log10(np.abs(full_audio) + np.finfo(float).eps)
-            relative_speech_mask_full = full_audio_db > self.silence_threshold
-            absolute_speech_mask_full = full_audio_db > self.absolute_silence_threshold
-            full_speech_mask = relative_speech_mask_full & absolute_speech_mask_full
+            # Calculate speech duration based on energy
+            speech_chunks = [chunk for chunk in self.current_audio_chunks 
+                             if self._calculate_rms_energy(chunk) > self.energy_threshold]
+            full_speech_audio = np.concatenate(speech_chunks) if speech_chunks else np.array([])
             
-            speech_duration_full = np.sum(full_speech_mask) / self.sample_rate
+            speech_duration_full = len(full_speech_audio) / self.sample_rate
             
             self._log(f"Full Audio Speech Duration: {speech_duration_full:.3f}s")
             
