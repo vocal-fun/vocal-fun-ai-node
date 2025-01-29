@@ -151,8 +151,8 @@ bnb_config = BitsAndBytesConfig(
 
 # Initialize model with DeepSpeed inference
 model = AutoModelForCausalLM.from_pretrained(model_name,
-                                            # torch_dtype=torch.float16, 
-                                            quantization_config=bnb_config,
+                                            torch_dtype=torch.float16, 
+                                            # quantization_config=bnb_config,
                                             device_map="auto")
 # model = deepspeed.init_inference(
 #     model,
