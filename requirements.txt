@@ -15,3 +15,4 @@ prompt-engine-py
 wheel
 python-multipart
 faster-whisper
+groq

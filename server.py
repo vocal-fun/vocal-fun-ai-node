@@ -22,7 +22,7 @@ app.add_middleware(
 
 # Service URLs
 STT_SERVICE_URL = "http://localhost:8001/transcribe"
-CHAT_SERVICE_URL = "http://localhost:8002/chat"
+CHAT_SERVICE_URL = "http://localhost:8002/chat/groq"
 TTS_SERVICE_URL = "ws://localhost:8003/tts_stream"
 
 class AudioSession:
@@ -146,6 +146,10 @@ async def process_audio_to_response(session: AudioSession) -> None:
             if not transcript.strip():
                 session.is_responding = False
                 return
+
+            if transcript.length < 10:
+                session.is_responding = False
+                return
             
             # Process the transcript through chat and TTS
             await process_text_to_response(session, transcript)
@@ -181,7 +185,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
     speech_detector = AudioSpeechDetector(
         sample_rate=16000,
-        energy_threshold=0.05,  # Adjust based on your audio environment
+        energy_threshold=0.1,  # Adjust based on your audio environment
         min_speech_duration=0.4,  # Minimum speech to process
         max_silence_duration=0.4,  # Pause length to trigger processing
         max_recording_duration=10.0,

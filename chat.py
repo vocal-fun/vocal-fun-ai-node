@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteriaList, StoppingCriteria, BitsAndBytesConfig
@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Dict, List
 import asyncio
+import aiohttp
 import deepspeed
 
 app = FastAPI()
@@ -301,6 +302,30 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
         print(f"Error extracting response: {e}")
         return full_response.strip()
 
+def format_messages(personality: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
+    """Format conversation history into Groq API message format"""
+    system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
+    system_prompt = MAIN_SYSTEM_PROMPT.replace("{p}", personality) + system_prompt
+    
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+        }
+    ]
+    
+    # Add conversation history
+    for msg in conversation_history[-2:]:  # Keep last 2 messages
+        messages.extend([
+            {"role": "user", "content": msg["user"]},
+            {"role": "assistant", "content": msg["assistant"]}
+        ])
+    
+    # Add current message
+    messages.append({"role": "user", "content": current_message})
+    
+    return messages
+
 
 @app.post("/chat")
 async def generate_response(data: dict):
@@ -388,3 +413,97 @@ async def generate_response(data: dict):
     print(f"Total time: {(time.time() - start_time) * 1000:.2f}ms")
 
     return {"response": text}
+
+@app.post("/chat/groq")
+async def generate_response_groq(data: dict):
+    start_time = time.time()
+    
+    # Extract parameters from request
+    session_id = data["session_id"]
+    user_message = data["text"]
+    personality = data.get("personality", "default")
+    
+    print(f"Client {session_id} INPUT {user_message} PERSONALITY {personality}")
+    
+    # Get conversation history
+    history = conversation_manager.get_history(session_id)
+    
+    if not history:
+        voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
+        initial_response = random.choice(voice_lines)
+        conversation_manager.add_conversation(session_id, "Hello", initial_response)
+        history = conversation_manager.get_history(session_id)
+    
+    # Format messages for Groq API
+    messages = format_messages(
+        personality,
+        history,
+        user_message
+    )
+    
+    # Groq API configuration
+    GROQ_API_KEY = "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"
+    
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Choose the model
+    model = "llama3-8b-8192"  # Using the model from your example
+    
+    print(messages)
+    
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=headers,
+                json={
+                    "model": model,
+                    "messages": messages,
+                    "max_tokens": 50,
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "frequency_penalty": 0.0,
+                    "presence_penalty": 0.6
+                },
+                timeout=aiohttp.ClientTimeout(total=30)
+            ) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    print(f"Groq API error: {error_text}")
+                    raise HTTPException(status_code=response.status, detail="Error from Groq API")
+                
+                response_data = await response.json()
+                text = response_data["choices"][0]["message"]["content"]
+                
+                # Clean up the response
+                # text = remove_emojis(text) if text else ""
+                # text = re.sub(r'^.*?:', '', text).strip() if text else ""
+                
+                if not text:
+                    fallback_responses = [
+                        "I understand what you're saying. Could you rephrase that?",
+                        "That's an interesting point. Could you elaborate?",
+                        "I see what you mean. Let's explore that further.",
+                    ]
+                    text = random.choice(fallback_responses)
+                    print("Using fallback response:", text)
+                
+                # Update conversation history
+                conversation_manager.add_conversation(session_id, user_message, text)
+                
+                print(f"Client {session_id} OUTPUT {text}")
+                print(f"Total time: {(time.time() - start_time) * 1000:.2f}ms")
+                
+                return {"response": text}
+                
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=504, detail="Request to Groq API timed out")
+        except aiohttp.ClientError as e:
+            print(f"aiohttp client error: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
