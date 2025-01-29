@@ -451,6 +451,7 @@ async def generate_response_groq(data: dict):
     
     # Choose the model
     model = "mixtral-8x7b-32768"  # Using the model from your example
+    model = "gemma2-9b-it"
     
     print(messages)
 

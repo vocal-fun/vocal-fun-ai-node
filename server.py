@@ -151,6 +151,10 @@ async def process_audio_to_response(session: AudioSession) -> None:
                 session.is_responding = False
                 return
             
+            if "thank you" in transcript.lower():
+                session.is_responding = False
+                return
+            
             # Process the transcript through chat and TTS
             await process_text_to_response(session, transcript)
 
