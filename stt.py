@@ -16,7 +16,7 @@ app.add_middleware(
 # Initialize Whisper model
 print("Loading Whisper tiny.en model...")
 model = WhisperModel(
-    "tiny.en",
+    "small.en",
     device="cuda",
     compute_type="int8",
     download_root="./models"
