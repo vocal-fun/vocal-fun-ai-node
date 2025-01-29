@@ -6,7 +6,7 @@ class AudioSpeechDetector:
                  sample_rate=16000, 
                  energy_threshold=0.1,  # Percentage of max possible energy
                  min_speech_duration=0.3,  # seconds
-                 max_silence_duration=0.5,  # seconds
+                 max_silence_duration=0.4,  # seconds
                  max_recording_duration=10.0,
                  debug=True):
         """
