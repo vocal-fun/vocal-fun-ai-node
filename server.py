@@ -88,6 +88,11 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
                 chat_result = await response.json()
                 chat_response = chat_result['response']
 
+            #discard existing audio if new text is received
+            if session.tts_websocket:
+                await session.tts_websocket.close()
+                session.tts_websocket = None
+
             # Stream TTS response
             async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
                 session.tts_websocket = ws
@@ -139,6 +144,7 @@ async def process_audio_to_response(session: AudioSession) -> None:
 
             #check if all whitespace or empty
             if not transcript.strip():
+                session.is_responding = False
                 return
             
             # Process the transcript through chat and TTS
