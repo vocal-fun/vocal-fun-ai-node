@@ -55,7 +55,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         # Get or compute speaker latents
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
-            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=['voices/trump/samples/sample_1.wav', 'voices/trump/samples/sample_2.wav', 'voices/trump/samples/sample_3.wav', 'voices/trump/samples/sample_4.wav', 'voices/trump/samples/sample_5.wav'])
+            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=['voices/trump/samples/sample_1.wav'])
             speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]

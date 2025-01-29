@@ -105,6 +105,7 @@ INITIAL_VOICE_LINES = {
 #     device_map="auto"
 # )
 
+ENBALE_LOCAL_MODEL = False
 
 # model_name = "mistralai/Mistral-7B-v0.1"  # Use the Mistral model name
 # tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
@@ -126,35 +127,38 @@ INITIAL_VOICE_LINES = {
 # tokenizer = AutoTokenizer.from_pretrained(model_name)
 # model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
-# Model initialization
-model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
-model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
-# model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+if ENBALE_LOCAL_MODEL:
+    # Model initialization
+    model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
+    model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
+    # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
+    model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+    # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
-# DeepSpeed inference config
-ds_config = {
-    "tensor_parallel": {"tp_size": 1},
-    "dtype": "fp16",
-    "replace_with_kernel_inject": True,
-    "replace_method": "auto"
-}
+    # DeepSpeed inference config
+    ds_config = {
+        "tensor_parallel": {"tp_size": 1},
+        "dtype": "fp16",
+        "replace_with_kernel_inject": True,
+        "replace_method": "auto"
+    }
 
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16,
-    bnb_4bit_use_double_quant=True
-)
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_use_double_quant=True
+    )
 
-# Initialize model with DeepSpeed inference
-model = AutoModelForCausalLM.from_pretrained(model_name,
-                                            torch_dtype=torch.float16, 
-                                            # quantization_config=bnb_config,
-                                            device_map="auto")
+    # Initialize model with DeepSpeed inference
+    model = AutoModelForCausalLM.from_pretrained(model_name,
+                                                torch_dtype=torch.float16, 
+                                                # quantization_config=bnb_config,
+                                                device_map="auto")
+
+
 # model = deepspeed.init_inference(
 #     model,
 #     config=ds_config
