@@ -129,8 +129,8 @@ INITIAL_VOICE_LINES = {
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
 # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
@@ -343,7 +343,7 @@ async def generate_response(data: dict):
         gen_start = time.time()
         outputs = model.generate(
             inputs["input_ids"],
-            max_new_tokens=50,
+            max_new_tokens=40,
             temperature=0.7 + (retry_count * 0.1),  # Gradually increase temperature on retries
             top_p=0.9,
             top_k=50,
