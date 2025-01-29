@@ -456,7 +456,7 @@ async def generate_response_groq(data: dict):
     
     # Choose the model
     model = "mixtral-8x7b-32768"  # Using the model from your example
-    # model = "gemma2-9b-it"
+    model = "gemma2-9b-it"
     
     print(messages)
 
@@ -468,7 +468,7 @@ async def generate_response_groq(data: dict):
                 json={
                     "model": model,
                     "messages": messages,
-                    "max_tokens": 50,
+                    "max_tokens": 70,
                     "temperature": 0.7,
                     "top_p": 0.9,
                     "frequency_penalty": 0.0,
