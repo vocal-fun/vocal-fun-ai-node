@@ -157,6 +157,8 @@ if ENBALE_LOCAL_MODEL:
                                                 torch_dtype=torch.float16, 
                                                 # quantization_config=bnb_config,
                                                 device_map="auto")
+    
+    stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
 
 # model = deepspeed.init_inference(
@@ -181,7 +183,6 @@ if ENBALE_LOCAL_MODEL:
 
 # Initialize conversation manager and stopping criteria
 conversation_manager = ConversationManager(max_history=1)
-stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
 client_selected_personality = {}
 
