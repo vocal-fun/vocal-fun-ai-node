@@ -160,6 +160,15 @@ if ENBALE_LOCAL_MODEL:
     
     stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
+    # Cache system prompts tokenization
+    CACHED_SYSTEM_PROMPTS = {
+        personality: tokenizer(
+            MAIN_SYSTEM_PROMPT + prompt,
+            return_tensors="pt"
+        ).to(device) 
+        for personality, prompt in PERSONALITY_SYSTEM_PROMPTS.items()
+    }
+
 
 # model = deepspeed.init_inference(
 #     model,
@@ -185,15 +194,6 @@ if ENBALE_LOCAL_MODEL:
 conversation_manager = ConversationManager(max_history=1)
 
 client_selected_personality = {}
-
-# Cache system prompts tokenization
-CACHED_SYSTEM_PROMPTS = {
-    personality: tokenizer(
-        MAIN_SYSTEM_PROMPT + prompt,
-        return_tensors="pt"
-    ).to(device) 
-    for personality, prompt in PERSONALITY_SYSTEM_PROMPTS.items()
-}
 
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
     system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
