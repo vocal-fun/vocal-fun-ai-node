@@ -30,6 +30,7 @@ class AudioSession:
         self.session_id = session_id
         self.audio_chunks = []
         self.is_speaking = False
+        self.is_responding = False
         self.agent_id = ""
         self.agent_name = ""
         self.websocket: Optional[WebSocket] = None
@@ -76,6 +77,7 @@ manager = ConnectionManager()
 
 async def process_text_to_response(session: AudioSession, text: str) -> None:
     print(f"Processing text: {text}")
+    session.is_responding = True
     try:
         async with aiohttp.ClientSession() as http_session:
             # Get chat response
@@ -103,6 +105,7 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
                         })
                         
                         if data.get("type") == "stream_end":
+                            session.is_responding = False
                             await session.websocket.send_json({
                                 "type": "tts_stream_end"
                             })
@@ -111,6 +114,7 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
                         break
 
     except Exception as e:
+        session.is_responding = False
         print(f"Error processing text: {e}")
         if session.websocket:
             await session.websocket.send_json({
@@ -120,6 +124,7 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
 
 async def process_audio_to_response(session: AudioSession) -> None:
     print("Processing audio...")
+    session.is_responding = True
     try:
         audio_file = await session.save_audio()
         if not audio_file:
@@ -136,6 +141,7 @@ async def process_audio_to_response(session: AudioSession) -> None:
             await process_text_to_response(session, transcript)
 
     except Exception as e:
+        session.is_responding = False
         print(f"Error processing audio: {e}")
         if session.websocket:
             await session.websocket.send_json({
@@ -185,6 +191,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "websocket.receive":
                 if "bytes" in message:
                     try:
+                        if session.is_responding:
+                            print("Ignoring audio data while responding")
+                            continue
                         binary_data = message["bytes"]
                         if len(binary_data) > 0:
                            # Convert binary data to numpy array
