@@ -183,7 +183,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     try:
         while True:
             message = await websocket.receive()
-            print(f"Received message type: {message['type']}")
+            # print(f"Received message type: {message['type']}")
             
             if message["type"] == "websocket.disconnect":
                 break
@@ -194,7 +194,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                         if session.is_responding:
                             # print("Ignoring audio data while responding")
                             continue
-                        
+
                         binary_data = message["bytes"]
                         if len(binary_data) > 0:
                            # Convert binary data to numpy array
