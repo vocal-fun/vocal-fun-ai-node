@@ -129,8 +129,8 @@ INITIAL_VOICE_LINES = {
 model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
 model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
 # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
+# model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 
@@ -151,8 +151,8 @@ bnb_config = BitsAndBytesConfig(
 
 # Initialize model with DeepSpeed inference
 model = AutoModelForCausalLM.from_pretrained(model_name,
-                                            torch_dtype=torch.float16, 
-                                            # quantization_config=bnb_config,
+                                            # torch_dtype=torch.float16, 
+                                            quantization_config=bnb_config,
                                             device_map="auto")
 # model = deepspeed.init_inference(
 #     model,
