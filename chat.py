@@ -450,10 +450,10 @@ async def generate_response_groq(data: dict):
     }
     
     # Choose the model
-    model = "llama3-8b-8192"  # Using the model from your example
+    model = "mixtral-8x7b-32768"  # Using the model from your example
     
     print(messages)
-    
+
     async with aiohttp.ClientSession() as session:
         try:
             async with session.post(
