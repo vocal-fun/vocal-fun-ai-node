@@ -137,6 +137,10 @@ async def process_audio_to_response(session: AudioSession) -> None:
                 transcript_result = await response.json()
                 transcript = transcript_result['text']
 
+            #check if all whitespace or empty
+            if not transcript.strip():
+                return
+            
             # Process the transcript through chat and TTS
             await process_text_to_response(session, transcript)
 
@@ -171,8 +175,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
     speech_detector = AudioSpeechDetector(
         sample_rate=16000,
-        energy_threshold=0.03,  # Adjust based on your audio environment
-        min_speech_duration=0.3,  # Minimum speech to process
+        energy_threshold=0.05,  # Adjust based on your audio environment
+        min_speech_duration=0.4,  # Minimum speech to process
         max_silence_duration=0.4,  # Pause length to trigger processing
         max_recording_duration=10.0,
         debug=False  # Enable detailed logging
