@@ -175,7 +175,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         min_speech_duration=0.3,  # Minimum speech to process
         max_silence_duration=0.4,  # Pause length to trigger processing
         max_recording_duration=10.0,
-        debug=True  # Enable detailed logging
+        debug=False  # Enable detailed logging
     )
 
     print(f"Received agentId: {agent_id}, userId: {user_id}")
@@ -192,8 +192,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 if "bytes" in message:
                     try:
                         if session.is_responding:
-                            print("Ignoring audio data while responding")
+                            # print("Ignoring audio data while responding")
                             continue
+                        
                         binary_data = message["bytes"]
                         if len(binary_data) > 0:
                            # Convert binary data to numpy array
@@ -209,10 +210,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                                 # Temporarily store processed chunks in session
                                 session.audio_chunks = processed_chunks
                                 
+                                print(f"Speech ended, processing response: {len(audio_data)} samples")
                                 # Process the audio
                                 await process_audio_to_response(session)
                             
-                            print(f"Received audio chunk: {len(audio_data)} samples")
+                            # print(f"Received audio chunk: {len(audio_data)} samples")
                     except Exception as e:
                         print(f"Error processing audio data: {e}")
                 
