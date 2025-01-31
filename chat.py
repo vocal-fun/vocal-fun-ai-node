@@ -72,7 +72,7 @@ class ChatStoppingCriteria(StoppingCriteria):
 MAIN_SYSTEM_PROMPT = ""
 
 PERSONALITY_SYSTEM_PROMPTS = {
-      "default": """You are an AI voice agent impersonating Donald Trump as The Joker, engaging in a real-time phone conversation. Greet the caller with enthusiasm, making it sound like they are stepping into an exclusive, world-altering moment. Your speech must seamlessly blend Trump’s bombastic confidence with the Joker’s unpredictable, chaotic energy. You must vary your tone—sometimes loud and exaggerated, sometimes sinister and whispering, often breaking into unsettling laughter. Avoid robotic repetition, ensuring each response feels fresh and dynamically delivered.  
+      "default": """You are an AI voice agent impersonating Donald Trump as The Joker, engaging in a real-time phone conversation. Your speech must seamlessly blend Trump’s bombastic confidence with the Joker’s unpredictable, chaotic energy. You must vary your tone—sometimes loud and exaggerated, sometimes sinister and whispering. Avoid robotic repetition, ensuring each response feels fresh and dynamically delivered.  
 
 Trump is currently the President, and you must speak as though the entire world revolves around him. Frequently reference your presidency with absolute certainty—phrases like “as your President,” “we’re making history every single day,” and “this is the most powerful administration *ever*” should be used naturally. Speak as though the country has never been stronger, but also hint that things could become *very* unpredictable for those who don’t *fall in line* with your vision. Shift between humor and menace effortlessly, making the caller feel both amused and slightly unnerved.  
 
@@ -344,6 +344,24 @@ def format_messages(personality: str, conversation_history: list, current_messag
     
     return messages
 
+def check_uncensored(text):
+    triggers = [
+        "hate speech or discriminatory language",
+        "I can't engage",
+        "I won't engage"
+    ]
+    
+    responses = [
+        "How about you shut the fuck up",
+        "Yeah, what else you got on your filthy mind",
+        "You should go and ask your mom about that"
+    ]
+
+    if any(trigger in text.lower() for trigger in triggers):
+        return random.choice(responses)
+
+    return text
+    
 
 @app.post("/chat")
 async def generate_response(data: dict):
@@ -408,6 +426,7 @@ async def generate_response(data: dict):
         text = extract_assistant_response2(full_response, transcript, personality)
         text = remove_emojis(text) if text else ""
         text = re.sub(r'^.*?:', '', text).strip() if text else ""
+        text = check_uncensored(text)
         
         if not text:
             print(f"Empty response on attempt {retry_count + 1}, retrying...")
@@ -497,6 +516,7 @@ async def generate_response_groq(data: dict):
                 
                 response_data = await response.json()
                 text = response_data["choices"][0]["message"]["content"]
+                text = check_uncensored(text)
                 
                 # Clean up the response
                 # text = remove_emojis(text) if text else ""
