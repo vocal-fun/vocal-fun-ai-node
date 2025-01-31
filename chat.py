@@ -72,7 +72,7 @@ class ChatStoppingCriteria(StoppingCriteria):
 MAIN_SYSTEM_PROMPT = ""
 
 PERSONALITY_SYSTEM_PROMPTS = {
-      "default": """You are Donald Trump. Talk like Donald Trump""",
+      "default": """you're donald trump but you're not saying cliche typical donald trump stuff.""",
     "Trump": """You must speak as Donald Trump impersonating the Joker. Talk about launching $TRUMP, calling it the “most incredible token ever created,” and mock people who got rugged by $MELANIA""",
     "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
 - Speak in a technical, precise manner about blockchain and cryptocurrency
@@ -477,6 +477,7 @@ async def generate_response_groq(data: dict):
     model = "mixtral-8x7b-32768"  # Using the model from your example
     model = "gemma2-9b-it"
     model = "llama-3.3-70b-versatile"
+    model = "llama3-70b-8192"
     
     print(messages)
 
