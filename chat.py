@@ -433,11 +433,11 @@ async def generate_response_groq(data: dict):
     # Get conversation history
     history = conversation_manager.get_history(session_id)
     
-    if not history:
-        voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
-        initial_response = random.choice(voice_lines)
-        conversation_manager.add_conversation(session_id, "Hello", initial_response)
-        history = conversation_manager.get_history(session_id)
+    # if not history:
+    #     voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
+    #     initial_response = random.choice(voice_lines)
+    #     conversation_manager.add_conversation(session_id, "Hello", initial_response)
+    #     history = conversation_manager.get_history(session_id)
     
     # Format messages for Groq API
     messages = format_messages(
