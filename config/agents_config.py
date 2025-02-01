@@ -2,9 +2,13 @@ import json
 import random
 import os
 
+# Get the absolute path of the current directory (where the script is running)
 current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Path to the 'agents_output.json' file
 file_path = os.path.join(current_dir, 'agents_output.json')
 
+# Load the JSON data
 with open(file_path, 'r') as file:
     agents_data = json.load(file)
 
@@ -16,6 +20,12 @@ def get_agent_data(agent_name):
         # Get all voice samples for the agent
         voice_samples = agent.get("voice_samples", [])
         
+        # Convert relative paths in voice_samples to absolute paths
+        absolute_voice_samples = [
+            os.path.join(current_dir, sample) if sample.startswith("./") else sample
+            for sample in voice_samples
+        ]
+        
         # Get a random system prompt for the agent
         system_prompts = agent.get("system_prompts", [])
         
@@ -24,7 +34,7 @@ def get_agent_data(agent_name):
         else:
             random_system_prompt = None
         
-        return voice_samples, random_system_prompt
+        return absolute_voice_samples, random_system_prompt
     else:
         return None, None
 
