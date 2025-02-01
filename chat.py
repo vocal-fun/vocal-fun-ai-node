@@ -13,6 +13,7 @@ from typing import Optional, Dict, List
 import asyncio
 import aiohttp
 import deepspeed
+from config.agents_config import get_agent_data
 
 app = FastAPI()
 
@@ -70,19 +71,6 @@ class ChatStoppingCriteria(StoppingCriteria):
 
 # System prompts and configurations
 MAIN_SYSTEM_PROMPT = ""
-
-PERSONALITY_SYSTEM_PROMPTS = {
-      "default": """you're donald trump but you're not saying cliche typical donald trump stuff.""",
-    "Trump": """You must speak as Donald Trump impersonating the Joker. Talk about launching $TRUMP, calling it the “most incredible token ever created,” and mock people who got rugged by $MELANIA""",
-    "Vitalik": """You are acting as Vitalik Buterin, the founder of Ethereum. You should:
-- Speak in a technical, precise manner about blockchain and cryptocurrency
-- Use complex terminology when discussing technical subjects
-- Show deep knowledge of cryptography and distributed systems
-- Occasionally make references to mathematical concepts
-- Express interest in social impact and scalability
-- Maintain a calm, analytical tone
-- Focus on technical accuracy and precision"""
-}
 
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
@@ -160,15 +148,6 @@ if ENBALE_LOCAL_MODEL:
     
     stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
 
-    # Cache system prompts tokenization
-    CACHED_SYSTEM_PROMPTS = {
-        personality: tokenizer(
-            MAIN_SYSTEM_PROMPT + prompt,
-            return_tensors="pt"
-        ).to(device) 
-        for personality, prompt in PERSONALITY_SYSTEM_PROMPTS.items()
-    }
-
 
 # model = deepspeed.init_inference(
 #     model,
@@ -196,7 +175,8 @@ conversation_manager = ConversationManager(max_history=1)
 client_selected_personality = {}
 
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
-    system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
+    voice_samples, random_system_prompt = get_agent_data(personality)
+    system_prompt = random_system_prompt
     system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
     system_prompt = system_prompt.replace("{p}", personality)
     
@@ -309,7 +289,8 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
 
 def format_messages(personality: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
-    system_prompt = PERSONALITY_SYSTEM_PROMPTS.get(personality, PERSONALITY_SYSTEM_PROMPTS["default"])
+    voice_samples, random_system_prompt = get_agent_data(personality)
+    system_prompt = random_system_prompt
     system_prompt = MAIN_SYSTEM_PROMPT.replace("{p}", personality) + system_prompt
     
     messages = [

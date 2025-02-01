@@ -13,6 +13,7 @@ import io
 from typing import Dict
 import uuid
 from fastapi.background import BackgroundTasks
+from config.agents_config import get_agent_data
 
 
 app = FastAPI()
@@ -32,13 +33,6 @@ model = Xtts.init_from_config(config)
 model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/tts_models--multilingual--multi-dataset--xtts_v2", use_deepspeed=True)
 model.cuda()
 
-PERSONALITY_MAP = {
-    "default": "voices/trump.wav",
-    "Vitalik": "voices/vitalik.wav",
-    "Donald Trump": "voices/trump.wav",
-    "Elon Musk": "voices/vitalik.wav"
-}
-
 # Cache for voice lines and speaker latents
 voice_lines_cached = {}
 speaker_latents_cache = {}
@@ -50,12 +44,12 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             "timestamp": time.time()
         })
 
-        speaker_wav_path = PERSONALITY_MAP.get(personality, PERSONALITY_MAP["default"])
+        voice_samples, random_system_prompt = get_agent_data(personality)
         
         # Get or compute speaker latents
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
-            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=['voices/trump.wav'])
+            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
             speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
@@ -148,12 +142,12 @@ async def generate_tts(
 ):
     try:
         # Get the appropriate voice file path
-        speaker_wav_path = PERSONALITY_MAP.get(personality, PERSONALITY_MAP["default"])
+        voice_samples, random_system_prompt = get_agent_data(personality)
         
         # Get or compute speaker latents
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
-            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=speaker_wav_path)
+            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
             speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
