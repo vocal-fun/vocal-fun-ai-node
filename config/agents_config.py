@@ -1,8 +1,11 @@
 import json
 import random
+import os
 
-# Load the agents input JSON data into memory once
-with open('agents_output.json', 'r') as file:
+current_dir = os.path.dirname(os.path.realpath(__file__))
+file_path = os.path.join(current_dir, 'agents_output.json')
+
+with open(file_path, 'r') as file:
     agents_data = json.load(file)
 
 def get_agent_data(agent_name):
