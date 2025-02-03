@@ -16,39 +16,11 @@ import uuid
 from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
-import pyaudio
 
 # Configuration
 ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
 CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
 DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
-
-class AudioBuffer:
-    def __init__(self, sample_rate=22050, buffer_size=2048):
-        self.sample_rate = sample_rate
-        self.buffer_size = buffer_size
-        self.buffer = bytearray()
-        self.position = 0
-
-    def write(self, audio_data):
-        """Write audio data to buffer"""
-        self.buffer.extend(audio_data)
-        return len(audio_data)
-
-    def read(self, size):
-        """Read a chunk from buffer"""
-        if self.position >= len(self.buffer):
-            return None
-        
-        end = min(self.position + size, len(self.buffer))
-        data = self.buffer[self.position:end]
-        self.position = end
-        return data
-
-    def clear(self):
-        """Clear the buffer"""
-        self.buffer = bytearray()
-        self.position = 0
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 5):
@@ -254,9 +226,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Cartesia streaming implementation with server-side buffering"""
+    """Improved Cartesia streaming implementation with better buffer management"""
     ws = None
-    audio_buffer = None
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -264,16 +235,16 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         })
         
         t0 = time.time()
+        session_id = str(uuid.uuid4())
+
         _, _, voice_id = get_agent_data(personality)
 
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
         
-        # Initialize buffer
-        audio_buffer = AudioBuffer(sample_rate=cartesia_stream_format["sample_rate"])
-        chunk_size = 2048  # Standard buffer size, ~46ms at 22050Hz
-        
-        # Start streaming
+        print(f"Time for socket reuse: {time.time() - t0}")
+
+        # Send the request and get the stream
         stream = await ws.send(
             model_id="sonic",
             transcript=text,
@@ -282,35 +253,58 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             output_format=cartesia_stream_format
         )
 
-        # Initial buffer fill
-        initial_buffer_chunks = 2
-        initial_chunks = []
-        async for output in stream:
-            initial_chunks.append(output["audio"])
-            if len(initial_chunks) >= initial_buffer_chunks:
-                break
-
-        # Send initial chunks
+        # Buffer for accumulating audio data
+        buffer = np.array([], dtype=np.float32)
+        chunk_size = 4800  # 0.2 seconds at 24kHz
         chunk_counter = 0
-        for chunk in initial_chunks:
-            audio_buffer.write(chunk)
-            chunk_base64 = base64.b64encode(chunk).decode("utf-8")
-            await websocket.send_json({
-                "type": "audio_chunk",
-                "chunk": chunk_base64,
-                "chunk_id": chunk_counter,
-                "format": "pcm_f32le",
-                "sample_rate": cartesia_stream_format["sample_rate"],
-                "timestamp": time.time()
-            })
-            chunk_counter += 1
-
-        # Continue with rest of the stream
+        
         async for output in stream:
-            audio_data = output["audio"]
-            audio_buffer.write(audio_data)
+            if chunk_counter == 0:
+                print(f"Time to first chunk: {time.time() - t0}")
             
-            chunk_base64 = base64.b64encode(audio_data).decode("utf-8")
+            # Convert bytes to numpy array
+            audio_chunk = np.frombuffer(output["audio"], dtype=np.float32)
+            
+            # Add to buffer
+            buffer = np.append(buffer, audio_chunk)
+            
+            # Process complete chunks
+            while len(buffer) >= chunk_size:
+                # Extract chunk with overlap
+                chunk = buffer[:chunk_size]
+                buffer = buffer[chunk_size:]  # Remove processed data
+                
+                # Apply fade in/out to reduce artifacts
+                if chunk_counter > 0:  # Apply fade-in
+                    fade_samples = 240  # 10ms fade
+                    fade_in = np.linspace(0, 1, fade_samples)
+                    chunk[:fade_samples] *= fade_in
+                
+                if len(buffer) < chunk_size:  # Apply fade-out to last chunk
+                    fade_samples = 240
+                    fade_out = np.linspace(1, 0, fade_samples)
+                    chunk[-fade_samples:] *= fade_out
+                
+                # Convert to bytes and send
+                chunk_bytes = chunk.tobytes()
+                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+                
+                await websocket.send_json({
+                    "type": "audio_chunk",
+                    "chunk": chunk_base64,
+                    "chunk_id": chunk_counter,
+                    "format": "pcm_f32le",
+                    "sample_rate": cartesia_stream_format["sample_rate"],
+                    "timestamp": time.time()
+                })
+                
+                chunk_counter += 1
+        
+        # Send any remaining buffer
+        if len(buffer) > 0:
+            chunk_bytes = buffer.tobytes()
+            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+            
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
@@ -319,9 +313,6 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                 "sample_rate": cartesia_stream_format["sample_rate"],
                 "timestamp": time.time()
             })
-            
-            chunk_counter += 1
-            await asyncio.sleep(0.02)  # Small delay to simulate buffering
 
         await websocket.send_json({
             "type": "stream_end",
