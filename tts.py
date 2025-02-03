@@ -226,7 +226,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Improved Cartesia streaming implementation with better audio handling and artifact prevention"""
+    """Simple Cartesia streaming implementation that forwards raw PCM chunks"""
     ws = None
     try:
         await websocket.send_json({
@@ -240,7 +240,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
         
-        # Configure stream with normalized output
+        # Start streaming
         stream = await ws.send(
             model_id="sonic",
             transcript=text,
@@ -249,79 +249,13 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             output_format=cartesia_stream_format
         )
 
-        # Buffer configuration
-        chunk_size = 2400  # Smaller chunks (0.1s at 24kHz) for more responsive streaming
-        min_initial_buffer = 4800  # Collect more initial data before starting playback
-        fade_samples = 120  # Gentler fades (5ms)
-        
-        # Initialize buffers
-        buffer = np.array([], dtype=np.float32)
-        initial_collection = True
         chunk_counter = 0
-        first_chunk_sent = False
-        
         async for output in stream:
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert incoming audio to numpy array
-            audio_chunk = np.frombuffer(output["audio"], dtype=np.float32)
-            
-            # Append to buffer
-            buffer = np.append(buffer, audio_chunk)
-            
-            # Initial buffer collection
-            if initial_collection:
-                if len(buffer) < min_initial_buffer:
-                    continue
-                initial_collection = False
-            
-            # Process complete chunks
-            while len(buffer) >= chunk_size:
-                # Extract chunk with small overlap
-                current_chunk = buffer[:chunk_size]
-                buffer = buffer[chunk_size-fade_samples:]  # Keep small overlap
-                
-                # Normalize audio to prevent clipping
-                max_val = np.max(np.abs(current_chunk))
-                if max_val > 1.0:
-                    current_chunk = current_chunk / max_val * 0.95
-                
-                # Apply appropriate fades based on position
-                if not first_chunk_sent:
-                    # Gentle fade-in for first chunk
-                    fade_in = np.linspace(0, 1, fade_samples * 2)
-                    current_chunk[:fade_samples * 2] *= fade_in
-                    first_chunk_sent = True
-                else:
-                    # Crossfade for subsequent chunks
-                    fade = np.linspace(0.8, 1.0, fade_samples)
-                    current_chunk[:fade_samples] *= fade
-                
-                # Convert to bytes and send
-                chunk_bytes = current_chunk.tobytes()
-                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-                
-                await websocket.send_json({
-                    "type": "audio_chunk",
-                    "chunk": chunk_base64,
-                    "chunk_id": chunk_counter,
-                    "format": "pcm_f32le",
-                    "sample_rate": cartesia_stream_format["sample_rate"],
-                    "timestamp": time.time()
-                })
-                
-                chunk_counter += 1
-                await asyncio.sleep(0.05)  # Slightly longer delay between chunks
-        
-        # Process remaining buffer
-        if len(buffer) > fade_samples:
-            # Apply fade out to remaining audio
-            fade_out = np.linspace(1, 0, min(len(buffer), fade_samples))
-            buffer[-len(fade_out):] *= fade_out
-            
-            chunk_bytes = buffer.tobytes()
-            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+            # Just encode and send the raw bytes
+            chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
             
             await websocket.send_json({
                 "type": "audio_chunk",
@@ -331,6 +265,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                 "sample_rate": cartesia_stream_format["sample_rate"],
                 "timestamp": time.time()
             })
+            
+            chunk_counter += 1
 
         await websocket.send_json({
             "type": "stream_end",
