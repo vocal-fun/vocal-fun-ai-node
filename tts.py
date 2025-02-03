@@ -18,7 +18,7 @@ from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
 
 # Configuration
-ENABLE_LOCAL_MODEL = True  # Set to False to disable local model
+ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
 CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
 DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
 
@@ -412,7 +412,7 @@ async def generate_tts_cartesia(
     try:
         # Generate audio using Cartesia's REST API
         response = await cartesia_client.tts.bytes(
-            model_id="sonic-english",
+            model_id="sonic",
             transcript=text,
             voice_id=DEFAULT_VOICE_ID,
             output_format=cartesia_bytes_format
