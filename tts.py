@@ -155,6 +155,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             # Send each chunk to the client
             chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
             
+            print(f"Received chunk of size {len(output['audio'])}")
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
