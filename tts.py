@@ -226,7 +226,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Improved Cartesia streaming implementation with better buffer management"""
+    """Improved Cartesia streaming implementation with better initial audio handling"""
     ws = None
     try:
         await websocket.send_json({
@@ -237,12 +237,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         t0 = time.time()
         session_id = str(uuid.uuid4())
         
-        # Get a connection from the pool
         ws = await ws_manager.get_connection()
-        
         print(f"Time for socket reuse: {time.time() - t0}")
 
-        # Send the request and get the stream
         stream = await ws.send(
             model_id="sonic",
             transcript=text,
@@ -255,6 +252,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         buffer = np.array([], dtype=np.float32)
         chunk_size = 4800  # 0.2 seconds at 24kHz
         chunk_counter = 0
+        initial_buffer_size = chunk_size * 2  # Accumulate more data initially
         
         async for output in stream:
             if chunk_counter == 0:
@@ -262,28 +260,49 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             
             # Convert bytes to numpy array
             audio_chunk = np.frombuffer(output["audio"], dtype=np.float32)
-            
-            # Add to buffer
             buffer = np.append(buffer, audio_chunk)
             
-            # Process complete chunks
-            while len(buffer) >= chunk_size:
-                # Extract chunk with overlap
-                chunk = buffer[:chunk_size]
-                buffer = buffer[chunk_size:]  # Remove processed data
+            # For the first chunks, wait until we have more data
+            if chunk_counter == 0 and len(buffer) < initial_buffer_size:
+                continue
                 
-                # Apply fade in/out to reduce artifacts
-                if chunk_counter > 0:  # Apply fade-in
-                    fade_samples = 240  # 10ms fade
-                    fade_in = np.linspace(0, 1, fade_samples)
+            # Process complete chunks
+            while len(buffer) >= (initial_buffer_size if chunk_counter == 0 else chunk_size):
+                # Extract chunk
+                current_chunk_size = initial_buffer_size if chunk_counter == 0 else chunk_size
+                chunk = buffer[:current_chunk_size]
+                buffer = buffer[current_chunk_size:]
+                
+                # Apply audio processing
+                if chunk_counter == 0:
+                    # Gradual fade-in for the very first chunk
+                    fade_samples = 480  # 20ms fade for first chunk
+                    fade_in = np.linspace(0, 1, fade_samples)**2  # Quadratic fade for smoother start
                     chunk[:fade_samples] *= fade_in
+                    
+                    # Apply subtle compression to stabilize initial audio
+                    threshold = 0.5
+                    ratio = 0.7
+                    mask = np.abs(chunk) > threshold
+                    chunk[mask] = np.sign(chunk[mask]) * (threshold + (np.abs(chunk[mask]) - threshold) * ratio)
+                else:
+                    # Normal fade processing for subsequent chunks
+                    fade_samples = 240  # 10ms fade
+                    if chunk_counter > 1:  # Skip fade-in for chunk right after initial
+                        fade_in = np.linspace(0, 1, fade_samples)
+                        chunk[:fade_samples] *= fade_in
                 
                 if len(buffer) < chunk_size:  # Apply fade-out to last chunk
                     fade_samples = 240
                     fade_out = np.linspace(1, 0, fade_samples)
                     chunk[-fade_samples:] *= fade_out
                 
-                # Convert to bytes and send
+                # Normalize audio chunk to prevent sudden volume changes
+                max_val = np.max(np.abs(chunk))
+                if max_val > 0:
+                    chunk = chunk * (0.95 / max_val)  # Leave some headroom
+                
+                # Convert and send
                 chunk_bytes = chunk.tobytes()
                 chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
                 
@@ -298,8 +317,12 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                 
                 chunk_counter += 1
         
-        # Send any remaining buffer
+        # Handle remaining buffer
         if len(buffer) > 0:
+            fade_samples = 240
+            fade_out = np.linspace(1, 0, fade_samples)
+            buffer[-fade_samples:] *= fade_out
+            
             chunk_bytes = buffer.tobytes()
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
