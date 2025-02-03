@@ -479,7 +479,7 @@ async def generate_response_groq(data: dict):
                 json={
                     "model": model,
                     "messages": messages,
-                    "max_tokens": 70,
+                    "max_tokens": 90,
                     "temperature": 0.7,
                     "top_p": 0.9,
                     "frequency_penalty": 0.0,
