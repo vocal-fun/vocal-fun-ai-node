@@ -16,3 +16,4 @@ wheel
 python-multipart
 faster-whisper
 groq
+cartesia
