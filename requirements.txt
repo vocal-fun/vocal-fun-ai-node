@@ -17,3 +17,4 @@ python-multipart
 faster-whisper
 groq
 cartesia
+websockets>=12.0

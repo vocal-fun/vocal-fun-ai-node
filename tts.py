@@ -14,8 +14,9 @@ from typing import Dict
 import uuid
 from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
-from cartesia import Cartesia
+from cartesia import AsyncCartesia
 
+# Configuration
 ENABLE_LOCAL_MODEL = False
 
 app = FastAPI()
@@ -42,10 +43,11 @@ if ENABLE_LOCAL_MODEL:
     speaker_latents_cache = {}
 
 # Initialize Cartesia client if API key is available
-CARTESIA_API_KEY = "sk_car_u_tiwMaJH0qTFtzXB6Shs"
+CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
+
 cartesia_client = None
 if CARTESIA_API_KEY:
-    cartesia_client = Cartesia(api_key=CARTESIA_API_KEY)
+    cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 
 # Cartesia output format configuration
 cartesia_output_format = {
@@ -136,13 +138,16 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         voice_samples, _ = get_agent_data(personality)
         
         # Set up the websocket connection with Cartesia
-        ws = cartesia_client.tts.websocket()
+        ws = await cartesia_client.tts.websocket()
+        
+        # Create a context for streaming
+        ctx = ws.context()
         
         # Stream the audio using Cartesia's websocket API
-        for output in ws.send(
+        async for output in ctx.send(
             model_id="sonic-english",
             transcript=text,
-            voice_id="41fadb49-adea-45dd-b9b6-4ba14091292d",  # Use the voice ID from your config
+            voice_id='41fadb49-adea-45dd-b9b6-4ba14091292d',  # Use the voice ID from your config
             output_format=cartesia_output_format,
             stream=True
         ):
@@ -162,7 +167,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             "timestamp": time.time()
         })
         
-        ws.close()
+        await ws.close()
 
     except WebSocketDisconnect:
         print("WebSocket disconnected during streaming")
@@ -291,10 +296,10 @@ async def generate_tts_cartesia(
         voice_samples, _ = get_agent_data(personality)
         
         # Generate audio using Cartesia's REST API
-        response = cartesia_client.tts.bytes(
+        response = await cartesia_client.tts.bytes(
             model_id="sonic-english",
             transcript=text,
-            voice_id="41fadb49-adea-45dd-b9b6-4ba14091292d",  # Use the voice ID from your config
+            voice_id='41fadb49-adea-45dd-b9b6-4ba14091292d',  # Use the voice ID from your config
             output_format=cartesia_output_format
         )
         
