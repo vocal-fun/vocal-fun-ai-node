@@ -1,8 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
+from fastapi.responses import JSONResponse
 import base64
 import os
 import time
@@ -17,7 +17,9 @@ from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
 
 # Configuration
-ENABLE_LOCAL_MODEL = False
+ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
+CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
+DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
 
 app = FastAPI()
 
@@ -31,7 +33,7 @@ app.add_middleware(
 
 # Initialize local XTTS model if enabled
 if ENABLE_LOCAL_MODEL:
-    print("Loading local XTTS model...")
+    print("Loading local model...")
     config = XttsConfig()
     config.load_json("/home/ec2-user/.local/share/tts/tts_models--multilingual--multi-dataset--xtts_v2/config.json")
     model = Xtts.init_from_config(config)
@@ -42,12 +44,8 @@ if ENABLE_LOCAL_MODEL:
     voice_lines_cached = {}
     speaker_latents_cache = {}
 
-# Initialize Cartesia client if API key is available
-CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
-
-cartesia_client = None
-if CARTESIA_API_KEY:
-    cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
+# Initialize Cartesia client
+cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 
 # Cartesia output format configuration
 cartesia_output_format = {
@@ -56,8 +54,8 @@ cartesia_output_format = {
     "sample_rate": 24000,
 }
 
-# Original local model endpoints
 async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
+    """Original XTTS streaming implementation"""
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -88,6 +86,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             if i == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
+            # Convert chunk to bytes
             chunk_tensor = chunk.squeeze().unsqueeze(0).cpu()
             buffer = torch.zeros(1, chunk_tensor.shape[1], dtype=torch.float32)
             buffer[0, :chunk_tensor.shape[1]] = chunk_tensor
@@ -101,14 +100,16 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
+            # Send chunk and wait for small delay to prevent overwhelming the connection
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
                 "chunk_id": i,
                 "timestamp": time.time()
             })
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.01)  # Small delay between chunks
 
+        # Send end of stream message
         await websocket.send_json({
             "type": "stream_end",
             "timestamp": time.time()
@@ -126,30 +127,27 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         except:
             pass
 
-# New Cartesia streaming endpoint
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
+    """Cartesia streaming implementation"""
     try:
         await websocket.send_json({
             "type": "stream_start",
             "timestamp": time.time()
         })
         
-        # Get voice ID for the personality
-        voice_samples, _ = get_agent_data(personality)
+        # Use default voice ID
+        voice_id = DEFAULT_VOICE_ID
         
         # Set up the websocket connection with Cartesia
         ws = await cartesia_client.tts.websocket()
         
-        # Create a context for streaming
-        ctx = ws.context()
-        
         # Stream the audio using Cartesia's websocket API
-        async for output in ctx.send(
+        async for output in ws.send(
             model_id="sonic-english",
             transcript=text,
-            voice_id='41fadb49-adea-45dd-b9b6-4ba14091292d',  # Use the voice ID from your config
-            output_format=cartesia_output_format,
-            stream=True
+            voice_id=voice_id,
+            stream=True,
+            output_format=cartesia_output_format
         ):
             # Send each chunk to the client
             chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
@@ -181,9 +179,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         except:
             pass
 
-# Original WebSocket endpoint
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
+    """Original XTTS WebSocket endpoint"""
     if not ENABLE_LOCAL_MODEL:
         await websocket.close(code=1000, reason="Local model is disabled")
         return
@@ -208,9 +206,9 @@ async def tts_stream(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
 
-# New Cartesia WebSocket endpoint
 @app.websocket("/tts/stream/cartesia")
 async def tts_stream_cartesia(websocket: WebSocket):
+    """Cartesia WebSocket endpoint"""
     if not cartesia_client:
         await websocket.close(code=1000, reason="Cartesia API is not configured")
         return
@@ -235,12 +233,12 @@ async def tts_stream_cartesia(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
 
-# Original TTS endpoint
 @app.get("/tts")
 async def generate_tts(
     text: str = Query(..., description="Text to convert to speech"),
     personality: str = Query("default", description="Voice personality to use")
 ):
+    """Original XTTS endpoint for single audio generation"""
     if not ENABLE_LOCAL_MODEL:
         raise HTTPException(status_code=400, detail="Local model is disabled")
         
@@ -257,6 +255,7 @@ async def generate_tts(
         print("Starting full audio generation...")
         t0 = time.time()
         
+        # Generate the complete audio
         audio = model.inference(
             text,
             "en",
@@ -265,10 +264,12 @@ async def generate_tts(
             temperature=0.7
         )
 
+        # Convert audio tensor to WAV format in memory
         buffer = io.BytesIO()
         torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
         buffer.seek(0)
         
+        # Convert to base64
         audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
@@ -282,24 +283,21 @@ async def generate_tts(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# New Cartesia TTS endpoint
 @app.get("/tts/cartesia")
 async def generate_tts_cartesia(
     text: str = Query(..., description="Text to convert to speech"),
     personality: str = Query("default", description="Voice personality to use")
 ):
+    """Cartesia endpoint for single audio generation"""
     if not cartesia_client:
         raise HTTPException(status_code=400, detail="Cartesia API is not configured")
         
     try:
-        # Get voice ID for the personality
-        voice_samples, _ = get_agent_data(personality)
-        
         # Generate audio using Cartesia's REST API
         response = await cartesia_client.tts.bytes(
             model_id="sonic-english",
             transcript=text,
-            voice_id='41fadb49-adea-45dd-b9b6-4ba14091292d',  # Use the voice ID from your config
+            voice_id=DEFAULT_VOICE_ID,
             output_format=cartesia_output_format
         )
         
