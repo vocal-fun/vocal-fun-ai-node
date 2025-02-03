@@ -255,7 +255,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
 
         # Buffer for accumulating audio data
         buffer = np.array([], dtype=np.float32)
-        chunk_size = 2400  # 0.2 seconds at 24kHz
+        chunk_size = 7200  # 0.2 seconds at 24kHz
         chunk_counter = 0
         
         async for output in stream:
