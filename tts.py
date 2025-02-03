@@ -135,7 +135,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Cartesia streaming implementation"""
+    """Improved Cartesia streaming implementation with audio artifact prevention"""
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -143,8 +143,6 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         })
         
         t0 = time.time()
-
-        # Generate a unique session ID for this streaming session
         session_id = str(uuid.uuid4())
         
         # Set up the websocket connection with Cartesia
@@ -159,41 +157,86 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             output_format=cartesia_stream_format
         )
         
+        # Buffer for maintaining continuous audio
+        audio_buffer = np.array([], dtype=np.float32)
+        chunk_size = 4096  # Adjust this value based on your needs
+        overlap = 128      # Small overlap to prevent discontinuities
         chunk_counter = 0
-        # Stream the audio using async iteration
+        
         async for output in stream:
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
-            # Convert bytes to numpy array, make a writeable copy, then convert to tensor
-            audio_np = np.frombuffer(output["audio"], dtype=np.float32).copy()
-            audio_data = torch.from_numpy(audio_np).unsqueeze(0)
             
-            # Save as WAV in memory with unique session ID
-            temp_path = f"temp_chunk_{session_id}_{chunk_counter}.wav"
-            torchaudio.save(temp_path, audio_data, cartesia_stream_format["sample_rate"], format="wav")
+            # Convert incoming audio to numpy array
+            new_audio = np.frombuffer(output["audio"], dtype=np.float32)
+            
+            # Append to buffer
+            audio_buffer = np.append(audio_buffer, new_audio)
+            
+            # Process complete chunks from the buffer
+            while len(audio_buffer) >= chunk_size:
+                # Extract chunk with overlap
+                chunk = audio_buffer[:chunk_size + overlap]
+                
+                # Apply fade out to the end of the chunk to smooth transition
+                if len(chunk) > overlap:
+                    fade_out = np.linspace(1, 0, overlap)
+                    chunk[-overlap:] *= fade_out
+                
+                # Convert to tensor
+                chunk_tensor = torch.from_numpy(chunk).unsqueeze(0)
+                
+                # Save as WAV in memory
+                temp_path = f"temp_chunk_{session_id}_{chunk_counter}.wav"
+                torchaudio.save(temp_path, chunk_tensor, cartesia_stream_format["sample_rate"])
+                
+                try:
+                    # Read and encode chunk
+                    with open(temp_path, "rb") as f:
+                        chunk_bytes = f.read()
+                    chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+                    
+                    # Send to client
+                    await websocket.send_json({
+                        "type": "audio_chunk",
+                        "chunk": chunk_base64,
+                        "chunk_id": chunk_counter,
+                        "timestamp": time.time()
+                    })
+                    
+                finally:
+                    # Cleanup
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                
+                # Remove processed audio from buffer (keeping overlap)
+                audio_buffer = audio_buffer[chunk_size:]
+                chunk_counter += 1
+                
+                # Small delay to prevent overwhelming the connection
+                await asyncio.sleep(0.01)
+        
+        # Process any remaining audio in the buffer
+        if len(audio_buffer) > 0:
+            chunk_tensor = torch.from_numpy(audio_buffer).unsqueeze(0)
+            temp_path = f"temp_chunk_{session_id}_final.wav"
+            torchaudio.save(temp_path, chunk_tensor, cartesia_stream_format["sample_rate"])
             
             try:
-                # Read the WAV file and encode to base64
                 with open(temp_path, "rb") as f:
                     chunk_bytes = f.read()
                 chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
                 
-                # Send each chunk to the client
                 await websocket.send_json({
                     "type": "audio_chunk",
                     "chunk": chunk_base64,
                     "chunk_id": chunk_counter,
                     "timestamp": time.time()
                 })
-                
             finally:
-                # Clean up temp file
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
-            
-            chunk_counter += 1
-            await asyncio.sleep(0.01)  # Small delay between chunks
-            
+
         # Send end of stream message
         await websocket.send_json({
             "type": "stream_end",
