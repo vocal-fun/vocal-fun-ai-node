@@ -49,7 +49,7 @@ cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 
 # Cartesia output format configuration
 cartesia_output_format = {
-    "container": "wav",
+    "container": "raw",
     "encoding": "pcm_f32le",
     "sample_rate": 24000,
 }
