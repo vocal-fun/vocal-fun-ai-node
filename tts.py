@@ -16,11 +16,49 @@ import uuid
 from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
+import pyaudio
 
 # Configuration
 ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
 CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
 DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
+
+class PyAudioBuffer:
+    def __init__(self, sample_rate=22050):
+        self.p = pyaudio.PyAudio()
+        self.sample_rate = sample_rate
+        self.stream = None
+        self.buffer = io.BytesIO()
+        
+    def write(self, audio_data):
+        # Write to both PyAudio stream and our buffer
+        if not self.stream:
+            self.stream = self.p.open(
+                format=pyaudio.paFloat32,
+                channels=1,
+                rate=self.sample_rate,
+                output=True,
+                stream_callback=self._callback
+            )
+            self.stream.start_stream()
+        
+        self.buffer.write(audio_data)
+        return len(audio_data)
+    
+    def _callback(self, in_data, frame_count, time_info, status):
+        # Read from our buffer
+        data = self.buffer.read(frame_count * 4)  # 4 bytes per float32
+        if len(data) < frame_count * 4:
+            # Not enough data, pad with silence
+            data = data + b'\x00' * (frame_count * 4 - len(data))
+        return (data, pyaudio.paContinue)
+    
+    def close(self):
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
+        self.p.terminate()
+        self.buffer.close()
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 5):
@@ -226,8 +264,9 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Simple Cartesia streaming implementation that forwards raw PCM chunks"""
+    """Cartesia streaming implementation using PyAudio as buffer"""
     ws = None
+    audio_buffer = None
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -239,6 +278,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
 
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
+        
+        # Initialize PyAudio buffer
+        audio_buffer = PyAudioBuffer(sample_rate=cartesia_stream_format["sample_rate"])
         
         # Start streaming
         stream = await ws.send(
@@ -253,9 +295,13 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         async for output in stream:
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
+
+            # Write to PyAudio buffer
+            audio_data = output["audio"]
+            audio_buffer.write(audio_data)
             
-            # Just encode and send the raw bytes
-            chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
+            # Send the processed audio to websocket
+            chunk_base64 = base64.b64encode(audio_data).decode("utf-8")
             
             await websocket.send_json({
                 "type": "audio_chunk",
@@ -267,6 +313,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             })
             
             chunk_counter += 1
+            # Small delay to allow PyAudio to process
+            await asyncio.sleep(0.01)
 
         await websocket.send_json({
             "type": "stream_end",
@@ -287,6 +335,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
     finally:
         if ws:
             await ws_manager.release_connection(ws)
+        if audio_buffer:
+            audio_buffer.close()
 
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
