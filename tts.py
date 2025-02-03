@@ -161,7 +161,7 @@ async def startup_event():
     asyncio.create_task(ws_manager.maintain_pool())
 
 async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
-    """Original XTTS streaming implementation"""
+    """Original XTTS streaming implementation with raw PCM output"""
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -188,30 +188,24 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             temperature=0.7
         )
 
-        for i, chunk in enumerate(chunks):
-            if i == 0:
+        chunk_counter = 0
+        for chunk in chunks:
+            if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert chunk to bytes
-            chunk_tensor = chunk.squeeze().unsqueeze(0).cpu()
-            buffer = torch.zeros(1, chunk_tensor.shape[1], dtype=torch.float32)
-            buffer[0, :chunk_tensor.shape[1]] = chunk_tensor
-            
-            temp_path = f"temp_chunk_{i}.wav"
-            torchaudio.save(temp_path, buffer, 24000)
-            
-            with open(temp_path, "rb") as f:
-                chunk_bytes = f.read()
-            os.remove(temp_path)
-            
+            # Convert tensor to raw PCM bytes
+            chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
-                "chunk_id": i,
+                "chunk_id": chunk_counter,
+                "format": "pcm_f32le",
+                "sample_rate": 24000,
                 "timestamp": time.time()
             })
+            chunk_counter += 1
             await asyncio.sleep(0.01)
 
         await websocket.send_json({
@@ -267,75 +261,23 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert incoming audio to numpy array
-            new_audio = np.frombuffer(output["audio"], dtype=np.float32)
+            # The output["audio"] is already raw PCM data
+            # Just encode it directly in base64 and send
+            chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
             
-            # Append to buffer
-            audio_buffer = np.append(audio_buffer, new_audio)
+            await websocket.send_json({
+                "type": "audio_chunk",
+                "chunk": chunk_base64,
+                "chunk_id": chunk_counter,
+                "format": "pcm_f32le",
+                "sample_rate": cartesia_stream_format["sample_rate"],
+                "timestamp": time.time()
+            })
             
-            # Process complete chunks from the buffer
-            while len(audio_buffer) >= chunk_size:
-                # Extract chunk with overlap
-                chunk = audio_buffer[:chunk_size + overlap]
-                
-                # Apply fade out to the end of the chunk to smooth transition
-                if len(chunk) > overlap:
-                    fade_out = np.linspace(1, 0, overlap)
-                    chunk[-overlap:] *= fade_out
-                
-                # Convert to tensor
-                chunk_tensor = torch.from_numpy(chunk).unsqueeze(0)
-                
-                # Save as WAV in memory
-                temp_path = f"temp_chunk_{session_id}_{chunk_counter}.wav"
-                torchaudio.save(temp_path, chunk_tensor, cartesia_stream_format["sample_rate"])
-                
-                try:
-                    # Read and encode chunk
-                    with open(temp_path, "rb") as f:
-                        chunk_bytes = f.read()
-                    chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-                    
-                    # Send to client
-                    await websocket.send_json({
-                        "type": "audio_chunk",
-                        "chunk": chunk_base64,
-                        "chunk_id": chunk_counter,
-                        "timestamp": time.time()
-                    })
-                    
-                finally:
-                    # Cleanup
-                    if os.path.exists(temp_path):
-                        os.remove(temp_path)
-                
-                # Remove processed audio from buffer (keeping overlap)
-                audio_buffer = audio_buffer[chunk_size:]
-                chunk_counter += 1
-                
-                # Small delay to prevent overwhelming the connection
-                await asyncio.sleep(0.01)
-        
-        # Process any remaining audio in the buffer
-        if len(audio_buffer) > 0:
-            chunk_tensor = torch.from_numpy(audio_buffer).unsqueeze(0)
-            temp_path = f"temp_chunk_{session_id}_final.wav"
-            torchaudio.save(temp_path, chunk_tensor, cartesia_stream_format["sample_rate"])
+            chunk_counter += 1
             
-            try:
-                with open(temp_path, "rb") as f:
-                    chunk_bytes = f.read()
-                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-                
-                await websocket.send_json({
-                    "type": "audio_chunk",
-                    "chunk": chunk_base64,
-                    "chunk_id": chunk_counter,
-                    "timestamp": time.time()
-                })
-            finally:
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
+            # Small delay to prevent overwhelming the connection
+            await asyncio.sleep(0.01)
 
         # Send end of stream message
         await websocket.send_json({
@@ -417,7 +359,7 @@ async def generate_tts(
     text: str = Query(..., description="Text to convert to speech"),
     personality: str = Query("default", description="Voice personality to use")
 ):
-    """Original XTTS endpoint for single audio generation"""
+    """Original XTTS endpoint for single audio generation with raw PCM output"""
     if not ENABLE_LOCAL_MODEL:
         raise HTTPException(status_code=400, detail="Local model is disabled")
         
@@ -443,20 +385,16 @@ async def generate_tts(
             temperature=0.7
         )
 
-        # Convert audio tensor to WAV format in memory
-        buffer = io.BytesIO()
-        torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
-        buffer.seek(0)
-        
-        # Convert to base64
-        audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+        # Convert to raw PCM bytes
+        audio_bytes = audio["wav"].tobytes()
+        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
         
         return JSONResponse({
             "audio": audio_base64,
-            "sample_rate": 24000,
-            "format": "wav"
+            "format": "pcm_f32le",
+            "sample_rate": 24000
         })
 
     except Exception as e:
