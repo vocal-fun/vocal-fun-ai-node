@@ -148,6 +148,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         # Set up the websocket connection with Cartesia
         ws = await cartesia_client.tts.websocket()
         
+        print(f"Time for socket: {time.time() - t0}")
+
         # Send the request and get the stream
         stream = await ws.send(
             model_id="sonic",
@@ -157,6 +159,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             output_format=cartesia_stream_format
         )
         
+        print(f"Time for socket 2: {time.time() - t0}")
+
         # Buffer for maintaining continuous audio
         audio_buffer = np.array([], dtype=np.float32)
         chunk_size = 4096  # Adjust this value based on your needs
