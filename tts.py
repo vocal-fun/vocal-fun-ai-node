@@ -225,15 +225,17 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         except:
             pass
 
+import asyncio
+
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Improved Cartesia streaming implementation with better buffer management"""
+    """Cartesia streaming implementation with queue-based chunk processing"""
     ws = None
     try:
         await websocket.send_json({
             "type": "stream_start",
             "timestamp": time.time()
         })
-        
+
         t0 = time.time()
         session_id = str(uuid.uuid4())
         
@@ -251,58 +253,20 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             output_format=cartesia_stream_format
         )
 
-        # Buffer for accumulating audio data
-        buffer = np.array([], dtype=np.float32)
-        chunk_size = 4800  # 0.2 seconds at 24kHz
         chunk_counter = 0
+        chunk_queue = asyncio.Queue()  # Queue to buffer chunks
         
         async for output in stream:
-            if chunk_counter == 0:
-                print(f"Time to first chunk: {time.time() - t0}")
-            
-            # Convert bytes to numpy array
-            audio_chunk = np.frombuffer(output["audio"], dtype=np.float32)
-            
-            # Add to buffer
-            buffer = np.append(buffer, audio_chunk)
-            
-            # Process complete chunks
-            while len(buffer) >= chunk_size:
-                # Extract chunk with overlap
-                chunk = buffer[:chunk_size]
-                buffer = buffer[chunk_size:]  # Remove processed data
-                
-                # Apply fade in/out to reduce artifacts
-                # if chunk_counter > 0:  # Apply fade-in
-                #     fade_samples = 240  # 10ms fade
-                #     fade_in = np.linspace(0, 1, fade_samples)
-                #     chunk[:fade_samples] *= fade_in
-                
-                # if len(buffer) < chunk_size:  # Apply fade-out to last chunk
-                #     fade_samples = 240
-                #     fade_out = np.linspace(1, 0, fade_samples)
-                #     chunk[-fade_samples:] *= fade_out
-                
-                # Convert to bytes and send
-                chunk_bytes = chunk.tobytes()
-                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-                
-                await websocket.send_json({
-                    "type": "audio_chunk",
-                    "chunk": chunk_base64,
-                    "chunk_id": chunk_counter,
-                    "format": "pcm_f32le",
-                    "sample_rate": cartesia_stream_format["sample_rate"],
-                    "timestamp": time.time()
-                })
-                
-                chunk_counter += 1
-        
-        # Send any remaining buffer
-        if len(buffer) > 0:
-            chunk_bytes = buffer.tobytes()
+            await chunk_queue.put(output["audio"])  # Add chunk to the queue
+
+        # Process chunks sequentially
+        while not chunk_queue.empty():
+            chunk_bytes = await chunk_queue.get()
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
+            if chunk_counter == 0:
+                print(f"Time to first chunk: {time.time() - t0}")
+
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
@@ -311,6 +275,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                 "sample_rate": cartesia_stream_format["sample_rate"],
                 "timestamp": time.time()
             })
+
+            chunk_counter += 1
 
         await websocket.send_json({
             "type": "stream_end",
@@ -321,16 +287,10 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         print("WebSocket disconnected during streaming")
     except Exception as e:
         print(f"Error in stream_audio_chunks_cartesia: {e}")
-        try:
-            await websocket.send_json({
-                "type": "error",
-                "error": str(e)
-            })
-        except:
-            pass
     finally:
         if ws:
             await ws_manager.release_connection(ws)
+
 
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
