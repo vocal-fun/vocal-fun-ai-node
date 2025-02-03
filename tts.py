@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPExceptio
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from TTS.tts.models.xtts import Xtts
+from TTS.tts.configs.xtts_config import XttsConfig
 from fastapi.responses import JSONResponse
 import base64
 import os
