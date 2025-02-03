@@ -123,7 +123,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize the WebSocket manager
+# Initialize Cartesia clients
+cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
 
 # Initialize local XTTS model if enabled
