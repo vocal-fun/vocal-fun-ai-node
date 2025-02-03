@@ -71,7 +71,7 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = ""
+MAIN_SYSTEM_PROMPT = "Reply in max 50 words"
 
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],

@@ -5,7 +5,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Changpeng Zhao/Changpeng Zhao.wav"
-    ]
+    ],
+    "cartesia_voice_id": "dcfb6b8d-8b8a-4cf5-92d4-db9b1583f0e7"
   },
   "Ansem": {
     "system_prompts": [
@@ -13,7 +14,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Ansem/Ansem.wav"
-    ]
+    ],
+    "cartesia_voice_id": "82b4b359-884b-4f6a-b10f-acfe6faa773a"
   },
   "Melania Trump": {
     "system_prompts": [
@@ -21,7 +23,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Melania Trump/Melania Trump.wav"
-    ]
+    ],
+    "cartesia_voice_id": "4f4258b7-be6e-4d96-9f66-bb6159b5475f"
   },
   "Barron Trump": {
     "system_prompts": [
@@ -29,7 +32,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Barron Trump/Barron Trump.wav"
-    ]
+    ],
+    "cartesia_voice_id": "4da08c37-61bf-49a7-8c1b-90733684d464"
   },
   "Volodymyr Zelensky": {
     "system_prompts": [
@@ -37,7 +41,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Volodymyr Zelensky/Volodymyr Zelensky.wav"
-    ]
+    ],
+    "cartesia_voice_id": "6de5aff4-2706-49cb-abf4-b3a49608a528"
   },
   "Andrew Tate": {
     "system_prompts": [
@@ -45,7 +50,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Andrew Tate/Andrew Tate.wav"
-    ]
+    ],
+    "cartesia_voice_id": "178d8996-0c74-4494-9717-7c1490374748"
+
   },
   "ZachXBT": {
     "system_prompts": [
@@ -53,7 +60,9 @@
     ],
     "voice_samples": [
       "./converted_agents/ZachXBT/ZachXBT.wav"
-    ]
+    ],
+    "cartesia_voice_id": "cb5bab78-cc90-4c87-ba64-fe941d8b1adc"
+
   },
   "John McAfee": {
     "system_prompts": [
@@ -61,7 +70,9 @@
     ],
     "voice_samples": [
       "./converted_agents/John McAfee/John McAfee.wav"
-    ]
+    ],
+    "cartesia_voice_id": "53abc197-8964-4901-9fe4-a8351bac5d1e"
+
   },
   "Donald Trump": {
     "system_prompts": [
@@ -69,7 +80,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Donald Trump/Donald Trump.wav"
-    ]
+    ],
+    "cartesia_voice_id": "a022a3d9-f5f3-433d-aa14-1f4afde8228e"
+
   },
   "Brian Armstrong": {
     "system_prompts": [
@@ -77,7 +90,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Brian Armstrong/Brian Armstrong.wav"
-    ]
+    ],
+    "cartesia_voice_id": "6389f261-be12-4316-a8e7-6c3f13afea09"
+
   },
   "Osama Bin Laden": {
     "system_prompts": [
@@ -85,7 +100,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Osama Bin Laden/Osama Bin Laden.wav"
-    ]
+    ],
+    "cartesia_voice_id": "568c34d2-4e16-43c3-9878-d49541231959"
+
   },
   "Jeff Bezos": {
     "system_prompts": [
@@ -93,7 +110,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Jeff Bezos/Jeff Bezos.wav"
-    ]
+    ],
+    "cartesia_voice_id": "12b18210-c308-450f-810f-1d0dd24bf54d"
+
   },
   "Vladimir Putin": {
     "system_prompts": [
@@ -101,7 +120,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Vladimir Putin/Vladimir Putin.wav"
-    ]
+    ],
+    "cartesia_voice_id": "07c1b852-a31a-47d5-b65d-fbcc8062b39e"
+
   },
   "Joe Rogan": {
     "system_prompts": [
@@ -109,7 +130,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Joe Rogan/Joe Rogan.wav"
-    ]
+    ],
+    "cartesia_voice_id": "0261398b-7211-4d6d-9ae9-876785478890"
   },
   "Elon Musk": {
     "system_prompts": [
@@ -117,7 +139,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Elon Musk/Elon Musk.wav"
-    ]
+    ],
+    "cartesia_voice_id": "3bf04a36-271d-437a-9330-95c8cf59920c"
+
   },
   "Iggy Azalea": {
     "system_prompts": [
@@ -125,7 +149,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Iggy Azalea/Iggy Azalea.wav"
-    ]
+    ],
+    "cartesia_voice_id": "632c15cd-4069-4efe-ab35-466e0d06f5b6"
+
   },
   "Dave Portnoy": {
     "system_prompts": [
@@ -133,7 +159,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Dave Portnoy/Dave Portnoy.wav"
-    ]
+    ],
+    "cartesia_voice_id": "15867bc0-1f09-4311-932c-af823c29dfcb"
+
   },
   "Indian Scammer": {
     "system_prompts": [
@@ -150,7 +178,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Xi Jinping/Xi Jinping.wav"
-    ]
+    ],
+    "cartesia_voice_id": "fe5b866c-b42c-49af-be9b-e78031640181"
   },
   "Sam Bankman-Fried": {
     "system_prompts": [
@@ -158,7 +187,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Sam Bankman-Fried/Sam Bankman-Fried.wav"
-    ]
+    ],
+    "cartesia_voice_id": "79f5fa36-f221-4d9d-970b-a86913c3b23a"
+
   },
   "Haliey Welch": {
     "system_prompts": [
@@ -166,7 +197,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Haliey Welch/Haliey Welch.wav"
-    ]
+    ],
+    "cartesia_voice_id": "a32c4b5f-5cd5-4ffa-b745-a0f6de21dbda"
+
   },
   "Frank Degods": {
     "system_prompts": [
@@ -174,7 +207,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Frank Degods/Frank Degods.wav"
-    ]
+    ],
+    "cartesia_voice_id": "fd7f03e5-54b1-4ae5-8786-afe1a071e18e"
+
   },
   "Ape": {
     "system_prompts": [
@@ -182,7 +217,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Ape/Ape.wav"
-    ]
+    ],
+    "cartesia_voice_id": "1f43cfa1-5cab-4123-af28-efeb5360fc3f"
+
   },
   "Mr. Beast": {
     "system_prompts": [
@@ -190,7 +227,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Mr. Beast/Mr. Beast.wav"
-    ]
+    ],
+    "cartesia_voice_id": "2682e251-e737-4141-8f86-74d555f91942"
   },
   "Pavel Durov": {
     "system_prompts": [
@@ -198,7 +236,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Pavel Durov/Pavel Durov.wav"
-    ]
+    ],
+    "cartesia_voice_id": "13c74872-0907-4ab0-a44d-6a84cbeec978"
+
   },
   "Jensen Huang": {
     "system_prompts": [
@@ -206,7 +246,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Jensen Huang/Jensen Huang.wav"
-    ]
+    ],
+    "cartesia_voice_id": "c1291392-90a8-4460-b098-69af66a1d949"
+
   },
   "IShowSpeed": {
     "system_prompts": [
@@ -223,7 +265,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Su Zhu/Su Zhu.wav"
-    ]
+    ],
+    "cartesia_voice_id": "dec52cec-c910-4c91-8ff0-4549e9a637cd"
+
   },
   "Kamala Harris": {
     "system_prompts": [
@@ -231,7 +275,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Kamala Harris/Kamala Harris.wav"
-    ]
+    ],
+    "cartesia_voice_id": "81831f61-992d-44ad-a9b8-b371c52055bb"
   },
   "Kanye West": {
     "system_prompts": [
@@ -239,7 +284,9 @@
     ],
     "voice_samples": [
       "./converted_agents/Kanye West/Kanye West.wav"
-    ]
+    ],
+    "cartesia_voice_id": "8e55e8ff-18e3-4f8b-9936-42f6982af48f"
+
   },
   "Sydney Sweeney": {
     "system_prompts": [
@@ -247,7 +294,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Sydney Sweeney/Sydney Sweeney.wav"
-    ]
+    ],
+    "cartesia_voice_id": "1dfad7a4-adf0-41d9-a395-305e1ed2cc2c"
   },
   "Sam Altman": {
     "system_prompts": [
@@ -255,7 +303,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Sam Altman/Sam Altman.wav"
-    ]
+    ],
+    "cartesia_voice_id": "d618bb16-e200-41bf-bb48-f0dbd05697b3"
   },
   "Mark Zuckerberg": {
     "system_prompts": [
@@ -263,7 +312,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Mark Zuckerberg/Mark Zuckerberg.wav"
-    ]
+    ],
+    "cartesia_voice_id": "d36df48c-451f-4f58-b2a9-4b16d8e78316"
   },
   "Do Kwon": {
     "system_prompts": [
@@ -271,7 +321,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Do Kwon/Do Kwon.wav"
-    ]
+    ],
+    "cartesia_voice_id": "e5c02425-5f26-4e8c-8297-472f88a3e8b8"
   },
   "Yi Long Ma": {
     "system_prompts": [
@@ -279,7 +330,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Yi Long Ma/Yi Long Ma.wav"
-    ]
+    ],
+    "cartesia_voice_id": "049bec21-f012-48a1-bec6-a4b8050392d9"
   },
   "Vitalik Buterin": {
     "system_prompts": [
@@ -287,6 +339,7 @@
     ],
     "voice_samples": [
       "./converted_agents/Vitalik Buterin/Vitalik Buterin.wav"
-    ]
+    ],
+    "cartesia_voice_id": "5050bc9a-10f9-4701-89d9-02242257f506"
   }
 }
