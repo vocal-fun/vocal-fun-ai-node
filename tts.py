@@ -141,14 +141,17 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         # Set up the websocket connection with Cartesia
         ws = await cartesia_client.tts.websocket()
         
-        # Stream the audio using Cartesia's websocket API
-        for output in await ws.send(
+        # Send the request and get the stream
+        stream = await ws.send(
             model_id="sonic-english",
             transcript=text,
             voice_id=voice_id,
             stream=True,
             output_format=cartesia_output_format
-        ):
+        )
+        
+        # Stream the audio using async iteration
+        async for output in stream:
             # Send each chunk to the client
             chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
             
