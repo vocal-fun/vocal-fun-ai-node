@@ -14,6 +14,7 @@ import asyncio
 import aiohttp
 import deepspeed
 from config.agents_config import get_agent_data
+import re
 
 app = FastAPI()
 
@@ -330,6 +331,13 @@ def check_uncensored(text):
 
     return text
     
+def remove_emotions(text: str) -> str:
+    # Remove text between * * (including the * characters)
+    text = re.sub(r'\*[^*]*\*', '', text)
+    # Remove text between ( ) (including the () characters)
+    text = re.sub(r'\([^)]*\)', '', text)
+    # Return the cleaned text
+    return text.strip()
 
 @app.post("/chat")
 async def generate_response(data: dict):
@@ -395,6 +403,7 @@ async def generate_response(data: dict):
         text = remove_emojis(text) if text else ""
         text = re.sub(r'^.*?:', '', text).strip() if text else ""
         text = check_uncensored(text)
+        text = remove_emotions(text)
         
         if not text:
             print(f"Empty response on attempt {retry_count + 1}, retrying...")
@@ -486,6 +495,7 @@ async def generate_response_groq(data: dict):
                 response_data = await response.json()
                 text = response_data["choices"][0]["message"]["content"]
                 text = check_uncensored(text)
+                text = remove_emotions(text)
                 
                 # Clean up the response
                 # text = remove_emojis(text) if text else ""
