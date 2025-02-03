@@ -255,7 +255,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
 
         # Buffer for accumulating audio data
         buffer = np.array([], dtype=np.float32)
-        chunk_size = 4800  # 0.2 seconds at 24kHz
+        chunk_size = 2400  # 0.2 seconds at 24kHz
         chunk_counter = 0
         
         async for output in stream:
@@ -275,15 +275,15 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                 buffer = buffer[chunk_size:]  # Remove processed data
                 
                 # Apply fade in/out to reduce artifacts
-                # if chunk_counter > 0:  # Apply fade-in
-                #     fade_samples = 240  # 10ms fade
-                #     fade_in = np.linspace(0, 1, fade_samples)
-                #     chunk[:fade_samples] *= fade_in
+                if chunk_counter > 0:  # Apply fade-in
+                    fade_samples = 240  # 10ms fade
+                    fade_in = np.linspace(0, 1, fade_samples)
+                    chunk[:fade_samples] *= fade_in
                 
-                # if len(buffer) < chunk_size:  # Apply fade-out to last chunk
-                #     fade_samples = 240
-                #     fade_out = np.linspace(1, 0, fade_samples)
-                #     chunk[-fade_samples:] *= fade_out
+                if len(buffer) < chunk_size:  # Apply fade-out to last chunk
+                    fade_samples = 240
+                    fade_out = np.linspace(1, 0, fade_samples)
+                    chunk[-fade_samples:] *= fade_out
                 
                 # Convert to bytes and send
                 chunk_bytes = chunk.tobytes()
