@@ -47,9 +47,15 @@ if ENABLE_LOCAL_MODEL:
 # Initialize Cartesia client
 cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 
-# Cartesia output format configuration
-cartesia_output_format = {
+# Cartesia output formats
+cartesia_stream_format = {
     "container": "raw",
+    "encoding": "pcm_f32le",
+    "sample_rate": 24000,
+}
+
+cartesia_bytes_format = {
+    "container": "wav",
     "encoding": "pcm_f32le",
     "sample_rate": 24000,
 }
@@ -135,9 +141,6 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             "timestamp": time.time()
         })
         
-        # Use default voice ID
-        voice_id = DEFAULT_VOICE_ID
-        
         # Set up the websocket connection with Cartesia
         ws = await cartesia_client.tts.websocket()
         
@@ -145,23 +148,38 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         stream = await ws.send(
             model_id="sonic-english",
             transcript=text,
-            voice_id=voice_id,
+            voice_id=DEFAULT_VOICE_ID,
             stream=True,
-            output_format=cartesia_output_format
+            output_format=cartesia_stream_format
         )
         
+        chunk_counter = 0
         # Stream the audio using async iteration
         async for output in stream:
-            # Send each chunk to the client
-            chunk_base64 = base64.b64encode(output["audio"]).decode("utf-8")
+            # Convert raw PCM to WAV format
+            audio_data = torch.tensor(output["audio"]).unsqueeze(0)
             
-            print(f"Received chunk of size {len(output['audio'])}")
+            # Save as WAV in memory
+            temp_path = f"temp_chunk_{chunk_counter}.wav"
+            torchaudio.save(temp_path, audio_data, cartesia_stream_format["sample_rate"], format="wav")
+            
+            # Read the WAV file and encode to base64
+            with open(temp_path, "rb") as f:
+                chunk_bytes = f.read()
+            os.remove(temp_path)
+            
+            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+            
+            # Send each chunk to the client
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
-                "chunk_id": time.time(),  # Using timestamp as chunk ID
+                "chunk_id": chunk_counter,
                 "timestamp": time.time()
             })
+            
+            chunk_counter += 1
+            await asyncio.sleep(0.01)  # Small delay between chunks
             
         # Send end of stream message
         await websocket.send_json({
@@ -302,7 +320,7 @@ async def generate_tts_cartesia(
             model_id="sonic-english",
             transcript=text,
             voice_id=DEFAULT_VOICE_ID,
-            output_format=cartesia_output_format
+            output_format=cartesia_bytes_format
         )
         
         # Convert to base64
@@ -311,7 +329,7 @@ async def generate_tts_cartesia(
         # Return base64 encoded audio data
         return JSONResponse({
             "audio": audio_base64,
-            "sample_rate": cartesia_output_format["sample_rate"],
+            "sample_rate": cartesia_bytes_format["sample_rate"],
             "format": "wav"
         })
 
