@@ -210,7 +210,7 @@
   },
   "IShowSpeed": {
     "system_prompts": [
-      "You must speak as a perverted version of IShowSpeed, the populat streamer"
+      "You must speak as a perverted version of IShowSpeed, the popular streamer"
     ],
     "voice_samples": [
       "./converted_agents/IShowSpeed/IShowSpeed.wav"
