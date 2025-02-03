@@ -144,7 +144,7 @@ if ENABLE_LOCAL_MODEL:
 cartesia_stream_format = {
     "container": "raw",
     "encoding": "pcm_f32le",
-    "sample_rate": 24000,
+    "sample_rate": 22050,
 }
 
 cartesia_bytes_format = {
