@@ -159,8 +159,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         chunk_counter = 0
         # Stream the audio using async iteration
         async for output in stream:
-            # Convert bytes to numpy array then to tensor
-            audio_np = np.frombuffer(output["audio"], dtype=np.float32)
+            # Convert bytes to numpy array, make a writeable copy, then convert to tensor
+            audio_np = np.frombuffer(output["audio"], dtype=np.float32).copy()
             audio_data = torch.from_numpy(audio_np).unsqueeze(0)
             
             # Save as WAV in memory with unique session ID
