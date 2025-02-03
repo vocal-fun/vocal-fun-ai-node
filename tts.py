@@ -142,6 +142,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             "timestamp": time.time()
         })
         
+        t0 = time.time()
+
         # Generate a unique session ID for this streaming session
         session_id = str(uuid.uuid4())
         
@@ -160,6 +162,8 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         chunk_counter = 0
         # Stream the audio using async iteration
         async for output in stream:
+            if chunk_counter == 0:
+                print(f"Time to first chunk: {time.time() - t0}")
             # Convert bytes to numpy array, make a writeable copy, then convert to tensor
             audio_np = np.frombuffer(output["audio"], dtype=np.float32).copy()
             audio_data = torch.from_numpy(audio_np).unsqueeze(0)
