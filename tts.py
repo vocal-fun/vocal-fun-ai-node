@@ -236,7 +236,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         
         t0 = time.time()
         session_id = str(uuid.uuid4())
-        
+
+        _, _, voice_id = get_agent_data(personality)
+
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
         
@@ -246,7 +248,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         stream = await ws.send(
             model_id="sonic",
             transcript=text,
-            voice_id=DEFAULT_VOICE_ID,
+            voice_id=voice_id,
             stream=True,
             output_format=cartesia_stream_format
         )
@@ -442,11 +444,13 @@ async def generate_tts_cartesia(
         raise HTTPException(status_code=400, detail="Cartesia API is not configured")
         
     try:
+        _, _, voice_id = get_agent_data(personality)
+
         # Generate audio using Cartesia's REST API
         response = await cartesia_client.tts.bytes(
             model_id="sonic",
             transcript=text,
-            voice_id=DEFAULT_VOICE_ID,
+            voice_id=voice_id,
             output_format=cartesia_bytes_format
         )
         

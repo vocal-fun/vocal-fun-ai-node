@@ -141,7 +141,8 @@
     ],
     "voice_samples": [
       "./converted_agents/Indian Scammer/Indian Scammer.wav"
-    ]
+    ],
+    "cartesia_voice_id": "c8782cd8-7cff-47f7-888b-c2d511fd01ea"
   },
   "Xi Jinping": {
     "system_prompts": [
@@ -213,7 +214,8 @@
     ],
     "voice_samples": [
       "./converted_agents/IShowSpeed/IShowSpeed.wav"
-    ]
+    ],
+    "cartesia_voice_id": "77e33823-7af4-4c86-af08-d5dba3d1af92"
   },
   "Su Zhu": {
     "system_prompts": [
