@@ -23,7 +23,7 @@ app.add_middleware(
 # Service URLs
 STT_SERVICE_URL = "http://localhost:8001/transcribe"
 CHAT_SERVICE_URL = "http://localhost:8002/chat/groq"
-TTS_SERVICE_URL = "ws://localhost:8003/tts/stream"
+TTS_SERVICE_URL = "ws://localhost:8003/tts/stream/cartesia"
 
 class AudioSession:
     def __init__(self, session_id: str):
