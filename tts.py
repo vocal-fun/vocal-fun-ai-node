@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from TTS.tts.configs.xtts_config import XttsConfig
+import numpy as np
 from TTS.tts.models.xtts import Xtts
 from fastapi.responses import JSONResponse
 import base64
@@ -141,6 +141,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             "timestamp": time.time()
         })
         
+        # Generate a unique session ID for this streaming session
+        session_id = str(uuid.uuid4())
+        
         # Set up the websocket connection with Cartesia
         ws = await cartesia_client.tts.websocket()
         
@@ -156,27 +159,32 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         chunk_counter = 0
         # Stream the audio using async iteration
         async for output in stream:
-            # Convert raw PCM to WAV format
-            audio_data = torch.tensor(output["audio"]).unsqueeze(0)
+            # Convert bytes to numpy array then to tensor
+            audio_np = np.frombuffer(output["audio"], dtype=np.float32)
+            audio_data = torch.from_numpy(audio_np).unsqueeze(0)
             
-            # Save as WAV in memory
-            temp_path = f"temp_chunk_{chunk_counter}.wav"
+            # Save as WAV in memory with unique session ID
+            temp_path = f"temp_chunk_{session_id}_{chunk_counter}.wav"
             torchaudio.save(temp_path, audio_data, cartesia_stream_format["sample_rate"], format="wav")
             
-            # Read the WAV file and encode to base64
-            with open(temp_path, "rb") as f:
-                chunk_bytes = f.read()
-            os.remove(temp_path)
-            
-            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-            
-            # Send each chunk to the client
-            await websocket.send_json({
-                "type": "audio_chunk",
-                "chunk": chunk_base64,
-                "chunk_id": chunk_counter,
-                "timestamp": time.time()
-            })
+            try:
+                # Read the WAV file and encode to base64
+                with open(temp_path, "rb") as f:
+                    chunk_bytes = f.read()
+                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+                
+                # Send each chunk to the client
+                await websocket.send_json({
+                    "type": "audio_chunk",
+                    "chunk": chunk_base64,
+                    "chunk_id": chunk_counter,
+                    "timestamp": time.time()
+                })
+                
+            finally:
+                # Clean up temp file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
             
             chunk_counter += 1
             await asyncio.sleep(0.01)  # Small delay between chunks
