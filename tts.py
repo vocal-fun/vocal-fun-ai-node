@@ -142,7 +142,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         ws = await cartesia_client.tts.websocket()
         
         # Stream the audio using Cartesia's websocket API
-        async for output in ws.send(
+        for output in await ws.send(
             model_id="sonic-english",
             transcript=text,
             voice_id=voice_id,
