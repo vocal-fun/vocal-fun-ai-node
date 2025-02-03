@@ -168,7 +168,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             "timestamp": time.time()
         })
 
-        voice_samples, random_system_prompt = get_agent_data(personality)
+        voice_samples, random_system_prompt, _ = get_agent_data(personality)
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
@@ -398,7 +398,7 @@ async def generate_tts(
         raise HTTPException(status_code=400, detail="Local model is disabled")
         
     try:
-        voice_samples, random_system_prompt = get_agent_data(personality)
+        voice_samples, random_system_prompt, _ = get_agent_data(personality)
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
