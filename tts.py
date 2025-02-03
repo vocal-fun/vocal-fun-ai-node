@@ -11,7 +11,7 @@ import torch
 import torchaudio
 import asyncio
 import io
-from typing import Dict
+from typing import Dict, List
 import uuid
 from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
@@ -22,6 +22,97 @@ ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
 CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
 DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
 
+class CartesiaWebSocketManager:
+    def __init__(self, api_key: str, pool_size: int = 5):
+        self.api_key = api_key
+        self.pool_size = pool_size
+        self.client = AsyncCartesia(api_key=api_key)
+        self.connections: List[Dict] = []
+        self.lock = asyncio.Lock()
+        
+    async def initialize_pool(self):
+        """Initialize the WebSocket connection pool"""
+        print("Initializing WebSocket pool...")
+        for _ in range(self.pool_size):
+            try:
+                ws = await self.client.tts.websocket()
+                self.connections.append({
+                    "websocket": ws,
+                    "in_use": False,
+                    "last_used": time.time()
+                })
+                print(f"Added connection to pool. Total: {len(self.connections)}")
+            except Exception as e:
+                print(f"Error creating WebSocket connection: {e}")
+        
+    async def get_connection(self):
+        """Get an available WebSocket connection from the pool"""
+        async with self.lock:
+            # First try to find an unused connection
+            for conn in self.connections:
+                if not conn["in_use"]:
+                    conn["in_use"] = True
+                    conn["last_used"] = time.time()
+                    return conn["websocket"]
+            
+            # If no available connections, create a new one
+            try:
+                ws = await self.client.tts.websocket()
+                conn = {
+                    "websocket": ws,
+                    "in_use": True,
+                    "last_used": time.time()
+                }
+                self.connections.append(conn)
+                return ws
+            except Exception as e:
+                print(f"Error creating new WebSocket connection: {e}")
+                raise
+    
+    async def release_connection(self, ws):
+        """Release a WebSocket connection back to the pool"""
+        async with self.lock:
+            for conn in self.connections:
+                if conn["websocket"] == ws:
+                    conn["in_use"] = False
+                    conn["last_used"] = time.time()
+                    break
+    
+    async def maintain_pool(self):
+        """Periodically check and maintain the WebSocket pool"""
+        while True:
+            try:
+                async with self.lock:
+                    current_time = time.time()
+                    # Check each connection
+                    for i in range(len(self.connections) - 1, -1, -1):
+                        conn = self.connections[i]
+                        # If connection is old (1 hour) and not in use, close it
+                        if not conn["in_use"] and (current_time - conn["last_used"]) > 3600:
+                            try:
+                                await conn["websocket"].close()
+                            except:
+                                pass
+                            self.connections.pop(i)
+                    
+                    # Ensure we maintain minimum pool size
+                    while len(self.connections) < self.pool_size:
+                        try:
+                            ws = await self.client.tts.websocket()
+                            self.connections.append({
+                                "websocket": ws,
+                                "in_use": False,
+                                "last_used": time.time()
+                            })
+                        except Exception as e:
+                            print(f"Error maintaining pool: {e}")
+                            break
+                            
+            except Exception as e:
+                print(f"Error in maintain_pool: {e}")
+            
+            await asyncio.sleep(300)  # Check every 5 minutes
+
 app = FastAPI()
 
 app.add_middleware(
@@ -31,6 +122,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize the WebSocket manager
+ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
 
 # Initialize local XTTS model if enabled
 if ENABLE_LOCAL_MODEL:
@@ -45,9 +139,6 @@ if ENABLE_LOCAL_MODEL:
     voice_lines_cached = {}
     speaker_latents_cache = {}
 
-# Initialize Cartesia client
-cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
-
 # Cartesia output formats
 cartesia_stream_format = {
     "container": "raw",
@@ -60,6 +151,13 @@ cartesia_bytes_format = {
     "encoding": "pcm_f32le",
     "sample_rate": 24000,
 }
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the WebSocket pool on app startup"""
+    await ws_manager.initialize_pool()
+    # Start the pool maintenance task
+    asyncio.create_task(ws_manager.maintain_pool())
 
 async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
     """Original XTTS streaming implementation"""
@@ -107,16 +205,14 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
-            # Send chunk and wait for small delay to prevent overwhelming the connection
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
                 "chunk_id": i,
                 "timestamp": time.time()
             })
-            await asyncio.sleep(0.01)  # Small delay between chunks
+            await asyncio.sleep(0.01)
 
-        # Send end of stream message
         await websocket.send_json({
             "type": "stream_end",
             "timestamp": time.time()
@@ -135,7 +231,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             pass
 
 async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
-    """Improved Cartesia streaming implementation with audio artifact prevention"""
+    """Improved Cartesia streaming implementation using connection pool"""
+    ws = None
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -145,10 +242,10 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         t0 = time.time()
         session_id = str(uuid.uuid4())
         
-        # Set up the websocket connection with Cartesia
-        ws = await cartesia_client.tts.websocket()
+        # Get a connection from the pool
+        ws = await ws_manager.get_connection()
         
-        print(f"Time for socket: {time.time() - t0}")
+        print(f"Time for socket reuse: {time.time() - t0}")
 
         # Send the request and get the stream
         stream = await ws.send(
@@ -158,8 +255,6 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             stream=True,
             output_format=cartesia_stream_format
         )
-        
-        print(f"Time for socket 2: {time.time() - t0}")
 
         # Buffer for maintaining continuous audio
         audio_buffer = np.array([], dtype=np.float32)
@@ -246,8 +341,6 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             "type": "stream_end",
             "timestamp": time.time()
         })
-        
-        await ws.close()
 
     except WebSocketDisconnect:
         print("WebSocket disconnected during streaming")
@@ -260,6 +353,9 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             })
         except:
             pass
+    finally:
+        if ws:
+            await ws_manager.release_connection(ws)
 
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
