@@ -38,8 +38,8 @@ os.environ['RVC_INDEXDIR'] = 'rvc/models'
 
 print(sys.argv)
 print('clearing sys args')
-sys.argv = []
-print(sys.argv)
+# sys.argv = []
+# print(sys.argv)
 print("Loading RVC model...")
 rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
 print("RVC model loaded")
