@@ -249,7 +249,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         chunk_counter = 0
 
         # Define the fixed chunk size in samples (for example, 1600 samples for 100ms at 16kHz)
-        chunk_size_in_samples = 1600  # Adjust this value to your desired chunk duration
+        chunk_size_in_samples = 1600 * 2.5
 
         async for output in await ws.send(
             model_id="sonic",
