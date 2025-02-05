@@ -216,38 +216,26 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-    
-           # Convert tensor to raw PCM bytes
-            chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
-
-            # Write the chunk to a temporary WAV file for RVC processing
-            with io.BytesIO() as temp_wav:
-                wavfile.write(temp_wav, 24000, np.frombuffer(chunk_bytes, dtype=np.float32))
-
-                # Seek back to the beginning of the BytesIO object to load it for RVC
-                temp_wav.seek(0)
-
-                # Load the WAV data from the BytesIO object into a numpy array
-                # Use scipy to load WAV data into numpy array
-                temp_wav.seek(0)  # Rewind the BytesIO stream
-                audio_data, _ = wavfile.read(temp_wav)
-
-                # Apply RVC (Real-Time Voice Conversion) to the audio data (convert the chunk to target voice)
-                converted_audio = rvc_model(audio_data, f0_up_key=6)
-
-               # Debugging: Print the type and value of the converted audio
-                print(f"Converted Audio Type: {type(converted_audio)}")
-                print(f"Converted Audio Value: {converted_audio}")
-
-                # Ensure converted_audio is not an integer
-                if isinstance(converted_audio, int):
-                    raise TypeError("Expected audio data, but received an integer.")
-
-                # Convert the converted audio back to raw PCM bytes
-                converted_chunk = converted_audio.astype(np.float32).tobytes()
+            # Convert TTS output to numpy array for RVC
+            audio_numpy = chunk.squeeze().cpu().numpy()
+            
+            # Convert to torch tensor for RVC (ensure correct shape and type)
+            audio_tensor = torch.from_numpy(audio_numpy).float()
+            if audio_tensor.ndim == 1:
+                audio_tensor = audio_tensor.unsqueeze(0)  # Add channel dimension if needed
+            
+            # Apply RVC voice conversion
+            converted_audio = rvc_model(
+                audio_tensor,
+                output_volume=RVC.MATCH_ORIGINAL,
+                index_rate=0.75
+            )
+            
+            # Convert to raw PCM bytes
+            converted_chunk_bytes = converted_audio.tobytes()
 
             # Base64 encode the converted chunk
-            converted_chunk_base64 = base64.b64encode(converted_chunk).decode("utf-8")
+            converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
             
             await websocket.send_json({
                 "type": "audio_chunk",
