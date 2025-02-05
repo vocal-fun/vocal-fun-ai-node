@@ -235,6 +235,14 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 # Apply RVC (Real-Time Voice Conversion) to the audio data (convert the chunk to target voice)
                 converted_audio = rvc_model(audio_data, f0_up_key=6)
 
+               # Debugging: Print the type and value of the converted audio
+                print(f"Converted Audio Type: {type(converted_audio)}")
+                print(f"Converted Audio Value: {converted_audio}")
+
+                # Ensure converted_audio is not an integer
+                if isinstance(converted_audio, int):
+                    raise TypeError("Expected audio data, but received an integer.")
+
                 # Convert the converted audio back to raw PCM bytes
                 converted_chunk = converted_audio.astype(np.float32).tobytes()
 
