@@ -38,11 +38,8 @@ API_BASE = "https://api.elevenlabs.io/v1"
 os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 print("Loading RVC model...")
-try:
- rvc_model = RVC(model='rvc/models/IShowSpeed/IShowSpeed.pth')
-except Exception as e:
-    print(f"Error loading RVC model: {e}")
-    rvc_model = None
+#rvc_model = RVC(model='rvc/models/IShowSpeed/IShowSpeed.pth')
+
 
 
 
