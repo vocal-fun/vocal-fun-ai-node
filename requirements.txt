@@ -18,3 +18,4 @@ faster-whisper
 groq
 cartesia
 websockets>=12.0
+elevenlabs

@@ -19,7 +19,7 @@ from cartesia import AsyncCartesia
 from elevenlabs.client import AsyncElevenLabs
 
 # Configuration
-ENABLE_LOCAL_MODEL = True  # Set to False to disable local model
+ENABLE_LOCAL_MODEL = False  # Set to False to disable local model
 CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
 DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
 
