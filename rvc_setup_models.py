@@ -36,6 +36,8 @@ def download_and_extract(model_url, model_name):
         for file_name in zip_file.namelist():
             if file_name.endswith('.pth'):
                 os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.pth")
+            if file_name.endswith('.index'):
+                os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.index")
         
         print(f"{model_name} downloaded and renamed successfully.")
     else:
