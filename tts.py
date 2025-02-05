@@ -32,13 +32,12 @@ ELEVENLABS_API_KEY = "sk_265e27f5c357d20b2a351e66b50c0ab1e137454d3a834f89"
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
 
-# Set environment variables (update with your actual paths)
-# os.environ['RVC_MODELDIR'] = 'rvc'  # Directory containing your RVC models
-# os.environ['RVC_INDEXDIR'] = '/path/to/rvc_index_dir'  # Directory containing index files
+os.environ['RVC_MODELDIR'] = 'rvc/models'
+os.environ['RVC_INDEXDIR'] = 'rvc/models'
 os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 print("Loading RVC model...")
-rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
+rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
 print("RVC model loaded")
 
 class CartesiaWebSocketManager:
