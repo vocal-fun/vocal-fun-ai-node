@@ -343,59 +343,31 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
             await ws_manager.release_connection(ws)
 
 async def stream_elevenlabs_audio(voice_id: str, text: str) -> AsyncGenerator[bytes, None]:
-    """Stream audio from ElevenLabs API using WebSocket connection"""
-    ws_url = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input"
-    
+    """Stream audio from ElevenLabs API"""
+    url = f"{API_BASE}/text-to-speech/{voice_id}/stream"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY
+    }
+    data = {
+        "text": text,
+        "model_id": "eleven_flash_v2",
+        "output_format": "pcm_32",
+        "sample_rate": 24000
+    }
+
     async with aiohttp.ClientSession() as session:
-        # Initialize WebSocket connection with query parameters
-        async with session.ws_connect(
-            ws_url,
-            params={
-                "model_id": "eleven_flash_v2",
-                "output_format": "pcm_32",
-                "optimize_streaming_latency": 4  # Max latency optimization
-            },
-            headers={
-                "xi-api-key": ELEVENLABS_API_KEY
-            }
-        ) as ws:
-            try:
-                # Send initialization message
-                await ws.send_json({
-                    "text": " ",  # Empty text for initialization
-                    "voice_settings": {
-                        "stability": 0.5,
-                        "similarity_boost": 0.75
-                    },
-                    "generation_config": {
-                        "chunk_length_schedule": [120, 160, 250, 290]
-                    }
-                })
-
-                # Send the actual text
-                await ws.send_json({
-                    "text": text,
-                    "try_trigger_generation": True
-                })
-
-                # Send empty text to signal end of input
-                await ws.send_json({"text": ""})
-
-                # Process incoming audio chunks
-                async for msg in ws:
-                    if msg.type == aiohttp.WSMsgType.BINARY:
-                        yield msg.data
-                    elif msg.type == aiohttp.WSMsgType.ERROR:
-                        raise Exception(f"WebSocket Error: {ws.exception()}")
-                    elif msg.type == aiohttp.WSMsgType.CLOSED:
-                        break
-
-            except Exception as e:
-                print(f"Error in ElevenLabs WebSocket streaming: {e}")
-                raise
+        async with session.post(url, json=data, headers=headers) as response:
+            if response.status != 200:
+                error_text = await response.text()
+                raise Exception(f"ElevenLabs API error: {error_text}")
+                
+            async for chunk in response.content.iter_chunked(CHUNK_SIZE):
+                yield chunk
 
 async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, personality: str):
-    """ElevenLabs streaming implementation using WebSocket API"""
+    """ElevenLabs streaming implementation"""
     try:
         await websocket.send_json({
             "type": "stream_start",
@@ -407,12 +379,11 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
         
         chunk_counter = 0
         async for chunk in stream_elevenlabs_audio('7fbQ7yJuEo56rYjrYaEh', text):
-            if chunk_counter == 0:
-                print(f"Time to first chunk: {time.time() - t0}")
-            
-            # Convert to base64
             chunk_base64 = base64.b64encode(chunk).decode("utf-8")
             
+            if (chunk_counter == 0):
+                print(f"Time to first chunk: {time.time() - t0}")
+
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
@@ -421,7 +392,6 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
                 "sample_rate": 24000,
                 "timestamp": time.time()
             })
-            
             chunk_counter += 1
             await asyncio.sleep(0.01)
 
