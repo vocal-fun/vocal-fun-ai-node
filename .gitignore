@@ -3,3 +3,4 @@ __pycache__/
 tortoise-tts-fastest/
 TTS/
 *.log
+rvc/
