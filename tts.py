@@ -16,6 +16,7 @@ import uuid
 from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
+from elevenlabs.client import AsyncElevenLabs
 
 # Configuration
 ENABLE_LOCAL_MODEL = True  # Set to False to disable local model
@@ -126,6 +127,8 @@ app.add_middleware(
 # Initialize Cartesia clients
 cartesia_client = AsyncCartesia(api_key=CARTESIA_API_KEY)
 ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
+
+elevenlabs_client = AsyncElevenLabs(api_key="sk_265e27f5c357d20b2a351e66b50c0ab1e137454d3a834f89")
 
 # Initialize local XTTS model if enabled
 if ENABLE_LOCAL_MODEL:
@@ -334,6 +337,60 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         if ws:
             await ws_manager.release_connection(ws)
 
+async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, personality: str):
+    """ElevenLabs streaming implementation"""
+    try:
+        await websocket.send_json({
+            "type": "stream_start",
+            "timestamp": time.time()
+        })
+        
+        _, _, elevenlabs_voice_id = get_agent_data(personality)
+        
+        # Generate audio stream using ElevenLabs
+        audio_stream = await elevenlabs_client.text_to_speech.convert_as_stream(
+            text=text,
+            voice_id=elevenlabs_voice_id,
+            model_id="eleven_flash_v2",
+            output_format={
+                "sample_rate": 24000
+            }
+        )
+        
+        chunk_counter = 0
+        async for chunk in audio_stream:
+            if isinstance(chunk, bytes):
+                # Convert to base64
+                chunk_base64 = base64.b64encode(chunk).decode("utf-8")
+                
+                await websocket.send_json({
+                    "type": "audio_chunk",
+                    "chunk": chunk_base64,
+                    "chunk_id": chunk_counter,
+                    "format": "pcm_f32le",
+                    "sample_rate": 24000,
+                    "timestamp": time.time()
+                })
+                chunk_counter += 1
+                await asyncio.sleep(0.01)
+
+        await websocket.send_json({
+            "type": "stream_end",
+            "timestamp": time.time()
+        })
+
+    except WebSocketDisconnect:
+        print("WebSocket disconnected during streaming")
+    except Exception as e:
+        print(f"Error in stream_audio_chunks_elevenlabs: {e}")
+        try:
+            await websocket.send_json({
+                "type": "error",
+                "error": str(e)
+            })
+        except:
+            pass
+
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
     """Original XTTS WebSocket endpoint"""
@@ -388,6 +445,29 @@ async def tts_stream_cartesia(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
 
+@app.websocket("/tts/stream/elevenlabs")
+async def tts_stream_elevenlabs(websocket: WebSocket):
+    """ElevenLabs WebSocket endpoint"""
+    await websocket.accept()
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            
+            if not isinstance(data, dict):
+                continue
+                
+            text = data.get("text")
+            personality = data.get("personality", "default")
+            
+            if text:
+                await stream_audio_chunks_elevenlabs(websocket, text, personality)
+            
+    except WebSocketDisconnect:
+        print("WebSocket connection closed normally")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    
 @app.get("/tts")
 async def generate_tts(
     text: str = Query(..., description="Text to convert to speech"),
@@ -466,4 +546,36 @@ async def generate_tts_cartesia(
 
     except Exception as e:
         print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/tts/elevenlabs")
+async def generate_tts_elevenlabs(
+    text: str = Query(..., description="Text to convert to speech"),
+    personality: str = Query("default", description="Voice personality to use")
+):
+    """ElevenLabs endpoint for single audio generation"""
+    try:
+        _, _, elevenlabs_voice_id = get_agent_data(personality)
+
+        # Generate audio using ElevenLabs
+        audio = await elevenlabs_client.text_to_speech.convert(
+            text=text,
+            voice_id=elevenlabs_voice_id,
+            model_id="eleven_flash_v2",
+            output_format={
+                "sample_rate": 24000
+            }
+        )
+        
+        # Convert to base64
+        audio_base64 = base64.b64encode(audio).decode('utf-8')
+        
+        return JSONResponse({
+            "audio": audio_base64,
+            "format": "pcm_f32le",
+            "sample_rate": 24000
+        })
+
+    except Exception as e:
+        print(f"Error in generate_tts_elevenlabs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
