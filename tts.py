@@ -246,7 +246,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
 
         chunk_counter = 0
 
-        for output in await ws.send(
+        async for output in await ws.send(
             model_id="sonic",
             transcript=text,
             voice_id=voice_id,
