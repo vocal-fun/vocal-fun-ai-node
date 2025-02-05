@@ -25,23 +25,17 @@ def download_and_extract(model_url, model_name):
         model_dir = f"rvc/models/{model_name}"
         os.makedirs(model_dir, exist_ok=True)
         
-        # If it's a zip file
-        if model_url.endswith('.zip'):
-            zip_file = ZipFile(io.BytesIO(response.content))
-            zip_file.extractall(f"rvc/models/{model_name}")
-            
-            # Debug: List the extracted files to confirm the .index file is present
-            extracted_files = zip_file.namelist()
-            print(f"Extracted files: {extracted_files}")
-            
-            # Find the .pth and .index files
-            for file_name in zip_file.namelist():
-                if file_name.endswith('.pth'):
-                    os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.pth")
-        else:
-            # For non-zip files, just download and rename
-            with open(f"rvc/models/{model_name}/{model_name}.pth", "wb") as f:
-                f.write(response.content)
+        zip_file = ZipFile(io.BytesIO(response.content))
+        zip_file.extractall(f"rvc/models/{model_name}")
+        
+        # Debug: List the extracted files to confirm the .index file is present
+        extracted_files = zip_file.namelist()
+        print(f"Extracted files: {extracted_files}")
+        
+        # Find the .pth and .index files
+        for file_name in zip_file.namelist():
+            if file_name.endswith('.pth'):
+                os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.pth")
         
         print(f"{model_name} downloaded and renamed successfully.")
     else:
