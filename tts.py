@@ -143,7 +143,7 @@ if ENABLE_LOCAL_MODEL:
 # Cartesia output formats
 cartesia_stream_format = {
     "container": "raw",
-    "encoding": "pcm_f32le",
+    "encoding": "pcm_s16le",
     "sample_rate": 16000,
 }
 
@@ -265,7 +265,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
                     "type": "audio_chunk",
                     "chunk": chunk_base64,
                     "chunk_id": chunk_counter,
-                    "format": "pcm_f32le",
+                    "format": "pcm_s16le",
                     "sample_rate": cartesia_stream_format["sample_rate"],
                     "timestamp": time.time()
                 })
