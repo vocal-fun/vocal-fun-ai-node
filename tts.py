@@ -20,7 +20,7 @@ import aiohttp
 from typing import AsyncGenerator
 from pathlib import Path
 from scipy.io import wavfile
-from rvc.modules.vc.modules import VC
+from inferrvc import RVC
 
 
 # Configuration
@@ -32,8 +32,14 @@ ELEVENLABS_API_KEY = "sk_265e27f5c357d20b2a351e66b50c0ab1e137454d3a834f89"
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
 
-vc = VC()
-vc.get_vc("rvc/models/IShowSpeed/IShowSpeed.pth") 
+# Set environment variables (update with your actual paths)
+os.environ['RVC_MODELDIR'] = 'rvc'  # Directory containing your RVC models
+# os.environ['RVC_INDEXDIR'] = '/path/to/rvc_index_dir'  # Directory containing index files
+os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
+
+# Load the RVC model
+rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
+
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
@@ -219,10 +225,10 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 temp_wav.seek(0)
 
                 # Apply RVC (Real-Time Voice Conversion) to the chunk (convert the chunk to target voice)
-                tgt_sr, audio_opt, _, _ = vc.vc_single(1, temp_wav)  # Convert using RVC
+                converted_audio = rvc_model(temp_wav, f0_up_key=6)
 
                 # Convert the converted audio back to raw PCM bytes
-                converted_chunk = audio_opt.tobytes()
+                converted_chunk = converted_audio.astype(np.float32).tobytes()
 
             # Base64 encode the converted chunk
             converted_chunk_base64 = base64.b64encode(converted_chunk).decode("utf-8")
