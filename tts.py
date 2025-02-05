@@ -344,7 +344,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
 
 async def stream_elevenlabs_audio(voice_id: str, text: str) -> AsyncGenerator[bytes, None]:
     """Stream audio from ElevenLabs API"""
-    url = f"{API_BASE}/text-to-speech/{voice_id}/stream"
+    url = f"{API_BASE}/text-to-speech/{voice_id}/stream?output_format=pcm_24000"
     headers = {
         "Accept": "audio/mpeg",
         "Content-Type": "application/json",
@@ -352,9 +352,7 @@ async def stream_elevenlabs_audio(voice_id: str, text: str) -> AsyncGenerator[by
     }
     data = {
         "text": text,
-        "model_id": "eleven_flash_v2",
-        "output_format": "pcm_24000",
-        "sample_rate": 24000
+        "model_id": "eleven_flash_v2"
     }
 
     async with aiohttp.ClientSession() as session:
