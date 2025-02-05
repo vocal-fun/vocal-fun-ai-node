@@ -30,12 +30,14 @@ def download_and_extract(model_url, model_name):
             zip_file = ZipFile(io.BytesIO(response.content))
             zip_file.extractall(f"rvc/models/{model_name}")
             
+            # Debug: List the extracted files to confirm the .index file is present
+            extracted_files = zip_file.namelist()
+            print(f"Extracted files: {extracted_files}")
+            
             # Find the .pth and .index files
             for file_name in zip_file.namelist():
                 if file_name.endswith('.pth'):
                     os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.pth")
-                elif file_name.endswith('.index'):
-                    os.rename(f"rvc/models/{model_name}/{file_name}", f"rvc/models/{model_name}/{model_name}.index")
         else:
             # For non-zip files, just download and rename
             with open(f"rvc/models/{model_name}/{model_name}.pth", "wb") as f:
