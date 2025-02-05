@@ -241,8 +241,6 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                     # Apply RVC voice conversion
                     converted_audio = rvc_model(
                         audio_tensor,
-                        f0_up_key=f0_up_key,
-                        output_device='cpu',
                         output_volume=RVC.MATCH_ORIGINAL,
                         index_rate=0.75
                     )
