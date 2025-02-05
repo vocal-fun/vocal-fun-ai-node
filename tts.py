@@ -17,6 +17,7 @@ from fastapi.background import BackgroundTasks
 from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
 import aiohttp
+from typing import AsyncGenerator
 
 
 # Configuration
