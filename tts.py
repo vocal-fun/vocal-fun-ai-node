@@ -38,10 +38,8 @@ API_BASE = "https://api.elevenlabs.io/v1"
 os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 print("Loading RVC model...")
-#rvc_model = RVC(model='rvc/models/IShowSpeed/IShowSpeed.pth')
-
-
-
+rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
+print("RVC model loaded")
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
