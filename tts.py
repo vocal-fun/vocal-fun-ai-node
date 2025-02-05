@@ -183,7 +183,7 @@ async def startup_event():
     # Start the pool maintenance task
     asyncio.create_task(ws_manager.maintain_pool())
 
-async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str, rvc_model_path: str, f0_up_key: int = 0):
+async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
     """TTS streaming implementation with RVC voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
