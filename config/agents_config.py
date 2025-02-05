@@ -34,7 +34,7 @@ def get_agent_data(agent_name):
         else:
             random_system_prompt = None
         
-        return absolute_voice_samples, random_system_prompt, agent.get("cartesia_voice_id")
+        return absolute_voice_samples, random_system_prompt, agent.get("cartesia_voice_id"), agent.get("elevenlabs_voice_id")
     else:
         return None, None
 
