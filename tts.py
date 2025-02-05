@@ -20,7 +20,7 @@ import aiohttp
 from typing import AsyncGenerator
 from pathlib import Path
 from scipy.io import wavfile
-from inferrvc import RVC
+# from inferrvc import RVC
 
 
 # Configuration
@@ -38,7 +38,7 @@ os.environ['RVC_MODELDIR'] = 'rvc'  # Directory containing your RVC models
 os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 # Load the RVC model
-rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
+# rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
 
 
 class CartesiaWebSocketManager:
