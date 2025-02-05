@@ -18,4 +18,5 @@ faster-whisper
 groq
 cartesia
 websockets>=12.0
-elevenlabs
+elevenlabs==0.2.26
+pydantic<2.0.0
