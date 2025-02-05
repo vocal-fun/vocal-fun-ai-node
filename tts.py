@@ -20,7 +20,7 @@ import aiohttp
 from typing import AsyncGenerator
 from pathlib import Path
 from scipy.io import wavfile
-# from inferrvc import RVC
+from inferrvc import RVC
 
 
 # Configuration
@@ -33,12 +33,12 @@ CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
 
 # Set environment variables (update with your actual paths)
-os.environ['RVC_MODELDIR'] = 'rvc'  # Directory containing your RVC models
+# os.environ['RVC_MODELDIR'] = 'rvc'  # Directory containing your RVC models
 # os.environ['RVC_INDEXDIR'] = '/path/to/rvc_index_dir'  # Directory containing index files
 os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
-# Load the RVC model
-# rvc_model = RVC('rvc/models/IShowSpeed/IShowSpeed.pth')
+print("Loading RVC model...")
+rvc_model = RVC(model='rvc/models/IShowSpeed/IShowSpeed.pth')
 
 
 class CartesiaWebSocketManager:
