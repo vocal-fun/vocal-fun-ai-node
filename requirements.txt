@@ -24,7 +24,3 @@ websockets>=12.0
 # fastapi>=0.100.0
 rvc
 requests
-
-omegaconf
-fairseq==0.12.2
-hydra-core==1.0.7
