@@ -183,14 +183,15 @@ async def startup_event():
     # Start the pool maintenance task
     asyncio.create_task(ws_manager.maintain_pool())
 
-async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
-    """Original XTTS streaming implementation with raw PCM output"""
+async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str, rvc_model_path: str, f0_up_key: int = 0):
+    """TTS streaming implementation with RVC voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
             "type": "stream_start",
             "timestamp": time.time()
         })
 
+        # Load TTS voice
         voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
         
         if personality not in speaker_latents_cache:
@@ -211,42 +212,93 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             temperature=0.7
         )
 
+        # Buffer to accumulate audio chunks
+        buffer = None
+        min_chunk_size = 16000  # Minimum chunk size to process (adjust as needed)
         chunk_counter = 0
+        
         for chunk in chunks:
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert TTS output to numpy array for RVC
-            audio_numpy = chunk.squeeze().cpu().numpy()
+            # Convert TTS output to numpy array
+            current_chunk = chunk.squeeze().cpu().numpy()
             
-            # Convert to torch tensor for RVC (ensure correct shape and type)
-            audio_tensor = torch.from_numpy(audio_numpy).float()
-            if audio_tensor.ndim == 1:
-                audio_tensor = audio_tensor.unsqueeze(0)  # Add channel dimension if needed
+            # Add to buffer
+            if buffer is None:
+                buffer = current_chunk
+            else:
+                buffer = np.concatenate([buffer, current_chunk])
             
-            # Apply RVC voice conversion
-            converted_audio = rvc_model(
-                audio_tensor,
-                output_volume=RVC.MATCH_ORIGINAL,
-                index_rate=0.75
-            )
-            
-            # Convert to raw PCM bytes
-            converted_chunk_bytes = converted_audio.tobytes()
+            # Process buffer when it's large enough
+            if len(buffer) >= min_chunk_size:
+                # Convert to torch tensor for RVC
+                audio_tensor = torch.from_numpy(buffer).float()
+                if audio_tensor.ndim == 1:
+                    audio_tensor = audio_tensor.unsqueeze(0)
+                
+                try:
+                    # Apply RVC voice conversion
+                    converted_audio = rvc_model(
+                        audio_tensor,
+                        f0_up_key=f0_up_key,
+                        output_device='cpu',
+                        output_volume=RVC.MATCH_ORIGINAL,
+                        index_rate=0.75
+                    )
+                    
+                    # Convert to raw PCM bytes
+                    converted_chunk_bytes = converted_audio.tobytes()
 
-            # Base64 encode the converted chunk
-            converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
-            
-            await websocket.send_json({
-                "type": "audio_chunk",
-                "chunk": converted_chunk_base64,
-                "chunk_id": chunk_counter,
-                "format": "pcm_f32le",
-                "sample_rate": 24000,
-                "timestamp": time.time()
-            })
+                    # Base64 encode the converted chunk
+                    converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
+                    
+                    await websocket.send_json({
+                        "type": "audio_chunk",
+                        "chunk": converted_chunk_base64,
+                        "chunk_id": chunk_counter,
+                        "format": "pcm_f32le",
+                        "sample_rate": 24000,
+                        "timestamp": time.time()
+                    })
+                    
+                    # Clear buffer
+                    buffer = None
+                    
+                except Exception as e:
+                    print(f"Error processing chunk: {e}")
+                    # If error occurs, skip this chunk and clear buffer
+                    buffer = None
+                    continue
+                
             chunk_counter += 1
             await asyncio.sleep(0.01)
+
+        # Process any remaining audio in buffer
+        if buffer is not None and len(buffer) > 0:
+            audio_tensor = torch.from_numpy(buffer).float().unsqueeze(0)
+            try:
+                converted_audio = rvc_model(
+                    audio_tensor,
+                    f0_up_key=f0_up_key,
+                    output_device='cpu',
+                    output_volume=RVC.MATCH_ORIGINAL,
+                    index_rate=0.75
+                )
+                
+                converted_chunk_bytes = converted_audio.tobytes()
+                converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
+                
+                await websocket.send_json({
+                    "type": "audio_chunk",
+                    "chunk": converted_chunk_base64,
+                    "chunk_id": chunk_counter,
+                    "format": "pcm_f32le",
+                    "sample_rate": 24000,
+                    "timestamp": time.time()
+                })
+            except Exception as e:
+                print(f"Error processing final chunk: {e}")
 
         await websocket.send_json({
             "type": "stream_end",
