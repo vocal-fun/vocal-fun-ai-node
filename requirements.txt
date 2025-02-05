@@ -19,5 +19,5 @@ groq
 cartesia
 elevenlabs==0.2.26
 pydantic<2.0.0
-websockets>=12.0
+# websockets>=12.0
 fastapi>=0.100.0
