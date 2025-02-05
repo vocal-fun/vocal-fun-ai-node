@@ -25,6 +25,6 @@ websockets>=12.0
 rvc
 requests
 
-omegaconf>=2.0.5,<2.1
+omegaconf
 fairseq==0.12.2
 hydra-core==1.0.7
