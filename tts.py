@@ -30,7 +30,7 @@ CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
 
 class CartesiaWebSocketManager:
-    def __init__(self, api_key: str, pool_size: int = 5):
+    def __init__(self, api_key: str, pool_size: int = 1):
         self.api_key = api_key
         self.pool_size = pool_size
         self.client = AsyncCartesia(api_key=api_key)
@@ -406,7 +406,7 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
         _, _, elevenlabs_voice_id = get_agent_data(personality)
         
         chunk_counter = 0
-        async for chunk in stream_elevenlabs_audio(elevenlabs_voice_id, text):
+        async for chunk in stream_elevenlabs_audio('7fbQ7yJuEo56rYjrYaEh', text):
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
