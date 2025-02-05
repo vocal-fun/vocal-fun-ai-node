@@ -18,6 +18,9 @@ from config.agents_config import get_agent_data
 from cartesia import AsyncCartesia
 import aiohttp
 from typing import AsyncGenerator
+from pathlib import Path
+from scipy.io import wavfile
+from rvc.modules.vc.modules import VC
 
 
 # Configuration
@@ -28,6 +31,9 @@ DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
 ELEVENLABS_API_KEY = "sk_265e27f5c357d20b2a351e66b50c0ab1e137454d3a834f89"
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
+
+vc = VC()
+vc.get_vc("rvc/models/IShowSpeed/IShowSpeed.pth") 
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
@@ -201,13 +207,29 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert tensor to raw PCM bytes
+    
+           # Convert tensor to raw PCM bytes
             chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
-            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+
+            # Write the chunk to a temporary WAV file for RVC processing
+            with io.BytesIO() as temp_wav:
+                wavfile.write(temp_wav, 24000, np.frombuffer(chunk_bytes, dtype=np.float32))
+
+                # Seek back to the beginning of the BytesIO object to load it for RVC
+                temp_wav.seek(0)
+
+                # Apply RVC (Real-Time Voice Conversion) to the chunk (convert the chunk to target voice)
+                tgt_sr, audio_opt, _, _ = vc.vc_single(1, temp_wav)  # Convert using RVC
+
+                # Convert the converted audio back to raw PCM bytes
+                converted_chunk = audio_opt.tobytes()
+
+            # Base64 encode the converted chunk
+            converted_chunk_base64 = base64.b64encode(converted_chunk).decode("utf-8")
             
             await websocket.send_json({
                 "type": "audio_chunk",
-                "chunk": chunk_base64,
+                "chunk": converted_chunk_base64,
                 "chunk_id": chunk_counter,
                 "format": "pcm_f32le",
                 "sample_rate": 24000,
