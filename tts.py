@@ -34,7 +34,7 @@ API_BASE = "https://api.elevenlabs.io/v1"
 
 os.environ['RVC_MODELDIR'] = 'rvc/models'
 os.environ['RVC_INDEXDIR'] = 'rvc/models'
-# os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
+os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 print(sys.argv)
 print('clearing sys args')
@@ -227,8 +227,13 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 # Seek back to the beginning of the BytesIO object to load it for RVC
                 temp_wav.seek(0)
 
-                # Apply RVC (Real-Time Voice Conversion) to the chunk (convert the chunk to target voice)
-                converted_audio = rvc_model(temp_wav, f0_up_key=6)
+                # Load the WAV data from the BytesIO object into a numpy array
+                # Use scipy to load WAV data into numpy array
+                temp_wav.seek(0)  # Rewind the BytesIO stream
+                audio_data, _ = wavfile.read(temp_wav)
+
+                # Apply RVC (Real-Time Voice Conversion) to the audio data (convert the chunk to target voice)
+                converted_audio = rvc_model(audio_data, f0_up_key=6)
 
                 # Convert the converted audio back to raw PCM bytes
                 converted_chunk = converted_audio.astype(np.float32).tobytes()
