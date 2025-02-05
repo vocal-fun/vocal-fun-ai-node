@@ -151,7 +151,7 @@ if ENABLE_LOCAL_MODEL:
 # Cartesia output formats
 cartesia_stream_format = {
     "container": "raw",
-    "encoding": "pcm_f32le",
+    "encoding": "pcm_s16le",
     "sample_rate": 24000,
 }
 
@@ -353,7 +353,7 @@ async def stream_elevenlabs_audio(voice_id: str, text: str) -> AsyncGenerator[by
     data = {
         "text": text,
         "model_id": "eleven_flash_v2",
-        "output_format": "pcm_32",
+        "output_format": "pcm_24000",
         "sample_rate": 24000
     }
 
