@@ -41,7 +41,7 @@ print('clearing sys args')
 sys.argv = [sys.argv[0]]
 print(sys.argv)
 print("Loading RVC model...")
-rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
+# rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
 print("RVC model loaded")
 
 class CartesiaWebSocketManager:
@@ -176,40 +176,6 @@ cartesia_bytes_format = {
     "sample_rate": 24000,
 }
 
-def process_audio_chunk(rvc_model, audio_data):
-    """Process a single chunk of audio through RVC"""
-    # Ensure audio is the right shape and type
-    if isinstance(audio_data, np.ndarray):
-        audio_tensor = torch.from_numpy(audio_data).float()
-    else:
-        audio_tensor = audio_data.float()
-    
-    if audio_tensor.ndim == 1:
-        audio_tensor = audio_tensor.unsqueeze(0)
-    
-    # Ensure we have enough samples (minimum 2 seconds worth)
-    min_samples = 48000  # 2 seconds at 24kHz
-    current_samples = audio_tensor.size(-1)
-    
-    if current_samples < min_samples:
-        # Pad with zeros if needed
-        padding = min_samples - current_samples
-        audio_tensor = torch.nn.functional.pad(audio_tensor, (0, padding))
-    
-    print(f"Input tensor shape before RVC: {audio_tensor.shape}")
-    
-    # Process through RVC
-    converted = rvc_model(
-        audio_tensor,
-        output_volume=RVC.MATCH_ORIGINAL,
-        index_rate=0.75,
-        filter_radius=3,  # Add filter radius to help with quality
-        resample_sr=24000,  # Explicitly set resample rate
-        protect=0.33  # Adjust protection value
-    )
-    
-    return converted
-
 
 @app.on_event("startup")
 async def startup_event():
@@ -248,86 +214,27 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             temperature=0.7
         )
 
-        # Buffer to accumulate audio chunks
-        buffer = []
+    
         chunk_counter = 0
-        samples_threshold = 96000  # 4 seconds worth of audio at 24kHz
-        
         for chunk in chunks:
             if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert TTS output to numpy array
-            current_chunk = chunk.squeeze().cpu().numpy()
-            print(f"Current chunk size: {current_chunk.shape}")
+            # Convert tensor to raw PCM bytes
+            chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
+            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
-            # Add to buffer
-            buffer.append(current_chunk)
-            total_samples = sum(len(c) for c in buffer)
-            print(f"Total buffered samples: {total_samples}")
-            
-            # Process buffer when it's large enough
-            if total_samples >= samples_threshold:
-                # Concatenate all chunks
-                audio_data = np.concatenate(buffer)
-                print(f"Processing combined buffer of size: {audio_data.shape}")
-                
-                try:
-                    # Process through RVC
-                    converted_audio = process_audio_chunk(rvc_model, audio_data)
-                    print(f"Converted audio shape: {converted_audio.shape}")
-                    
-                    # Convert to raw PCM bytes
-                    converted_chunk_bytes = converted_audio.tobytes()
-                    # Base64 encode the converted chunk
-                    converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
-                    
-                    await websocket.send_json({
-                        "type": "audio_chunk",
-                        "chunk": converted_chunk_base64,
-                        "chunk_id": chunk_counter,
-                        "format": "pcm_f32le",
-                        "sample_rate": 24000,
-                        "timestamp": time.time()
-                    })
-                    
-                    # Clear buffer
-                    buffer = []
-                    
-                except Exception as e:
-                    print(f"Error processing chunk: {e}")
-                    print(f"Error details:", str(e))
-                    # Keep a small portion of the buffer for continuity
-                    if len(buffer) > 1:
-                        buffer = buffer[-1:]
-                    else:
-                        buffer = []
-                    continue
-            
+            await websocket.send_json({
+                "type": "audio_chunk",
+                "chunk": chunk_base64,
+                "chunk_id": chunk_counter,
+                "format": "pcm_f32le",
+                "sample_rate": 24000,
+                "timestamp": time.time()
+            })
             chunk_counter += 1
             await asyncio.sleep(0.01)
 
-        # Process any remaining audio in buffer
-        if buffer:
-            try:
-                final_audio = np.concatenate(buffer)
-                print(f"Processing final buffer of size: {final_audio.shape}")
-                converted_audio = process_audio_chunk(rvc_model, final_audio)
-                
-                converted_chunk_bytes = converted_audio.tobytes()
-                converted_chunk_base64 = base64.b64encode(converted_chunk_bytes).decode("utf-8")
-                
-                await websocket.send_json({
-                    "type": "audio_chunk",
-                    "chunk": converted_chunk_base64,
-                    "chunk_id": chunk_counter,
-                    "format": "pcm_f32le",
-                    "sample_rate": 24000,
-                    "timestamp": time.time()
-                })
-            except Exception as e:
-                print(f"Error processing final chunk: {e}")
-                print(f"Error details:", str(e))
 
         await websocket.send_json({
             "type": "stream_end",
