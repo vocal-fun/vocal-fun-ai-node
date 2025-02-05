@@ -34,10 +34,10 @@ API_BASE = "https://api.elevenlabs.io/v1"
 
 os.environ['RVC_MODELDIR'] = 'rvc/models'
 os.environ['RVC_INDEXDIR'] = 'rvc/models'
-os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
+# os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
 print("Loading RVC model...")
-rvc_model = None
+rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
 print("RVC model loaded")
 
 class CartesiaWebSocketManager:
@@ -440,8 +440,6 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
 @app.websocket("/tts/stream")
 async def tts_stream(websocket: WebSocket):
     """Original XTTS WebSocket endpoint"""
-    rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
-
     if not ENABLE_LOCAL_MODEL:
         await websocket.close(code=1000, reason="Local model is disabled")
         return
