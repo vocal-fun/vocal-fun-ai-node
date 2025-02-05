@@ -176,6 +176,16 @@ cartesia_bytes_format = {
     "sample_rate": 24000,
 }
 
+def pad_audio(audio_tensor, target_length=48000):
+    """Pad audio tensor to target length"""
+    current_length = audio_tensor.size(-1)
+    if current_length < target_length:
+        padding_needed = target_length - current_length
+        padding_left = padding_needed // 2
+        padding_right = padding_needed - padding_left
+        return torch.nn.functional.pad(audio_tensor, (padding_left, padding_right))
+    return audio_tensor
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize the WebSocket pool on app startup"""
@@ -212,9 +222,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             temperature=0.7
         )
 
-        # Buffer to accumulate audio chunks
         buffer = None
-        min_chunk_size = 16000  # Minimum chunk size to process (adjust as needed)
+        min_chunk_size = 48000  # Increased to match RVC's expected input size
         chunk_counter = 0
         
         for chunk in chunks:
@@ -223,6 +232,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             
             # Convert TTS output to numpy array
             current_chunk = chunk.squeeze().cpu().numpy()
+            print(f"Current chunk size: {current_chunk.shape}")
             
             # Add to buffer
             if buffer is None:
@@ -230,12 +240,20 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             else:
                 buffer = np.concatenate([buffer, current_chunk])
             
+            print(f"Buffer size after concatenation: {buffer.shape}")
+            
             # Process buffer when it's large enough
-            if len(buffer) >= min_chunk_size:
+            while len(buffer) >= min_chunk_size:
+                # Take chunk of exactly min_chunk_size
+                process_chunk = buffer[:min_chunk_size]
+                buffer = buffer[min_chunk_size:] if len(buffer) > min_chunk_size else None
+                
                 # Convert to torch tensor for RVC
-                audio_tensor = torch.from_numpy(buffer).float()
+                audio_tensor = torch.from_numpy(process_chunk).float()
                 if audio_tensor.ndim == 1:
                     audio_tensor = audio_tensor.unsqueeze(0)
+                
+                print(f"Processing chunk shape: {audio_tensor.shape}")
                 
                 try:
                     # Apply RVC voice conversion
@@ -244,6 +262,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                         output_volume=RVC.MATCH_ORIGINAL,
                         index_rate=0.75
                     )
+                    
+                    print(f"Converted audio shape: {converted_audio.shape}")
                     
                     # Convert to raw PCM bytes
                     converted_chunk_bytes = converted_audio.tobytes()
@@ -260,13 +280,9 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                         "timestamp": time.time()
                     })
                     
-                    # Clear buffer
-                    buffer = None
-                    
                 except Exception as e:
                     print(f"Error processing chunk: {e}")
-                    # If error occurs, skip this chunk and clear buffer
-                    buffer = None
+                    print(f"Audio tensor shape: {audio_tensor.shape}")
                     continue
                 
             chunk_counter += 1
@@ -274,12 +290,20 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
 
         # Process any remaining audio in buffer
         if buffer is not None and len(buffer) > 0:
-            audio_tensor = torch.from_numpy(buffer).float().unsqueeze(0)
+            print(f"Processing final buffer of size: {len(buffer)}")
+            
+            # Pad the final chunk if needed
+            audio_tensor = torch.from_numpy(buffer).float()
+            if audio_tensor.ndim == 1:
+                audio_tensor = audio_tensor.unsqueeze(0)
+            
+            # Pad to min_chunk_size
+            if audio_tensor.size(-1) < min_chunk_size:
+                audio_tensor = pad_audio(audio_tensor, min_chunk_size)
+            
             try:
                 converted_audio = rvc_model(
                     audio_tensor,
-                    f0_up_key=f0_up_key,
-                    output_device='cpu',
                     output_volume=RVC.MATCH_ORIGINAL,
                     index_rate=0.75
                 )
@@ -297,6 +321,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 })
             except Exception as e:
                 print(f"Error processing final chunk: {e}")
+                print(f"Final audio tensor shape: {audio_tensor.shape}")
 
         await websocket.send_json({
             "type": "stream_end",
