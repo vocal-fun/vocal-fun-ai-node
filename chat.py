@@ -5,6 +5,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteriaLi
 import random
 from typing import Dict, List
 from collections import defaultdict
+import bitsandbytes as bnb
 import time
 import re
 from dataclasses import dataclass
@@ -133,9 +134,17 @@ if ENBALE_LOCAL_MODEL:
         "replace_method": "auto"
     }
 
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_use_double_quant=True
+    )
+
     # Initialize model with DeepSpeed inference
     model = AutoModelForCausalLM.from_pretrained(model_name,
                                                 torch_dtype=torch.float16, 
+                                                # quantization_config=bnb_config,
                                                 device_map="auto")
     
     stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])

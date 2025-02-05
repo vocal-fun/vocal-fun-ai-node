@@ -20,6 +20,10 @@ def download_and_extract(model_url, model_name):
     
     if response.status_code == 200:
         print(f"Downloading {model_name}...")
+
+        # Create a model-specific directory inside rvc/models
+        model_dir = f"rvc/models/{model_name}"
+        os.makedirs(model_dir, exist_ok=True)
         
         # If it's a zip file
         if model_url.endswith('.zip'):

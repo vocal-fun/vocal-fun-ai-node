@@ -9,6 +9,9 @@ transformers
 accelerate
 optimum
 huggingface_hub
+sentencepiece
+bitsandbytes
+prompt-engine-py
 wheel
 python-multipart
 faster-whisper
