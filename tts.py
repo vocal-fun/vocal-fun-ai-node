@@ -21,7 +21,7 @@ from typing import AsyncGenerator
 from pathlib import Path
 from scipy.io import wavfile
 from inferrvc import RVC
-
+import sys
 
 # Configuration
 ENABLE_LOCAL_MODEL = True  # Set to False to disable local model
@@ -36,6 +36,10 @@ os.environ['RVC_MODELDIR'] = 'rvc/models'
 os.environ['RVC_INDEXDIR'] = 'rvc/models'
 # os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
 
+print(sys.argv)
+print('clearing sys args')
+sys.argv = []
+print(sys.argv)
 print("Loading RVC model...")
 rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
 print("RVC model loaded")
