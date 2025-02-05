@@ -374,12 +374,16 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
             "timestamp": time.time()
         })
         
+        t0 = time.time()
         _, _, elevenlabs_voice_id = get_agent_data(personality)
         
         chunk_counter = 0
-        async for chunk in stream_elevenlabs_audio('s2wvuS7SwITYg8dqsJdn', text):
+        async for chunk in stream_elevenlabs_audio('7fbQ7yJuEo56rYjrYaEh', text):
             chunk_base64 = base64.b64encode(chunk).decode("utf-8")
             
+            if (chunk_counter == 0):
+                print(f"Time to first chunk: {time.time() - t0}")
+
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
