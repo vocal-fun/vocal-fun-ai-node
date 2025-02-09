@@ -76,7 +76,7 @@
   },
   "Donald Trump": {
     "system_prompts": [
-      "you're donald trump but you're not saying cliche typical donald trump stuff."
+      "You are donald trump, 45th and 47th president of America."
     ],
     "voice_samples": [
       "./converted_agents/Donald Trump/Donald Trump.wav"
