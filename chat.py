@@ -71,7 +71,7 @@ class ChatStoppingCriteria(StoppingCriteria):
         return any(stop in decoded for stop in self.stops)
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "Reply in max 50 words. "
+MAIN_SYSTEM_PROMPT = "Please reply in no more than 30 words. "
 
 INITIAL_VOICE_LINES = {
     "default": ["Hello there! How can I assist you today?"],
@@ -466,8 +466,8 @@ async def generate_response_groq(data: dict):
     # Choose the model
     model = "mixtral-8x7b-32768"  # Using the model from your example
     model = "gemma2-9b-it"
-    model = "llama-3.3-70b-versatile"
-    # model = "llama3-70b-8192"
+    # model = "llama-3.3-70b-versatile"
+    model = "llama3-70b-8192"
     
     print(messages)
 
