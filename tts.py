@@ -237,7 +237,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 "chunk_id": i,
                 "timestamp": time.time()
             })
-            await asyncio.sleep(0.01)  # Small delay between chunks
+            # await asyncio.sleep(0.01)  # Small delay between chunks
             
             # print(f"Sent chunk {i} of audio length {chunk.shape[-1]}")
 
