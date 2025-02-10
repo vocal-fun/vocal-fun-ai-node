@@ -468,8 +468,8 @@ async def generate_response_groq(data: dict):
     model = "gemma2-9b-it"
     # model = "llama-3.3-70b-versatile"
     model = "llama3-70b-8192"
-    model = "llama3-8b-8192"
-    
+    # model = "llama3-8b-8192"
+
     print(messages)
 
     async with aiohttp.ClientSession() as session:
