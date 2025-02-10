@@ -185,21 +185,23 @@ async def startup_event():
     asyncio.create_task(ws_manager.maintain_pool())
 
 async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
+    """TTS streaming implementation with RVC voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
             "type": "stream_start",
             "timestamp": time.time()
         })
 
-        voice_samples, _, _, _ = get_agent_data(personality)
+        # Load TTS voice
+        voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
         
-        # Get or compute speaker latents
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
             gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
             speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
+
 
         print("Starting streaming inference...")
         t0 = time.time()
@@ -212,36 +214,28 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             temperature=0.7
         )
 
-        for i, chunk in enumerate(chunks):
-            if i == 0:
+    
+        chunk_counter = 0
+        for chunk in chunks:
+            if chunk_counter == 0:
                 print(f"Time to first chunk: {time.time() - t0}")
             
-            # Convert chunk to bytes
-            chunk_tensor = chunk.squeeze().unsqueeze(0).cpu()
-            buffer = torch.zeros(1, chunk_tensor.shape[1], dtype=torch.float32)
-            buffer[0, :chunk_tensor.shape[1]] = chunk_tensor
-            
-            temp_path = f"temp_chunk_{i}.wav"
-            torchaudio.save(temp_path, buffer, 24000)
-            
-            with open(temp_path, "rb") as f:
-                chunk_bytes = f.read()
-            os.remove(temp_path)
-            
+            # Convert tensor to raw PCM bytes
+            chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
-            # Send chunk and wait for small delay to prevent overwhelming the connection
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
-                "chunk_id": i,
+                "chunk_id": chunk_counter,
+                "format": "pcm_f32le",
+                "sample_rate": 24000,
                 "timestamp": time.time()
             })
-            # await asyncio.sleep(0.01)  # Small delay between chunks
-            
-            # print(f"Sent chunk {i} of audio length {chunk.shape[-1]}")
+            chunk_counter += 1
+            await asyncio.sleep(0.01)
 
-        # Send end of stream message
+
         await websocket.send_json({
             "type": "stream_end",
             "timestamp": time.time()
