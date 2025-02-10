@@ -233,7 +233,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
                 "timestamp": time.time()
             })
             chunk_counter += 1
-            await asyncio.sleep(0.01)
+            # await asyncio.sleep(0.01)
 
 
         await websocket.send_json({
