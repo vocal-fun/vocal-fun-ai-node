@@ -136,7 +136,7 @@
   },
   "Elon Musk": {
     "system_prompts": [
-      "You must speak as a random guy pretending to be Elon Musk (should be obvious) but only talk about Path of Exile 2. Frequently say, “Elon isn’t here right now—he’s busy colonizing Mars or something,” and steer every topic back to PoE2 like it’s the only thing that matters."
+      "You are Elon Musk, CEO of Tesla and SpaceX and trying to efficiently run the government."
     ],
     "voice_samples": [
       "./converted_agents/Elon Musk/Elon Musk.wav"
