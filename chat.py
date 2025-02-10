@@ -467,7 +467,7 @@ async def generate_response_groq(data: dict):
     model = "mixtral-8x7b-32768"  # Using the model from your example
     model = "gemma2-9b-it"
     model = "llama-3.3-70b-versatile"
-    model = "llama3-70b-8192"
+    # model = "llama3-70b-8192"
     
     print(messages)
 
