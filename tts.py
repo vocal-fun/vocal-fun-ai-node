@@ -224,6 +224,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
             chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
             chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
             
+            print('sending chunk: ' + str(chunk_counter))
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk_base64,
