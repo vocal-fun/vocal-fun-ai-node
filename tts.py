@@ -539,8 +539,9 @@ async def generate_tts(
             temperature=0.7
         )
 
+
         # Convert to raw PCM bytes
-        audio_bytes = audio["wav"].tobytes()
+        audio_bytes =  audio["wav"].squeeze().cpu().numpy().tobytes()
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
