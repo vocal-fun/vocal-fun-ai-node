@@ -540,9 +540,13 @@ async def generate_tts(
         )
 
 
-        # Convert to raw PCM bytes
-        audio_bytes =  audio["wav"].squeeze().cpu().numpy().tobytes()
-        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        # Convert audio tensor to WAV format in memory
+        buffer = io.BytesIO()
+        torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
+        buffer.seek(0)
+        
+        # Convert to base64
+        audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
         
         print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
         
