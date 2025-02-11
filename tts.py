@@ -154,9 +154,9 @@ ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
 if ENABLE_LOCAL_MODEL:
     print("Loading local model...")
     config = XttsConfig()
-    config.load_json("/home/ec2-user/.local/share/tts/xtts_finetuned_full/config.json")
+    config.load_json("/home/ec2-user/.local/share/tts/xtts_finetuned_full2/config.json")
     model = Xtts.init_from_config(config)
-    model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/xtts_finetuned_full", use_deepspeed=True)
+    model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/xtts_finetuned_full2", use_deepspeed=True)
     model.cuda()
 
     # Cache for voice lines and speaker latents
