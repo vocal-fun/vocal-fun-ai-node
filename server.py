@@ -148,9 +148,9 @@ async def process_audio_to_response(session: AudioSession) -> None:
                 session.is_responding = False
                 return
 
-            if len(transcript) < 10:
-                session.is_responding = False
-                return
+            # if len(transcript) < 10:
+            #     session.is_responding = False
+            #     return
             
             if "thank you" in transcript.lower():
                 session.is_responding = False
