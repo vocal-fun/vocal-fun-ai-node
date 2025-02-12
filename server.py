@@ -194,7 +194,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         min_speech_duration=0.4,  # Minimum speech to process
         max_silence_duration=0.5,  # Pause length to trigger processing
         max_recording_duration=10.0,
-        debug=False  # Enable detailed logging
+        debug=True  # Enable detailed logging
     )
 
     print(f"Received agentId: {agent_id}, userId: {user_id}")
