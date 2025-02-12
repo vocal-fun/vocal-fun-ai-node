@@ -210,7 +210,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 if "bytes" in message:
                     try:
                         if session.is_responding:
-                            # print("Ignoring audio data while responding")
+                            print("Ignoring audio data while responding")
                             continue
 
                         binary_data = message["bytes"]
