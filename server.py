@@ -133,6 +133,7 @@ async def process_audio_to_response(session: AudioSession) -> None:
     try:
         audio_file = await session.save_audio()
         if not audio_file:
+            session.is_responding = False
             return
 
         async with aiohttp.ClientSession() as http_session:
@@ -209,9 +210,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "websocket.receive":
                 if "bytes" in message:
                     try:
-                        if session.is_responding:
-                            print("Ignoring audio data while responding")
-                            continue
+                        # if session.is_responding:
+                        #     print("Ignoring audio data while responding")
+                        #     continue
 
                         binary_data = message["bytes"]
                         if len(binary_data) > 0:
