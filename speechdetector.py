@@ -103,12 +103,12 @@ class AudioSpeechDetector:
         self.consecutive_silence_chunks += 1
         
         # Check max recording duration
-        if current_time - self.start_recording_time > self.max_recording_duration:
-            self._log("Max recording duration reached")
-            return {
-                "action": "process",
-                "reason": "max_duration_reached"
-            }
+        # if current_time - self.start_recording_time > self.max_recording_duration:
+        #     self._log("Max recording duration reached")
+        #     return {
+        #         "action": "process",
+        #         "reason": "max_duration_reached"
+        #     }
         
         # Check for prolonged silence
         silence_duration = self.consecutive_silence_chunks * (len(audio_chunk) / self.sample_rate)
