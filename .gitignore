@@ -3,3 +3,4 @@ __pycache__/
 TTS/
 *.log
 .env
+*.DS_Store
