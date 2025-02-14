@@ -22,27 +22,17 @@ from pathlib import Path
 from scipy.io import wavfile
 from inferrvc import RVC
 import sys
+from dotenv import load_dotenv
+import os
 
-# Configuration
+load_dotenv()
+
 ENABLE_LOCAL_MODEL = True  # Set to False to disable local model
-CARTESIA_API_KEY = 'sk_car_u_tiwMaJH0qTFtzXB6Shs'
-DEFAULT_VOICE_ID = '41fadb49-adea-45dd-b9b6-4ba14091292d'
+CARTESIA_API_KEY = os.getenv('CARTESIA_API_KEY')
 
-ELEVENLABS_API_KEY = "sk_265e27f5c357d20b2a351e66b50c0ab1e137454d3a834f89"
+ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
-
-os.environ['RVC_MODELDIR'] = 'rvc/models'
-os.environ['RVC_INDEXDIR'] = 'rvc/models'
-os.environ['RVC_OUTPUTFREQ'] = '24000'  # Set your desired output sample rate
-
-print(sys.argv)
-print('clearing sys args')
-sys.argv = [sys.argv[0]]
-print(sys.argv)
-print("Loading RVC model...")
-# rvc_model = RVC('IShowSpeed/IShowSpeed.pth', index='IShowSpeed/IShowSpeed.index')
-print("RVC model loaded")
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
@@ -152,11 +142,12 @@ ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
 
 # Initialize local XTTS model if enabled
 if ENABLE_LOCAL_MODEL:
+    xttsPath = os.getenv('XTTS_MODEL_PATH')
     print("Loading local model...")
     config = XttsConfig()
-    config.load_json("/home/ec2-user/.local/share/tts/xtts_finetuned_full2/config.json")
+    config.load_json(xttsPath + "/config.json")
     model = Xtts.init_from_config(config)
-    model.load_checkpoint(config, checkpoint_dir="/home/ec2-user/.local/share/tts/xtts_finetuned_full2", use_deepspeed=True)
+    model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=True)
     model.cuda()
 
     # Cache for voice lines and speaker latents

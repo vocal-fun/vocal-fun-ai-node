@@ -15,6 +15,10 @@ import aiohttp
 import deepspeed
 from config.agents_config import get_agent_data
 import re
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -28,7 +32,7 @@ app.add_middleware(
 
 # Huggingface login
 from huggingface_hub import login
-login(token="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")
+login(token=os.getenv('HUGGINGFACE_API_KEY'))
 
 # Device configuration
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -84,42 +88,12 @@ INITIAL_VOICE_LINES = {
     ]
 }
 
-# model_name = "openlm-research/open_llama_3b"
-# model_name = "mistralai/Mistral-7B-v0.1"
-
-# tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
-# model = AutoModelForCausalLM.from_pretrained(
-#     model_name,
-#     torch_dtype=torch.float16,
-#     device_map="auto"
-# )
-
 ENBALE_LOCAL_MODEL = False
-
-# model_name = "mistralai/Mistral-7B-v0.1"  # Use the Mistral model name
-# tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
-# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,  device_map="auto")
-
-# model_name = "google/flan-t5-large"
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
-
-# model_name = "google/flan-t5-xl"
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
-
-# model_name = "EleutherAI/gpt-j-6B"
-# tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-j-6B")
-# model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
-
-# model_name = "EleutherAI/gpt-neo-2.7B"
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map="auto")
 
 if ENBALE_LOCAL_MODEL:
     # Model initialization
-    model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
-    model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
+    # model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
+    # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
     # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
     model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
     # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
@@ -456,7 +430,7 @@ async def generate_response_groq(data: dict):
     )
     
     # Groq API configuration
-    GROQ_API_KEY = "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"
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",

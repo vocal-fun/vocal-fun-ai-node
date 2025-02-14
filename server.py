@@ -9,6 +9,10 @@ from typing import Dict, Optional
 import os
 from datetime import datetime
 from speechdetector import AudioSpeechDetector
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
