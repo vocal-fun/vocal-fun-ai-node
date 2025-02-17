@@ -24,6 +24,7 @@ from inferrvc import RVC
 import sys
 from dotenv import load_dotenv
 import os
+import logging
 
 load_dotenv()
 
@@ -33,6 +34,10 @@ CARTESIA_API_KEY = os.getenv('CARTESIA_API_KEY')
 ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add a global lock for XTTS model
 xtts_lock = asyncio.Lock()
@@ -631,23 +636,27 @@ async def generate_tts_elevenlabs(
 @app.websocket("/stream")
 async def stream_audio(websocket: WebSocket):
     await websocket.accept()
+    session_id = str(uuid.uuid4())[:8]  # Create a short session ID for logging
     
     try:
         data = await websocket.receive_json()
         text = data["text"]
         personality = data["personality"]
         
+        logger.info(f"[{session_id}] Received TTS request for personality: {personality}")
         voice_samples, _, _, _ = get_agent_data(personality)
         
-        # Use the lock to ensure only one XTTS generation happens at a time
+        logger.info(f"[{session_id}] Waiting for TTS lock...")
         async with xtts_lock:
+            logger.info(f"[{session_id}] Acquired TTS lock, starting generation")
+            
             await websocket.send_json({
                 "type": "stream_start",
                 "timestamp": time.time()
             })
             
-            # Generate audio with XTTS
-            chunks = model.inference_stream(
+            # Store the generator object
+            chunks_generator = model.inference_stream(
                 text=text,
                 language="en",
                 gpt_cond_latent=model.get_conditioning_latents(audio_path=voice_samples)[0],
@@ -655,23 +664,31 @@ async def stream_audio(websocket: WebSocket):
                 temperature=0.7
             )
             
-            # Stream the chunks
-            for chunk in chunks:
+            # Process chunks within the lock to ensure complete isolation
+            chunks = []
+            for chunk in chunks_generator:
                 if chunk is not None:
-                    # Convert to bytes and send
-                    audio_bytes = chunk.squeeze().cpu().numpy().tobytes()
-                    await websocket.send_json({
-                        "type": "audio_chunk",
-                        "chunk": base64.b64encode(audio_bytes).decode('utf-8')
-                    })
+                    chunks.append(chunk)
+            
+            logger.info(f"[{session_id}] Generation complete, releasing lock")
+        
+        # Stream the chunks outside the lock since network I/O can be slow
+        logger.info(f"[{session_id}] Streaming chunks to client")
+        for chunk in chunks:
+            audio_bytes = chunk.tobytes()
+            await websocket.send_json({
+                "type": "audio_chunk",
+                "chunk": base64.b64encode(audio_bytes).decode('utf-8')
+            })
         
         await websocket.send_json({
             "type": "stream_end",
             "timestamp": time.time()
         })
+        logger.info(f"[{session_id}] Streaming completed")
         
     except Exception as e:
-        print(f"Error in stream_audio: {e}")
+        logger.error(f"[{session_id}] Error in stream_audio: {e}")
         try:
             await websocket.send_json({
                 "type": "error",
@@ -681,3 +698,4 @@ async def stream_audio(websocket: WebSocket):
             pass
     finally:
         await websocket.close()
+        logger.info(f"[{session_id}] WebSocket closed")
