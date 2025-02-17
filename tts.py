@@ -643,12 +643,12 @@ async def stream_audio(websocket: WebSocket):
         text = data["text"]
         personality = data["personality"]
         
-        logger.info(f"[{session_id}] Received TTS request for personality: {personality}")
+        print(f"[{session_id}] Received TTS request for personality: {personality}")
         voice_samples, _, _, _ = get_agent_data(personality)
         
-        logger.info(f"[{session_id}] Waiting for TTS lock...")
+        print(f"[{session_id}] Waiting for TTS lock...")
         async with xtts_lock:
-            logger.info(f"[{session_id}] Acquired TTS lock, starting generation")
+            print(f"[{session_id}] Acquired TTS lock, starting generation")
             
             await websocket.send_json({
                 "type": "stream_start",
@@ -670,10 +670,10 @@ async def stream_audio(websocket: WebSocket):
                 if chunk is not None:
                     chunks.append(chunk)
             
-            logger.info(f"[{session_id}] Generation complete, releasing lock")
+            print(f"[{session_id}] Generation complete, releasing lock")
         
         # Stream the chunks outside the lock since network I/O can be slow
-        logger.info(f"[{session_id}] Streaming chunks to client")
+        print(f"[{session_id}] Streaming chunks to client")
         for chunk in chunks:
             audio_bytes = chunk.tobytes()
             await websocket.send_json({
@@ -685,10 +685,10 @@ async def stream_audio(websocket: WebSocket):
             "type": "stream_end",
             "timestamp": time.time()
         })
-        logger.info(f"[{session_id}] Streaming completed")
+        print(f"[{session_id}] Streaming completed")
         
     except Exception as e:
-        logger.error(f"[{session_id}] Error in stream_audio: {e}")
+        print(f"[{session_id}] Error in stream_audio: {e}")
         try:
             await websocket.send_json({
                 "type": "error",
@@ -698,4 +698,4 @@ async def stream_audio(websocket: WebSocket):
             pass
     finally:
         await websocket.close()
-        logger.info(f"[{session_id}] WebSocket closed")
+        print(f"[{session_id}] WebSocket closed")
