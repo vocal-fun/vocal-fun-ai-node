@@ -39,6 +39,7 @@ class AudioSession:
         self.agent_name = ""
         self.websocket: Optional[WebSocket] = None
         self.tts_websocket: Optional[aiohttp.ClientWebSocketResponse] = None
+        self.tts_lock = asyncio.Lock()
 
     async def save_audio(self) -> str:
         if not self.audio_chunks:
@@ -74,62 +75,72 @@ class ConnectionManager:
         if session_id in self.active_sessions:
             session = self.active_sessions[session_id]
             if session.tts_websocket:
-                await session.tts_websocket.close()
+                try:
+                    await session.tts_websocket.close()
+                except:
+                    pass
+                session.tts_websocket = None
             del self.active_sessions[session_id]
 
 manager = ConnectionManager()
 
 async def process_text_to_response(session: AudioSession, text: str) -> None:
     print(f"Processing text: {text}")
-    session.is_responding = True
-    try:
-        async with aiohttp.ClientSession() as http_session:
-            # Get chat response
-            async with http_session.post(
-                CHAT_SERVICE_URL,
-                json={"text": text, "session_id": session.session_id, "personality": session.agent_name}
-            ) as response:
-                chat_result = await response.json()
-                chat_response = chat_result['response']
+    async with session.tts_lock:
+        session.is_responding = True
+        try:
+            async with aiohttp.ClientSession() as http_session:
+                # Get chat response
+                async with http_session.post(
+                    CHAT_SERVICE_URL,
+                    json={"text": text, "session_id": session.session_id, "personality": session.agent_name}
+                ) as response:
+                    chat_result = await response.json()
+                    chat_response = chat_result['response']
 
-            #discard existing audio if new text is received
-            if session.tts_websocket:
-                await session.tts_websocket.close()
-                session.tts_websocket = None
+                #discard existing audio if new text is received
+                if session.tts_websocket:
+                    await session.tts_websocket.close()
+                    session.tts_websocket = None
 
-            # Stream TTS response
-            async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
-                session.tts_websocket = ws
-                await ws.send_json({
-                    "text": chat_response,
-                    "personality": session.agent_name
-                })
+                # Stream TTS response
+                async with http_session.ws_connect(TTS_SERVICE_URL) as ws:
+                    session.tts_websocket = ws
+                    await ws.send_json({
+                        "text": chat_response,
+                        "personality": session.agent_name,
+                        "session_id": session.session_id
+                    })
 
-                async for msg in ws:
-                    if msg.type == aiohttp.WSMsgType.TEXT:
-                        data = json.loads(msg.data)
-                        await session.websocket.send_json({
-                            "type": "tts_stream",
-                            "data": data
-                        })
-                        
-                        if data.get("type") == "stream_end":
-                            session.is_responding = False
-                            await session.websocket.send_json({
-                                "type": "tts_stream_end"
-                            })
+                    async for msg in ws:
+                        if msg.type == aiohttp.WSMsgType.TEXT:
+                            data = json.loads(msg.data)
+                            if session.websocket and not session.websocket.client_state.disconnected:
+                                await session.websocket.send_json({
+                                    "type": "tts_stream",
+                                    "data": data,
+                                    "session_id": session.session_id
+                                })
+                            
+                            if data.get("type") == "stream_end":
+                                session.is_responding = False
+                                await session.websocket.send_json({
+                                    "type": "tts_stream_end",
+                                    "session_id": session.session_id
+                                })
+                                break
+                        elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
                             break
-                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
-                        break
 
-    except Exception as e:
-        session.is_responding = False
-        print(f"Error processing text: {e}")
-        if session.websocket:
-            await session.websocket.send_json({
-                "type": "error",
-                "error": str(e)
-            })
+        except Exception as e:
+            session.is_responding = False
+            print(f"Error processing text: {e}")
+            if session.websocket:
+                await session.websocket.send_json({
+                    "type": "error",
+                    "error": str(e),
+                    "session_id": session.session_id
+                })
 
 async def process_audio_to_response(session: AudioSession) -> None:
     print("Processing audio...")
