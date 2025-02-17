@@ -34,6 +34,9 @@ ELEVENLABS_API_KEY = os.getenv('ELEVENLABS_API_KEY')
 CHUNK_SIZE = 1024
 API_BASE = "https://api.elevenlabs.io/v1"
 
+# Add a global lock for XTTS model
+xtts_lock = asyncio.Lock()
+
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
         self.api_key = api_key
@@ -624,3 +627,57 @@ async def generate_tts_elevenlabs(
     except Exception as e:
         print(f"Error in generate_tts_elevenlabs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.websocket("/stream")
+async def stream_audio(websocket: WebSocket):
+    await websocket.accept()
+    
+    try:
+        data = await websocket.receive_json()
+        text = data["text"]
+        personality = data["personality"]
+        
+        voice_samples, _, _, _ = get_agent_data(personality)
+        
+        # Use the lock to ensure only one XTTS generation happens at a time
+        async with xtts_lock:
+            await websocket.send_json({
+                "type": "stream_start",
+                "timestamp": time.time()
+            })
+            
+            # Generate audio with XTTS
+            chunks = model.inference_stream(
+                text=text,
+                language="en",
+                gpt_cond_latent=model.get_conditioning_latents(audio_path=voice_samples)[0],
+                speaker_embedding=model.get_conditioning_latents(audio_path=voice_samples)[1],
+                temperature=0.7
+            )
+            
+            # Stream the chunks
+            for chunk in chunks:
+                if chunk is not None:
+                    # Convert to bytes and send
+                    audio_bytes = chunk.squeeze().cpu().numpy().tobytes()
+                    await websocket.send_json({
+                        "type": "audio_chunk",
+                        "chunk": base64.b64encode(audio_bytes).decode('utf-8')
+                    })
+        
+        await websocket.send_json({
+            "type": "stream_end",
+            "timestamp": time.time()
+        })
+        
+    except Exception as e:
+        print(f"Error in stream_audio: {e}")
+        try:
+            await websocket.send_json({
+                "type": "error",
+                "error": str(e)
+            })
+        except:
+            pass
+    finally:
+        await websocket.close()
