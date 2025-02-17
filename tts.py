@@ -196,45 +196,45 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
-            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
-            speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
+            async with xtts_lock:  # Add lock for computing latents
+                gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
+                speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
-
 
         print("Starting streaming inference...")
         t0 = time.time()
         
-        chunks = model.inference_stream(
-            text,
-            "en",
-            gpt_cond_latent,
-            speaker_embedding,
-            temperature=0.7
-        )
+        # Add lock for the inference
+        async with xtts_lock:
+            chunks = model.inference_stream(
+                text,
+                "en",
+                gpt_cond_latent,
+                speaker_embedding,
+                temperature=0.7
+            )
 
-    
-        chunk_counter = 0
-        for chunk in chunks:
-            if chunk_counter == 0:
-                print(f"Time to first chunk: {time.time() - t0}")
-            
-            # Convert tensor to raw PCM bytes
-            chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
-            chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
-            
-            print('sending chunk: ' + str(chunk_counter))
-            await websocket.send_json({
-                "type": "audio_chunk",
-                "chunk": chunk_base64,
-                "chunk_id": chunk_counter,
-                "format": "pcm_f32le",
-                "sample_rate": 24000,
-                "timestamp": time.time()
-            })
-            chunk_counter += 1
-            await asyncio.sleep(0.01)
-
+            chunk_counter = 0
+            for chunk in chunks:
+                if chunk_counter == 0:
+                    print(f"Time to first chunk: {time.time() - t0}")
+                
+                # Convert tensor to raw PCM bytes
+                chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
+                chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
+                
+                print('sending chunk: ' + str(chunk_counter))
+                await websocket.send_json({
+                    "type": "audio_chunk",
+                    "chunk": chunk_base64,
+                    "chunk_id": chunk_counter,
+                    "format": "pcm_f32le",
+                    "sample_rate": 24000,
+                    "timestamp": time.time()
+                })
+                chunk_counter += 1
+                await asyncio.sleep(0.01)
 
         await websocket.send_json({
             "type": "stream_end",
@@ -521,39 +521,41 @@ async def generate_tts(
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
-            gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
-            speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
+            async with xtts_lock:  # Add lock for computing latents
+                gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
+                speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
         else:
             gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
 
         print("Starting full audio generation...")
         t0 = time.time()
         
-        # Generate the complete audio
-        audio = model.inference(
-            text,
-            "en",
-            gpt_cond_latent,
-            speaker_embedding,
-            temperature=0.7
-        )
+        async with xtts_lock:
+            # Generate the complete audio
+            audio = model.inference(
+                text,
+                "en",
+                gpt_cond_latent,
+                speaker_embedding,
+                temperature=0.7
+            )
 
 
-        # Convert audio tensor to WAV format in memory
-        buffer = io.BytesIO()
-        torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
-        buffer.seek(0)
-        
-        # Convert to base64
-        audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-        
-        print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
-        
-        return JSONResponse({
-            "audio": audio_base64,
-            "format": "pcm_f32le",
-            "sample_rate": 24000
-        })
+            # Convert audio tensor to WAV format in memory
+            buffer = io.BytesIO()
+            torchaudio.save(buffer, torch.tensor(audio["wav"]).unsqueeze(0), 24000, format="wav")
+            buffer.seek(0)
+            
+            # Convert to base64
+            audio_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+            
+            print(f"Audio generation completed in {time.time() - t0:.2f} seconds")
+            
+            return JSONResponse({
+                "audio": audio_base64,
+                "format": "pcm_f32le",
+                "sample_rate": 24000
+            })
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -632,70 +634,3 @@ async def generate_tts_elevenlabs(
     except Exception as e:
         print(f"Error in generate_tts_elevenlabs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.websocket("/stream")
-async def stream_audio(websocket: WebSocket):
-    await websocket.accept()
-    session_id = str(uuid.uuid4())[:8]  # Create a short session ID for logging
-    
-    try:
-        data = await websocket.receive_json()
-        text = data["text"]
-        personality = data["personality"]
-        
-        print(f"[{session_id}] Received TTS request for personality: {personality}")
-        voice_samples, _, _, _ = get_agent_data(personality)
-        
-        print(f"[{session_id}] Waiting for TTS lock...")
-        async with xtts_lock:
-            print(f"[{session_id}] Acquired TTS lock, starting generation")
-            
-            await websocket.send_json({
-                "type": "stream_start",
-                "timestamp": time.time()
-            })
-            
-            # Store the generator object
-            chunks_generator = model.inference_stream(
-                text=text,
-                language="en",
-                gpt_cond_latent=model.get_conditioning_latents(audio_path=voice_samples)[0],
-                speaker_embedding=model.get_conditioning_latents(audio_path=voice_samples)[1],
-                temperature=0.7
-            )
-            
-            # Process chunks within the lock to ensure complete isolation
-            chunks = []
-            for chunk in chunks_generator:
-                if chunk is not None:
-                    chunks.append(chunk)
-            
-            print(f"[{session_id}] Generation complete, releasing lock")
-        
-        # Stream the chunks outside the lock since network I/O can be slow
-        print(f"[{session_id}] Streaming chunks to client")
-        for chunk in chunks:
-            audio_bytes = chunk.tobytes()
-            await websocket.send_json({
-                "type": "audio_chunk",
-                "chunk": base64.b64encode(audio_bytes).decode('utf-8')
-            })
-        
-        await websocket.send_json({
-            "type": "stream_end",
-            "timestamp": time.time()
-        })
-        print(f"[{session_id}] Streaming completed")
-        
-    except Exception as e:
-        print(f"[{session_id}] Error in stream_audio: {e}")
-        try:
-            await websocket.send_json({
-                "type": "error",
-                "error": str(e)
-            })
-        except:
-            pass
-    finally:
-        await websocket.close()
-        print(f"[{session_id}] WebSocket closed")
