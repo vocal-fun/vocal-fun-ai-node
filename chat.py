@@ -141,7 +141,7 @@ conversation_manager = ConversationManager(max_history=1)
 client_selected_personality = {}
 
 def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
-    voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
+    voice_samples, random_system_prompt, _,  _, _ = get_agent_data(personality)
     system_prompt = random_system_prompt
     system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
     system_prompt = system_prompt.replace("{p}", personality)
@@ -214,7 +214,7 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
 
 def format_messages(personality: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
-    voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
+    voice_samples, random_system_prompt, _, _, _ = get_agent_data(personality)
     system_prompt = random_system_prompt
     system_prompt = MAIN_SYSTEM_PROMPT.replace("{p}", personality) + system_prompt
     

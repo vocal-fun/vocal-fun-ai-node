@@ -192,7 +192,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         })
 
         # Load TTS voice
-        voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
+        voice_samples, random_system_prompt, language,  _, _ = get_agent_data(personality)
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
@@ -209,7 +209,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         async with xtts_lock:
             chunks = model.inference_stream(
                 text,
-                "en",
+                language,
                 gpt_cond_latent,
                 speaker_embedding,
                 temperature=0.7
@@ -265,7 +265,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         t0 = time.time()
         session_id = str(uuid.uuid4())
 
-        _, _, voice_id, _ = get_agent_data(personality)
+        _, _, _, voice_id, _ = get_agent_data(personality)
 
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
@@ -393,7 +393,7 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
         })
         
         t0 = time.time()
-        _, _, _, elevenlabs_voice_id = get_agent_data(personality)
+        _, _, _, _, elevenlabs_voice_id = get_agent_data(personality)
         
         chunk_counter = 0
         async for chunk in stream_elevenlabs_audio(elevenlabs_voice_id, text):
@@ -517,7 +517,7 @@ async def generate_tts(
         raise HTTPException(status_code=400, detail="Local model is disabled")
         
     try:
-        voice_samples, random_system_prompt, _, _ = get_agent_data(personality)
+        voice_samples, random_system_prompt, language, _, _ = get_agent_data(personality)
         
         if personality not in speaker_latents_cache:
             print("Computing speaker latents...")
@@ -534,7 +534,7 @@ async def generate_tts(
             # Generate the complete audio
             audio = model.inference(
                 text,
-                "en",
+                language,
                 gpt_cond_latent,
                 speaker_embedding,
                 temperature=0.7
@@ -570,7 +570,7 @@ async def generate_tts_cartesia(
         raise HTTPException(status_code=400, detail="Cartesia API is not configured")
         
     try:
-        _, _, voice_id, _ = get_agent_data(personality)
+        _, _, _,  voice_id, _ = get_agent_data(personality)
 
         # Generate audio using Cartesia's REST API
         response = await cartesia_client.tts.bytes(
@@ -601,7 +601,7 @@ async def generate_tts_elevenlabs(
 ):
     """ElevenLabs endpoint for single audio generation"""
     try:
-        _, _, _, elevenlabs_voice_id = get_agent_data(personality)
+        _, _, _, _, elevenlabs_voice_id = get_agent_data(personality)
 
         url = f"{API_BASE}/text-to-speech/{elevenlabs_voice_id}"
         headers = {

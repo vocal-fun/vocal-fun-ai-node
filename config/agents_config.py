@@ -33,8 +33,10 @@ def get_agent_data(agent_name):
             random_system_prompt = random.choice(system_prompts)
         else:
             random_system_prompt = None
+
+        language = agent.get("language", "en")
         
-        return absolute_voice_samples, random_system_prompt, agent.get("cartesia_voice_id"), agent.get("elevenlabs_voice_id")
+        return absolute_voice_samples, random_system_prompt, language, agent.get("cartesia_voice_id"), agent.get("elevenlabs_voice_id")
     else:
         return None, None
 
