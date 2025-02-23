@@ -214,9 +214,13 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
 
 def format_messages(personality: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
-    voice_samples, random_system_prompt, _, _, _ = get_agent_data(personality)
+    voice_samples, random_system_prompt, language, _, _ = get_agent_data(personality)
     system_prompt = random_system_prompt
     system_prompt = MAIN_SYSTEM_PROMPT.replace("{p}", personality) + system_prompt
+
+    if language == "hi":
+        system_prompt = system_prompt.replace("Please reply in no more than 30 words. ", "")
+        system_prompt = system_prompt + " आपका जवाब हिंदी में होना चाहिए।"
     
     messages = [
         {
