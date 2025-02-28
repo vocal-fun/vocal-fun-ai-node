@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocal Fun</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .connected { background-color: #d4edda; }
+        .disconnected { background-color: #f8d7da; }
+        .speaking { background-color: #cce5ff; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        .mode-selector {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vocal Fun</h1>
+
+    <div id="connectionStatus" class="status disconnected">Disconnected</div>
+    <div id="speechStatus" class="status">Not speaking</div>
+
+    <div class="mode-selector">
+        <button id="connectBtn">Connect</button>
+        <button id="startSpeakingBtn" disabled>Start Speaking</button>
+        <button id="stopSpeakingBtn" disabled>Stop Speaking</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        class AudioStreamPlayer {
+            constructor() {
+                this.audioContext = null;
+                this.sourceNode = null;
+                this.audioQueue = [];
+                this.isPlaying = false;
+                this.onStartCallback = null;
+                this.onEndCallback = null;
+                this.initializeAudioContext();
+            }
+
+            initializeAudioContext() {
+                if (typeof window !== 'undefined') {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        this.audioContext = new AudioContextClass({ sampleRate: 24000 }); // Match server sample rate
+                    } else {
+                        console.error('Web Audio API not supported');
+                    }
+                }
+            }
+
+            setCallbacks(onStart, onEnd) {
+                this.onStartCallback = onStart;
+                this.onEndCallback = onEnd;
+            }
+
+            async addChunk(base64Audio) {
+                if (!this.audioContext) {
+                    this.initializeAudioContext();
+                    if (!this.audioContext) {
+                        console.error('AudioContext could not be initialized');
+                        return;
+                    }
+                }
+
+                try {
+                    // Decode base64 to binary
+                    const binaryString = atob(base64Audio);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+
+                    // Convert to Float32Array (server sends pcm_f32le)
+                    const floatData = new Float32Array(bytes.buffer);
+
+                    // Create audio buffer
+                    const audioBuffer = this.audioContext.createBuffer(
+                        1,  // mono
+                        floatData.length,
+                        this.audioContext.sampleRate
+                    );
+
+                    // Copy the PCM data to the audio buffer
+                    audioBuffer.copyToChannel(floatData, 0);
+
+                    // Add to queue
+                    this.audioQueue.push(audioBuffer);
+
+                    // Start playing if not already playing
+                    if (!this.isPlaying) {
+                        this.playNextChunk();
+                    }
+
+                } catch (error) {
+                    console.error('Error processing audio chunk:', error);
+                }
+            }
+
+            async playNextChunk() {
+                if (!this.audioContext || this.audioQueue.length === 0 || this.isPlaying) {
+                    return;
+                }
+
+                const audioBuffer = this.audioQueue.shift();
+                if (!audioBuffer) return;
+
+                this.isPlaying = true;
+                this.sourceNode = this.audioContext.createBufferSource();
+                this.sourceNode.buffer = audioBuffer;
+                this.sourceNode.connect(this.audioContext.destination);
+
+                // Handle the end of this chunk
+                this.sourceNode.onended = () => {
+                    this.isPlaying = false;
+                    this.sourceNode.disconnect();
+                    this.sourceNode = null;
+
+                    // Play next chunk if available
+                    if (this.audioQueue.length > 0) {
+                        this.playNextChunk();
+                    } else if (this.onEndCallback) {
+                        this.onEndCallback();
+                    }
+                };
+
+                // Call start callback if this is the first chunk
+                if (this.onStartCallback && this.audioQueue.length === 0) {
+                    this.onStartCallback();
+                }
+
+                try {
+                    this.sourceNode.start(0);
+                } catch (error) {
+                    console.error('Error starting audio playback:', error);
+                    this.isPlaying = false;
+                    if (this.onEndCallback) {
+                        this.onEndCallback();
+                    }
+                }
+            }
+
+            async stop() {
+                try {
+                    if (this.sourceNode) {
+                        this.sourceNode.stop();
+                        this.sourceNode.disconnect();
+                        this.sourceNode = null;
+                    }
+                    this.audioQueue = [];
+                    this.isPlaying = false;
+
+                    if (this.audioContext?.state === 'running') {
+                        await this.audioContext.suspend();
+                    }
+                } catch (error) {
+                    console.error('Error stopping audio:', error);
+                }
+            }
+
+            async resume() {
+                try {
+                    if (this.audioContext?.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+                } catch (error) {
+                    console.error('Error resuming audio context:', error);
+                }
+            }
+
+            async cleanup() {
+                try {
+                    await this.stop();
+                    if (this.audioContext) {
+                        await this.audioContext.close();
+                        this.audioContext = null;
+                    }
+                } catch (error) {
+                    console.error('Error cleaning up audio player:', error);
+                }
+            }
+        }
+
+        let socket;
+        let mediaRecorder;
+        let audioContext;
+        let isConnected = false;
+        let isRecording = false;
+        let audioPlayer;
+
+        // DOM elements
+        const connectBtn = document.getElementById('connectBtn');
+        const startSpeakingBtn = document.getElementById('startSpeakingBtn');
+        const stopSpeakingBtn = document.getElementById('stopSpeakingBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const speechStatus = document.getElementById('speechStatus');
+        const log = document.getElementById('log');
+
+        function addLog(message) {
+            const line = document.createElement('div');
+            line.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function connect() {
+            socket = io('http://localhost:8000', {
+                auth: {
+                    token: '',
+                    sessionId: ''
+                }
+            });
+
+            socket.on('connect', () => {
+                isConnected = true;
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.className = 'status connected';
+                startSpeakingBtn.disabled = false;
+                connectBtn.disabled = true;
+                addLog('Connected to server');
+            });
+
+            socket.on('call_ready', () => {
+                addLog('Call ready - you can start speaking');
+            });
+
+            socket.on('disconnect', () => {
+                isConnected = false;
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.className = 'status disconnected';
+                startSpeakingBtn.disabled = true;
+                stopSpeakingBtn.disabled = true;
+                connectBtn.disabled = false;
+                stopRecording();
+                addLog('Disconnected from server');
+                if (audioPlayer) {
+                    audioPlayer.cleanup();
+                }
+            });
+
+            socket.on('audio_stream', handleTTSStream);
+            socket.on('audio_stream_end', () => {
+                addLog('Audio stream ended');
+            });
+            socket.on('ai_disconnected', () => {
+                addLog('AI server disconnected');
+            });
+            socket.on('error', (error) => {
+                addLog('Error: ' + error.message);
+            });
+        }
+
+        async function initAudio() {
+            audioPlayer = new AudioStreamPlayer();
+            audioPlayer.setCallbacks(
+                () => addLog('Started playing audio response'),
+                () => addLog('Finished playing audio response')
+            );
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        channelCount: 1,          // mono
+                        sampleRate: 16000,        // 16 kHz
+                        sampleSize: 16,           // 16-bit
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                const audioContext = new AudioContext({ sampleRate: 16000 });
+                const source = audioContext.createMediaStreamSource(stream);
+                const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+                source.connect(processor);
+                processor.connect(audioContext.destination);
+
+                processor.onaudioprocess = (e) => {
+                    if (socket && socket.connected) {
+                        const audioData = e.inputBuffer.getChannelData(0);
+                        // Convert Float32Array to Int16Array
+                        const int16Data = new Int16Array(audioData.length);
+                        for (let i = 0; i < audioData.length; i++) {
+                            const s = Math.max(-1, Math.min(1, audioData[i]));
+                            int16Data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                        }
+                        socket.emit('audio_data', int16Data.buffer);
+                    }
+                };
+
+                isRecording = true;
+                startSpeakingBtn.disabled = true;
+                stopSpeakingBtn.disabled = false;
+                speechStatus.textContent = 'Speaking';
+                speechStatus.className = 'status speaking';
+
+                addLog('Started recording');
+
+                // Store for cleanup
+                mediaStream = stream;
+                audioProcessor = processor;
+                audioContextObj = audioContext;
+
+            } catch (error) {
+                addLog('Error starting recording: ' + error.message);
+            }
+        }
+
+        function stopRecording() {
+            if (isRecording) {
+                // Cleanup audio context
+                if (audioProcessor) {
+                    audioProcessor.disconnect();
+                    audioProcessor = null;
+                }
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                if (audioContextObj) {
+                    audioContextObj.close();
+                    audioContextObj = null;
+                }
+
+                isRecording = false;
+                startSpeakingBtn.disabled = false;
+                stopSpeakingBtn.disabled = true;
+                speechStatus.textContent = 'Not speaking';
+                speechStatus.className = 'status';
+                addLog('Stopped recording');
+            }
+        }
+
+        async function handleTTSStream(data) {
+            if (data.type === 'audio_chunk' && data.chunk) {
+                try {
+                    // Check if the format matches what we expect
+                    // if (data.format !== 'pcm_f32le') {
+                    //     throw new Error(`Unexpected audio format: ${data.format}`);
+                    // }
+
+                    // // Check if the sample rate matches our audio context
+                    // if (data.sample_rate !== audioPlayer.audioContext.sampleRate) {
+                    //     console.warn(`Sample rate mismatch: server=${data.sample_rate}, client=${audioPlayer.audioContext.sampleRate}`);
+                    // }
+
+                    await audioPlayer.addChunk(data.chunk);
+                } catch (error) {
+                    addLog('Error handling audio chunk: ' + error.message);
+                }
+            }
+        }
+
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        startSpeakingBtn.addEventListener('click', startRecording);
+        stopSpeakingBtn.addEventListener('click', stopRecording);
+
+        // Initialize audio on page load
+        initAudio().catch(error => addLog('Error initializing audio: ' + error.message));
+    </script>
+</body>
+</html>
