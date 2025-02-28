@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vocal Fun</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -223,6 +222,7 @@
         let isConnected = false;
         let isRecording = false;
         let audioPlayer;
+        let sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
 
         // DOM elements
         const connectBtn = document.getElementById('connectBtn');
@@ -240,27 +240,25 @@
         }
 
         function connect() {
-            socket = io('http://localhost:8000', {
-                auth: {
-                    token: '',
-                    sessionId: ''
-                }
-            });
+            socket = new WebSocket(`ws://localhost:8000/ws/${sessionId}`);
 
-            socket.on('connect', () => {
+            socket.onopen = () => {
                 isConnected = true;
                 connectionStatus.textContent = 'Connected';
                 connectionStatus.className = 'status connected';
                 startSpeakingBtn.disabled = false;
                 connectBtn.disabled = true;
                 addLog('Connected to server');
-            });
 
-            socket.on('call_ready', () => {
-                addLog('Call ready - you can start speaking');
-            });
+                // Send initial configuration
+                socket.send(JSON.stringify({
+                    agentId: "679e1ec26707af8a10eeff09",
+                    userId: "1234",
+                    agentName: "Donald Trump"
+                }));
+            };
 
-            socket.on('disconnect', () => {
+            socket.onclose = () => {
                 isConnected = false;
                 connectionStatus.textContent = 'Disconnected';
                 connectionStatus.className = 'status disconnected';
@@ -272,18 +270,22 @@
                 if (audioPlayer) {
                     audioPlayer.cleanup();
                 }
-            });
+            };
 
-            socket.on('audio_stream', handleTTSStream);
-            socket.on('audio_stream_end', () => {
-                addLog('Audio stream ended');
-            });
-            socket.on('ai_disconnected', () => {
-                addLog('AI server disconnected');
-            });
-            socket.on('error', (error) => {
-                addLog('Error: ' + error.message);
-            });
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'tts_stream') {
+                    handleTTSStream(data.data);
+                } else if (data.type === 'tts_stream_end') {
+                    addLog('Audio stream ended');
+                } else if (data.type === 'error') {
+                    addLog('Error: ' + data.error);
+                }
+            };
+
+            socket.onerror = (error) => {
+                addLog('WebSocket error: ' + error.message);
+            };
         }
 
         async function initAudio() {
@@ -299,9 +301,9 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
-                        channelCount: 1,          // mono
-                        sampleRate: 16000,        // 16 kHz
-                        sampleSize: 16,           // 16-bit
+                        channelCount: 1,
+                        sampleRate: 16000,
+                        sampleSize: 16,
                         echoCancellation: true,
                         noiseSuppression: true,
                         autoGainControl: true
@@ -316,15 +318,14 @@
                 processor.connect(audioContext.destination);
 
                 processor.onaudioprocess = (e) => {
-                    if (socket && socket.connected) {
+                    if (socket && socket.readyState === WebSocket.OPEN) {
                         const audioData = e.inputBuffer.getChannelData(0);
-                        // Convert Float32Array to Int16Array
                         const int16Data = new Int16Array(audioData.length);
                         for (let i = 0; i < audioData.length; i++) {
                             const s = Math.max(-1, Math.min(1, audioData[i]));
                             int16Data[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
                         }
-                        socket.emit('audio_data', int16Data.buffer);
+                        socket.send(int16Data.buffer);
                     }
                 };
 
@@ -374,16 +375,6 @@
         async function handleTTSStream(data) {
             if (data.type === 'audio_chunk' && data.chunk) {
                 try {
-                    // Check if the format matches what we expect
-                    // if (data.format !== 'pcm_f32le') {
-                    //     throw new Error(`Unexpected audio format: ${data.format}`);
-                    // }
-
-                    // // Check if the sample rate matches our audio context
-                    // if (data.sample_rate !== audioPlayer.audioContext.sampleRate) {
-                    //     console.warn(`Sample rate mismatch: server=${data.sample_rate}, client=${audioPlayer.audioContext.sampleRate}`);
-                    // }
-
                     await audioPlayer.addChunk(data.chunk);
                 } catch (error) {
                     addLog('Error handling audio chunk: ' + error.message);

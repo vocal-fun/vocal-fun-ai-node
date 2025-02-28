@@ -5,3 +5,4 @@ TTS/
 .env
 *.DS_Store
 models/
+audio_files/
