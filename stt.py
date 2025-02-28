@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import time
+import torch
 
 app = FastAPI()
 
@@ -13,11 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 # Initialize Whisper model
 print("Loading Whisper model...")
 model = WhisperModel(
     "small",
-    device="cuda",
+    device=device,
     compute_type="int8",
     download_root="./models"
 )

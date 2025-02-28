@@ -73,7 +73,7 @@ Client                    Server                  Services
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.11.11
 - CUDA-compatible GPU
 - Required models:
   - Whisper (small.en)

@@ -6,21 +6,16 @@ python-dotenv
 ffmpeg-python==0.2.0
 torch
 transformers
-accelerate
-optimum
 huggingface_hub
-sentencepiece
 bitsandbytes
-prompt-engine-py
-wheel
 python-multipart
 faster-whisper
 groq
 aiohttp
 cartesia
-# elevenlabs==0.1.0
+elevenlabs
 # pydantic<2.0.0
 websockets>=12.0
 # fastapi>=0.100.0
-rvc
-requests
+TTS
+deepspeed

@@ -20,7 +20,6 @@ import aiohttp
 from typing import AsyncGenerator
 from pathlib import Path
 from scipy.io import wavfile
-from inferrvc import RVC
 import sys
 from dotenv import load_dotenv
 import os
@@ -41,6 +40,8 @@ logger = logging.getLogger(__name__)
 
 # Add a global lock for XTTS model
 xtts_lock = asyncio.Lock()
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 class CartesiaWebSocketManager:
     def __init__(self, api_key: str, pool_size: int = 1):
@@ -155,8 +156,9 @@ if ENABLE_LOCAL_MODEL:
     config = XttsConfig()
     config.load_json(xttsPath + "/config.json")
     model = Xtts.init_from_config(config)
-    model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=True)
-    model.cuda()
+    model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=device == "cuda")
+    if device == "cuda":
+        model.cuda()
 
     # Cache for voice lines and speaker latents
     voice_lines_cached = {}
@@ -179,12 +181,13 @@ cartesia_bytes_format = {
 @app.on_event("startup")
 async def startup_event():
     """Initialize the WebSocket pool on app startup"""
-    await ws_manager.initialize_pool()
-    # Start the pool maintenance task
-    asyncio.create_task(ws_manager.maintain_pool())
+    if not ENABLE_LOCAL_MODEL:
+        await ws_manager.initialize_pool()
+        # Start the pool maintenance task
+        asyncio.create_task(ws_manager.maintain_pool())
 
 async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
-    """TTS streaming implementation with RVC voice conversion and raw PCM output"""
+    """TTS streaming implementation with voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
             "type": "stream_start",
