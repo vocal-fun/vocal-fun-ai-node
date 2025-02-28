@@ -216,7 +216,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     speech_detector = AudioSpeechDetector(
         sample_rate=16000,
         energy_threshold=0.1,  # Adjust based on your audio environment
-        min_speech_duration=0.4,  # Minimum speech to process
+        min_speech_duration=0.2,  # Minimum speech to process
         max_silence_duration=0.5,  # Pause length to trigger processing
         max_recording_duration=10.0,
         debug=False  # Enable detailed logging

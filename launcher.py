@@ -183,7 +183,7 @@ def main():
     parser.add_argument(
         '--services', 
         nargs='*', 
-        choices=['server', 'chat', 'tts', 'all'],
+        choices=['server', 'chat', 'tts', 'stt','all'],
         default=['all'],
         help='Specify services to start (default: all)'
     )
