@@ -19,3 +19,4 @@ websockets>=12.0
 # fastapi>=0.100.0
 TTS
 deepspeed
+accelerate
