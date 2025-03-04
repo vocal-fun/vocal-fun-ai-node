@@ -76,10 +76,10 @@ if ENABLE_LOCAL_MODEL:
     # Initialize vLLM model
     llm = LLM(
         model=model_name,
-        max_num_seqs=256,
-        max_model_len=4096,
+        max_num_seqs=16,
+        max_model_len=256,
         tensor_parallel_size=1,  # Adjust based on your GPU setup
-        gpu_memory_utilization=0.9,
+        gpu_memory_utilization=1.0,
         dtype="float16",
     )
 
