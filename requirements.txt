@@ -17,6 +17,7 @@ elevenlabs
 # pydantic<2.0.0
 websockets>=12.0
 # fastapi>=0.100.0
-TTS
+coqui-tts
 deepspeed
 accelerate
+auralis

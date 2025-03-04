@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import time
 import torch
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -13,6 +17,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from huggingface_hub import login
+login(token=os.getenv('HUGGINGFACE_API_KEY'))
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -39,7 +46,7 @@ async def transcribe_audio(audio_file: UploadFile = File(...)):
         # Transcribe audio
         segments, info = model.transcribe(
             temp_path,
-            beam_size=1
+            beam_size=5
         )
         
         transcribed_text = " ".join([segment.text for segment in segments])

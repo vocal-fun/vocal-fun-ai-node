@@ -26,7 +26,7 @@ app.add_middleware(
 
 # Service URLs
 STT_SERVICE_URL = "http://localhost:8001/transcribe"
-CHAT_SERVICE_URL = "http://localhost:8002/chat/groq"
+CHAT_SERVICE_URL = "http://localhost:8002/chat"
 TTS_SERVICE_URL = "ws://localhost:8003/tts/stream"
 
 class AudioSession:

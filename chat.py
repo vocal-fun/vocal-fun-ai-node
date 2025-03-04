@@ -1,11 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteriaList, StoppingCriteria, BitsAndBytesConfig
+from vllm import LLM, SamplingParams
 import random
 from typing import Dict, List
 from collections import defaultdict
-import bitsandbytes as bnb
 import time
 import re
 from dataclasses import dataclass
@@ -14,6 +13,7 @@ import asyncio
 import aiohttp
 import deepspeed
 from config.agents_config import get_agent_data
+from vllm.entrypoints.chat_utils import load_chat_template
 import re
 from dotenv import load_dotenv
 import os
@@ -62,80 +62,38 @@ class ConversationManager:
     def clear_history(self, session_id: str):
         self.history[session_id] = []
 
-# Custom stopping criteria for chat markers
-class ChatStoppingCriteria(StoppingCriteria):
-    def __init__(self, tokenizer, stops=None):
-        super().__init__()
-        self.tokenizer = tokenizer
-        self.stops = stops or ["User:", "USER:", "Human:", "HUMAN:"]
-    
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        last_tokens = input_ids[0, -10:].cpu()
-        decoded = self.tokenizer.decode(last_tokens)
-        return any(stop in decoded for stop in self.stops)
-
 # System prompts and configurations
 MAIN_SYSTEM_PROMPT = "Please reply in no more than 30 words. "
 
 INITIAL_VOICE_LINES = {}
 
-ENBALE_LOCAL_MODEL = False
+ENABLE_LOCAL_MODEL = True
 
-if ENBALE_LOCAL_MODEL:
-    # Model initialization
-    # model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
-    # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
-    # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-    model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
-    # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
-
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-
-    # DeepSpeed inference config
-    ds_config = {
-        "tensor_parallel": {"tp_size": 1},
-        "dtype": "fp16",
-        "replace_with_kernel_inject": True,
-        "replace_method": "auto"
-    }
-
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True
+if ENABLE_LOCAL_MODEL:
+    # Model initialization with vLLM
+    model_name = "meta-llama/Llama-3.2-3B-Instruct"
+    
+    # Initialize vLLM model
+    llm = LLM(
+        model=model_name,
+        max_num_seqs=256,
+        max_model_len=4096,
+        tensor_parallel_size=1,  # Adjust based on your GPU setup
+        gpu_memory_utilization=0.9,
+        dtype="float16",
     )
 
-    # Initialize model with DeepSpeed inference
-    model = AutoModelForCausalLM.from_pretrained(model_name,
-                                                torch_dtype=torch.float16, 
-                                                # quantization_config=bnb_config,
-                                                device_map="auto")
-    
-    stopping_criteria = StoppingCriteriaList([ChatStoppingCriteria(tokenizer)])
+    # Define sampling parameters
+    sampling_params = SamplingParams(
+        temperature=0.7,
+        top_p=0.9,
+        top_k=50,
+        max_tokens=40,
+        presence_penalty=0.0,
+        frequency_penalty=1.2,
+    )
 
-
-# model = deepspeed.init_inference(
-#     model,
-#     config=ds_config
-# )
-
-# Load model with optimizations
-# model = AutoModelForCausalLM.from_pretrained(
-#     model_name,
-#     device_map="auto",
-#     quantization_config=BitsAndBytesConfig(
-#         load_in_4bit=True,
-#         bnb_4bit_compute_dtype=torch.float16,
-#         bnb_4bit_quant_type="nf4",
-#         bnb_4bit_use_double_quant=True,
-#     )
-# )
-
-# # Apply torch compile
-# model = torch.compile(model)
-
-# Initialize conversation manager and stopping criteria
+# Initialize conversation manager
 conversation_manager = ConversationManager(max_history=1)
 
 client_selected_personality = {}
@@ -279,12 +237,12 @@ async def generate_response(data: dict):
 
     history = conversation_manager.get_history(session_id)
 
-    if history:
-        text = history[0]["assistant"]
-    else:
-        voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
-        text = random.choice(voice_lines)
-        conversation_manager.add_conversation(session_id, "Hello", text)
+    # if history:
+    #     text = history[0]["assistant"]
+    # else:
+    #     voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
+    #     text = random.choice(voice_lines)
+    #     conversation_manager.add_conversation(session_id, "Hello", text)
         
     transcript = user_message
     print(f"Client {session_id} TRANSCRIPT {transcript}")
@@ -294,43 +252,43 @@ async def generate_response(data: dict):
     text = ""
 
     while retry_count < max_retries and not text:
-        # Tokenization time
-        token_start = time.time()
-        formatted_input = format_conversation(
+        # Format input
+        messages = format_messages(
             personality,
-            conversation_manager.get_history(session_id),
-            transcript
+            history,
+            user_message
         )
-        inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
-        print(f"Tokenization time: {(time.time() - token_start) * 1000:.2f}ms")
 
         # Generation time
         gen_start = time.time()
-        outputs = model.generate(
-            inputs["input_ids"],
-            max_new_tokens=40,
-            temperature=0.7 + (retry_count * 0.1),  # Gradually increase temperature on retries
+        
+        # Update sampling parameters with retry-specific temperature
+        current_sampling_params = SamplingParams(
+            temperature=0.7 + (retry_count * 0.1),
             top_p=0.9,
             top_k=50,
-            repetition_penalty=1.2,
-            no_repeat_ngram_size=3,
-            use_cache=True,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-            stopping_criteria=stopping_criteria,
-            output_scores=False
+            max_tokens=40,
+            presence_penalty=0.0,
+            frequency_penalty=1.2,
         )
+        
+        custom_template = load_chat_template(chat_template="tool_chat_template_llama3.2_json.jinja")
+
+        # Generate with vLLM
+        outputs = llm.chat(messages, current_sampling_params)
         print(f"Generation time: {(time.time() - gen_start) * 1000:.2f}ms")
 
         # Post-processing time
         post_start = time.time()
-        full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        full_response = outputs[0].outputs[0].text
         print(f"Full response (attempt {retry_count + 1}): {full_response}")
         
-        text = extract_assistant_response2(full_response, transcript, personality)
-        text = re.sub(r'^.*?:', '', text).strip() if text else ""
-        text = check_uncensored(text)
-        text = remove_emotions(text)
+        # text = extract_assistant_response2(full_response, transcript, personality)
+        # text = re.sub(r'^.*?:', '', text).strip() if text else ""
+        # text = check_uncensored(text)
+        # text = remove_emotions(text)
+
+        text = full_response
         
         if not text:
             print(f"Empty response on attempt {retry_count + 1}, retrying...")
