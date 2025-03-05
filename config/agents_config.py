@@ -44,6 +44,9 @@ class AgentConfigManager:
         if not url:
             return None
             
+        # Ensure voice samples directory exists
+        os.makedirs(self.voice_samples_dir, exist_ok=True)
+        
         final_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
         
         # Check if file already exists
@@ -53,7 +56,7 @@ class AgentConfigManager:
         
         try:
             # Create a temporary file to store the downloaded audio
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
                         if response.status == 200:
@@ -75,7 +78,8 @@ class AgentConfigManager:
                                 return None
                             finally:
                                 # Clean up temporary file
-                                os.unlink(temp_file.name)
+                                if os.path.exists(temp_file.name):
+                                    os.unlink(temp_file.name)
         except Exception as e:
             print(f"Error downloading voice sample: {e}")
             return None
