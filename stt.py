@@ -20,7 +20,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # Initialize Whisper model
 print("Loading Whisper model...")
 model = WhisperModel(
-    "small",
+    "medium",
     device="auto",
     compute_type="int8",
     download_root="./models"
@@ -55,7 +55,7 @@ async def transcribe_audio(
         segments, info = model.transcribe(
             temp_path,
             beam_size=5,
-            language=language
+            # language=language
         )
         
         transcribed_text = " ".join([segment.text for segment in segments])
