@@ -73,6 +73,7 @@ class AgentConfigManager:
             return [], None, "en", None, None
             
         config = self.agent_configs[config_id]
+        print(f"Agent config: {config}")
         
         # Update access time if we have a voice sample
         if "local_voice_sample" in config:
