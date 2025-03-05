@@ -6,6 +6,8 @@ import asyncio
 from collections import OrderedDict
 from typing import Dict, Optional, Tuple
 import time
+from pydub import AudioSegment
+import tempfile
 
 class AgentConfigManager:
     def __init__(self):
@@ -13,6 +15,7 @@ class AgentConfigManager:
         self.configs_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "active_configs.json")
         self.voice_sample_access_times: OrderedDict[str, float] = OrderedDict()
         self.max_samples = 100
+        self.max_audio_duration = 15000  # 15 seconds in milliseconds
         os.makedirs(self.voice_samples_dir, exist_ok=True)
         self._load_configs()
 
@@ -37,25 +40,42 @@ class AgentConfigManager:
             print(f"Error saving configs: {e}")
 
     async def download_voice_sample(self, url: str, config_id: str) -> Optional[str]:
-        """Download voice sample and return local file path"""
+        """Download voice sample, convert to wav, limit duration and return local file path"""
         if not url:
             return None
             
-        file_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
+        final_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
         
         # Check if file already exists
-        if os.path.exists(file_path):
+        if os.path.exists(final_path):
             print(f"Voice sample already exists for config_id: {config_id}")
-            return file_path
+            return final_path
         
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        with open(file_path, 'wb') as f:
-                            f.write(await response.read())
-                        print(f"Downloaded new voice sample for config_id: {config_id}")
-                        return file_path
+            # Create a temporary file to store the downloaded audio
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            temp_file.write(await response.read())
+                            temp_file.flush()
+                            
+                            # Convert to wav and limit duration
+                            try:
+                                audio = AudioSegment.from_file(temp_file.name)
+                                # Limit duration to 15 seconds
+                                if len(audio) > self.max_audio_duration:
+                                    audio = audio[:self.max_audio_duration]
+                                # Export as wav
+                                audio.export(final_path, format='wav')
+                                print(f"Downloaded and converted voice sample for config_id: {config_id}")
+                                return final_path
+                            except Exception as e:
+                                print(f"Error converting audio: {e}")
+                                return None
+                            finally:
+                                # Clean up temporary file
+                                os.unlink(temp_file.name)
         except Exception as e:
             print(f"Error downloading voice sample: {e}")
             return None
