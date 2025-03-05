@@ -13,7 +13,7 @@ from typing import Optional, Dict, List
 import asyncio
 import aiohttp
 import deepspeed
-from config.agents_config import get_agent_data
+from config.agents_config import agent_manager
 import re
 from dotenv import load_dotenv
 import os
@@ -77,16 +77,14 @@ class ChatStoppingCriteria(StoppingCriteria):
 # System prompts and configurations
 MAIN_SYSTEM_PROMPT = "Please reply in no more than 30 words. "
 
-INITIAL_VOICE_LINES = {}
-
 ENBALE_LOCAL_MODEL = False
 
 if ENBALE_LOCAL_MODEL:
     # Model initialization
     # model_name = "cognitivecomputations/WizardLM-7B-Uncensored"
-    # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
+    model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-1B"
     # model_name = "cognitivecomputations/Dolphin3.0-Llama3.2-3B"
-    model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
+    # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-3b"
     # model_name = "cognitivecomputations/Dolphin3.0-Qwen2.5-1.5B"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
@@ -140,11 +138,11 @@ conversation_manager = ConversationManager(max_history=1)
 
 client_selected_personality = {}
 
-def format_conversation(personality: str, conversation_history: list, current_message: str) -> str:
-    voice_samples, random_system_prompt, _,  _, _ = get_agent_data(personality)
-    system_prompt = random_system_prompt
+def format_conversation(config_id: str, conversation_history: list, current_message: str) -> str:
+    voice_samples, system_prompt, _, _, _ = agent_manager.get_agent_config(config_id)
+    agent_name = agent_manager.get_agent_name(config_id)
+    print(system_prompt)
     system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
-    system_prompt = system_prompt.replace("{p}", personality)
     
     formatted_text = [
         f"### System:\n{system_prompt}\n",
@@ -154,17 +152,17 @@ def format_conversation(personality: str, conversation_history: list, current_me
     for msg in conversation_history[-2:]:
         formatted_text.extend([
             f"User: {msg['user']}",
-            f"{personality}: {msg['assistant']}\n"
+            f"{agent_name}: {msg['assistant']}\n"
         ])
     
     formatted_text.extend([
         f"User: {current_message}",
-        f"{personality}: "
+        f"{agent_name}: "
     ])
     
     return "\n".join(formatted_text)
 
-def extract_assistant_response2(conversation, prompt, personality):
+def extract_assistant_response2(conversation, prompt, agent_name):
     lines = conversation.split('\n')
     
     for i, line in enumerate(lines):
@@ -172,13 +170,13 @@ def extract_assistant_response2(conversation, prompt, personality):
             for j in range(i + 1, len(lines)):
                 current_line = lines[j].strip()
                 
-                if current_line.startswith(f"{personality}:"):
-                    response = current_line.replace(f"{personality}:", "").strip()
+                if current_line.startswith(f"{agent_name}:"):
+                    response = current_line.replace(f"{agent_name}:", "").strip()
                     if not response and j + 1 < len(lines):
                         response = lines[j + 1].strip()
                     return response
                 
-                if j > 0 and lines[j - 1].strip() == f"{personality}:":
+                if j > 0 and lines[j - 1].strip() == f"{agent_name}:":
                     return current_line.strip()
     
     return ""
@@ -212,11 +210,10 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
         print(f"Error extracting response: {e}")
         return full_response.strip()
 
-def format_messages(personality: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
+def format_messages(config_id: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
-    voice_samples, random_system_prompt, language, _, _ = get_agent_data(personality)
-    system_prompt = random_system_prompt
-    system_prompt = MAIN_SYSTEM_PROMPT.replace("{p}", personality) + system_prompt
+    voice_samples, system_prompt, language, _, _ = agent_manager.get_agent_config(config_id)
+    system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
 
     if language == "hi":
         system_prompt = system_prompt.replace("Please reply in no more than 30 words. ", "")
@@ -230,13 +227,12 @@ def format_messages(personality: str, conversation_history: list, current_messag
     ]
     
     # Add conversation history
-    for msg in conversation_history[-2:]:  # Keep last 2 messages
+    for msg in conversation_history[-2:]:
         messages.extend([
             {"role": "user", "content": msg["user"]},
             {"role": "assistant", "content": msg["assistant"]}
         ])
     
-    # Add current message
     messages.append({"role": "user", "content": current_message})
     
     return messages
@@ -273,19 +269,13 @@ async def generate_response(data: dict):
     
     session_id = data["session_id"]
     user_message = data["text"]
-    personality = data.get("personality", "default")
+    config_id = data.get("config_id", "default")
+    agent_name = agent_manager.get_agent_name(config_id)
 
-    print(f"Client {session_id} INPUT {user_message} PERSONALITY {personality}")
+    print(f"Client {session_id} INPUT {user_message} CONFIG ID {config_id}")
 
     history = conversation_manager.get_history(session_id)
 
-    if history:
-        text = history[0]["assistant"]
-    else:
-        voice_lines = INITIAL_VOICE_LINES.get(personality, ["Hello there!"])
-        text = random.choice(voice_lines)
-        conversation_manager.add_conversation(session_id, "Hello", text)
-        
     transcript = user_message
     print(f"Client {session_id} TRANSCRIPT {transcript}")
     
@@ -297,8 +287,8 @@ async def generate_response(data: dict):
         # Tokenization time
         token_start = time.time()
         formatted_input = format_conversation(
-            personality,
-            conversation_manager.get_history(session_id),
+            config_id,
+            history,
             transcript
         )
         inputs = tokenizer(formatted_input, return_tensors="pt").to(device)
@@ -327,7 +317,7 @@ async def generate_response(data: dict):
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(f"Full response (attempt {retry_count + 1}): {full_response}")
         
-        text = extract_assistant_response2(full_response, transcript, personality)
+        text = extract_assistant_response2(full_response, transcript, agent_name)
         text = re.sub(r'^.*?:', '', text).strip() if text else ""
         text = check_uncensored(text)
         text = remove_emotions(text)
@@ -356,15 +346,15 @@ async def generate_response(data: dict):
     return {"response": text}
 
 @app.post("/chat/groq")
-async def generate_response_groq(data: dict):
-    start_time = time.time()
+async def chat_endpoint(request: dict):
+    user_text = request.get("text", "")
+    session_id = request.get("session_id", "")
+    config_id = request.get("config_id", "")  # Change from personality/agent_name
     
-    # Extract parameters from request
-    session_id = data["session_id"]
-    user_message = data["text"]
-    personality = data.get("personality", "default")
+    # Get the config using config_id
+    voice_samples, system_prompt, language, cartesia_id, elevenlabs_id = agent_manager.get_agent_config(config_id)
     
-    print(f"Client {session_id} INPUT {user_message} PERSONALITY {personality}")
+    print(f"Client {session_id} INPUT {text} PERSONALITY {config_id}")
     
     # Get conversation history
     history = conversation_manager.get_history(session_id)
@@ -377,9 +367,9 @@ async def generate_response_groq(data: dict):
     
     # Format messages for Groq API
     messages = format_messages(
-        personality,
+        config_id,
         history,
-        user_message
+        user_text
     )
     
     # Groq API configuration
@@ -398,6 +388,8 @@ async def generate_response_groq(data: dict):
     # model = "llama3-8b-8192"
 
     print(messages)
+    
+    start_time = time.time()
 
     async with aiohttp.ClientSession() as session:
         try:
@@ -439,7 +431,7 @@ async def generate_response_groq(data: dict):
                     print("Using fallback response:", text)
                 
                 # Update conversation history
-                conversation_manager.add_conversation(session_id, user_message, text)
+                conversation_manager.add_conversation(session_id, user_text, text)
                 
                 print(f"Client {session_id} OUTPUT {text}")
                 print(f"Total time: {(time.time() - start_time) * 1000:.2f}ms")

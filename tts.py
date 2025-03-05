@@ -14,7 +14,7 @@ import io
 from typing import Dict, List
 import uuid
 from fastapi.background import BackgroundTasks
-from config.agents_config import get_agent_data
+from config.agents_config import agent_manager
 from cartesia import AsyncCartesia
 import aiohttp
 from typing import AsyncGenerator
@@ -22,7 +22,6 @@ from pathlib import Path
 from scipy.io import wavfile
 import sys
 from dotenv import load_dotenv
-import os
 import logging
 
 load_dotenv()
@@ -186,7 +185,7 @@ async def startup_event():
         # Start the pool maintenance task
         asyncio.create_task(ws_manager.maintain_pool())
 
-async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str):
+async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
     """TTS streaming implementation with voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
@@ -195,15 +194,15 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         })
 
         # Load TTS voice
-        voice_samples, random_system_prompt, language,  _, _ = get_agent_data(personality)
+        voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
         
-        if personality not in speaker_latents_cache:
+        if config_id not in speaker_latents_cache:
             print("Computing speaker latents...")
             async with xtts_lock:  # Add lock for computing latents
                 gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
-                speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
+                speaker_latents_cache[config_id] = (gpt_cond_latent, speaker_embedding)
         else:
-            gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
+            gpt_cond_latent, speaker_embedding = speaker_latents_cache[config_id]
 
         print("Starting streaming inference...")
         t0 = time.time()
@@ -256,7 +255,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, personality: str)
         except:
             pass
 
-async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personality: str):
+async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, config_id: str):
     """Improved Cartesia streaming implementation with better buffer management"""
     ws = None
     try:
@@ -268,7 +267,7 @@ async def stream_audio_chunks_cartesia(websocket: WebSocket, text: str, personal
         t0 = time.time()
         session_id = str(uuid.uuid4())
 
-        _, _, _, voice_id, _ = get_agent_data(personality)
+        _, _, _, voice_id, _ = agent_manager.get_agent_config(config_id)
 
         # Get a connection from the pool
         ws = await ws_manager.get_connection()
@@ -387,7 +386,7 @@ async def stream_elevenlabs_audio(voice_id: str, text: str) -> AsyncGenerator[by
             async for chunk in response.content.iter_chunked(CHUNK_SIZE):
                 yield chunk
 
-async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, personality: str):
+async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, config_id: str):
     """ElevenLabs streaming implementation"""
     try:
         await websocket.send_json({
@@ -396,7 +395,7 @@ async def stream_audio_chunks_elevenlabs(websocket: WebSocket, text: str, person
         })
         
         t0 = time.time()
-        _, _, _, _, elevenlabs_voice_id = get_agent_data(personality)
+        _, _, _, _, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
         
         chunk_counter = 0
         async for chunk in stream_elevenlabs_audio(elevenlabs_voice_id, text):
@@ -450,10 +449,13 @@ async def tts_stream(websocket: WebSocket):
                 continue
                 
             text = data.get("text")
-            personality = data.get("personality", "default")
+            config_id = data.get("config_id", "")
+            session_id = data.get("session_id", "")
             
             if text:
-                await stream_audio_chunks(websocket, text, personality)
+                # Get the config using config_id
+                voice_samples, system_prompt, language, cartesia_id, elevenlabs_id = agent_manager.get_agent_config(config_id)
+                await stream_audio_chunks(websocket, text, config_id)
             
     except WebSocketDisconnect:
         print("WebSocket connection closed normally")
@@ -477,10 +479,13 @@ async def tts_stream_cartesia(websocket: WebSocket):
                 continue
                 
             text = data.get("text")
-            personality = data.get("personality", "default")
+            config_id = data.get("config_id", "")
+            session_id = data.get("session_id", "")
             
             if text:
-                await stream_audio_chunks_cartesia(websocket, text, personality)
+                # Get the config using config_id
+                voice_samples, system_prompt, language, cartesia_id, elevenlabs_id = agent_manager.get_agent_config(config_id)
+                await stream_audio_chunks_cartesia(websocket, text, config_id)
             
     except WebSocketDisconnect:
         print("WebSocket connection closed normally")
@@ -500,10 +505,13 @@ async def tts_stream_elevenlabs(websocket: WebSocket):
                 continue
                 
             text = data.get("text")
-            personality = data.get("personality", "default")
+            config_id = data.get("config_id", "")
+            session_id = data.get("session_id", "")
             
             if text:
-                await stream_audio_chunks_elevenlabs(websocket, text, personality)
+                # Get the config using config_id
+                voice_samples, system_prompt, language, cartesia_id, elevenlabs_id = agent_manager.get_agent_config(config_id)
+                await stream_audio_chunks_elevenlabs(websocket, text, config_id)
             
     except WebSocketDisconnect:
         print("WebSocket connection closed normally")
@@ -513,22 +521,22 @@ async def tts_stream_elevenlabs(websocket: WebSocket):
 @app.get("/tts")
 async def generate_tts(
     text: str = Query(..., description="Text to convert to speech"),
-    personality: str = Query("default", description="Voice personality to use")
+    config_id: str = Query(..., description="Config ID to use")
 ):
     """Original XTTS endpoint for single audio generation with raw PCM output"""
     if not ENABLE_LOCAL_MODEL:
         raise HTTPException(status_code=400, detail="Local model is disabled")
         
     try:
-        voice_samples, random_system_prompt, language, _, _ = get_agent_data(personality)
+        voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
         
-        if personality not in speaker_latents_cache:
+        if config_id not in speaker_latents_cache:
             print("Computing speaker latents...")
             async with xtts_lock:  # Add lock for computing latents
                 gpt_cond_latent, speaker_embedding = model.get_conditioning_latents(audio_path=voice_samples)
-                speaker_latents_cache[personality] = (gpt_cond_latent, speaker_embedding)
+                speaker_latents_cache[config_id] = (gpt_cond_latent, speaker_embedding)
         else:
-            gpt_cond_latent, speaker_embedding = speaker_latents_cache[personality]
+            gpt_cond_latent, speaker_embedding = speaker_latents_cache[config_id]
 
         print("Starting full audio generation...")
         t0 = time.time()
@@ -566,14 +574,14 @@ async def generate_tts(
 @app.get("/tts/cartesia")
 async def generate_tts_cartesia(
     text: str = Query(..., description="Text to convert to speech"),
-    personality: str = Query("default", description="Voice personality to use")
+    config_id: str = Query(..., description="Config ID to use")
 ):
     """Cartesia endpoint for single audio generation"""
     if not cartesia_client:
         raise HTTPException(status_code=400, detail="Cartesia API is not configured")
         
     try:
-        _, _, _,  voice_id, _ = get_agent_data(personality)
+        _, _, _, voice_id, _ = agent_manager.get_agent_config(config_id)
 
         # Generate audio using Cartesia's REST API
         response = await cartesia_client.tts.bytes(
@@ -600,11 +608,11 @@ async def generate_tts_cartesia(
 @app.get("/tts/elevenlabs")
 async def generate_tts_elevenlabs(
     text: str = Query(..., description="Text to convert to speech"),
-    personality: str = Query("default", description="Voice personality to use")
+    config_id: str = Query(..., description="Config ID to use")
 ):
     """ElevenLabs endpoint for single audio generation"""
     try:
-        _, _, _, _, elevenlabs_voice_id = get_agent_data(personality)
+        _, _, _, _, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
 
         url = f"{API_BASE}/text-to-speech/{elevenlabs_voice_id}"
         headers = {

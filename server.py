@@ -37,7 +37,7 @@ class AudioSession:
         self.is_speaking = False
         self.is_responding = False
         self.agent_id = ""
-        self.agent_name = ""
+        self.config_id = ""
         self.websocket: Optional[WebSocket] = None
         self.tts_websocket: Optional[aiohttp.ClientWebSocketResponse] = None
         self.tts_lock = asyncio.Lock()
@@ -94,7 +94,11 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
                 # Get chat response
                 async with http_session.post(
                     CHAT_SERVICE_URL,
-                    json={"text": text, "session_id": session.session_id, "personality": session.agent_name}
+                    json={
+                        "text": text, 
+                        "session_id": session.session_id, 
+                        "config_id": session.config_id
+                    }
                 ) as response:
                     chat_result = await response.json()
                     chat_response = chat_result['response']
@@ -109,7 +113,7 @@ async def process_text_to_response(session: AudioSession, text: str) -> None:
                     session.tts_websocket = ws
                     await ws.send_json({
                         "text": chat_response,
-                        "personality": session.agent_name,
+                        "config_id": session.config_id,
                         "session_id": session.session_id
                     })
 
@@ -211,7 +215,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 
     # Update session with agent info
     session.agent_id = config["agentId"]
-    session.agent_name = config["agentName"]
+    session.config_id = config["configId"]
 
     # Send ready message back to client
     await websocket.send_json({

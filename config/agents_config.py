@@ -52,7 +52,6 @@ class AgentConfigManager:
 
     async def add_agent_config(self, config: dict) -> None:
         """Add or update agent configuration"""
-        agent_name = config["agentName"]
         config_id = config["configId"]
         
         # Download voice sample if URL provided
@@ -66,14 +65,14 @@ class AgentConfigManager:
                 self.cleanup_old_samples()
                 config["local_voice_sample"] = voice_sample_path
 
-        self.agent_configs[agent_name] = config
+        self.agent_configs[config_id] = config
 
-    def get_agent_data(self, agent_name: str) -> Tuple[list, str, str, str, str]:
-        """Returns voice samples, system prompt, language, and voice IDs for the given agent"""
-        if agent_name not in self.agent_configs:
+    def get_agent_config(self, config_id: str) -> Tuple[list, str, str, str, str]:
+        """Returns voice samples, system prompt, language, and voice IDs for the given config"""
+        if config_id not in self.agent_configs:
             return [], None, "en", None, None
             
-        config = self.agent_configs[agent_name]
+        config = self.agent_configs[config_id]
         
         # Update access time if we have a voice sample
         if "local_voice_sample" in config:
@@ -90,17 +89,13 @@ class AgentConfigManager:
             config.get("cartesiaVoiceId"),
             config.get("elevenLabsVoiceId")
         )
+    
+    def get_agent_name(self, config_id: str) -> str:
+        """Returns the agent name for the given config"""
+        if config_id not in self.agent_configs:
+            return ""
+        return self.agent_configs[config_id]["agentName"]
 
-# Global singleton instance
+# Only keep the singleton instance
 agent_manager = AgentConfigManager()
 
-# Backwards compatibility function
-def get_agent_data(agent_name):
-    return agent_manager.get_agent_data(agent_name)
-
-# Example Usage (you can call this function from another script)
-if __name__ == "__main__":
-    agent_name = "Donald Trump"  # Replace with any agent name
-    voice_samples, random_system_prompt = get_agent_data(agent_name)
-    print(f"Voice Samples for {agent_name}: {voice_samples}")
-    print(f"Random System Prompt for {agent_name}: {random_system_prompt}")
