@@ -207,36 +207,50 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     print(f"Client connected: {session_id}")
 
     # Wait for the first message (which should contain agent config)
-    data = await websocket.receive_text()
-    config = json.loads(data)
-
-    print(f"Received config: {config}")
-    
-    # Store the configuration
-    await agent_manager.add_agent_config(config)
-
-    # Update session with agent info
-    session.agent_id = config["agentId"]
-    session.config_id = config["configId"]
-
-    # Send ready message back to client
-    await websocket.send_json({
-        "type": "call_ready",
-        "session_id": session_id
-    })
-
-    speech_detector = AudioSpeechDetector(
-        sample_rate=16000,
-        energy_threshold=0.15,
-        min_speech_duration=0.4,
-        max_silence_duration=0.5,
-        max_recording_duration=10.0,
-        debug=False
-    )
-
-    print(f"Received agentId: {session.agent_id}, userId: {session.session_id}")
-    
     try:
+        data = await websocket.receive_text()
+        config = json.loads(data)
+
+        print(f"Received config: {config}")
+        
+        if not isinstance(config, dict):
+            print("Error: Config is not a dictionary")
+            return
+            
+        required_fields = ["configId", "agentId", "agentName"]
+        missing_fields = [field for field in required_fields if field not in config]
+        if missing_fields:
+            print(f"Error: Missing required fields in config: {missing_fields}")
+            return
+
+        # Store the configuration
+        await agent_manager.add_agent_config(config)
+        
+        # Verify the config was stored
+        stored_config = agent_manager.agent_configs.get(config["configId"])
+        print(f"Stored config: {stored_config}")
+
+        # Update session with agent info
+        session.agent_id = config["agentId"]
+        session.config_id = config["configId"]
+
+        # Send ready message back to client
+        await websocket.send_json({
+            "type": "call_ready",
+            "session_id": session_id
+        })
+
+        speech_detector = AudioSpeechDetector(
+            sample_rate=16000,
+            energy_threshold=0.15,
+            min_speech_duration=0.4,
+            max_silence_duration=0.5,
+            max_recording_duration=10.0,
+            debug=False
+        )
+
+        print(f"Received agentId: {session.agent_id}, userId: {session.session_id}")
+        
         while True:
             message = await websocket.receive()
             # print(f"Received message type: {message['type']}")

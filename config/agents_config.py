@@ -52,30 +52,43 @@ class AgentConfigManager:
 
     async def add_agent_config(self, config: dict) -> None:
         """Add or update agent configuration"""
-        config_id = config["configId"]
-        
-        # Download voice sample if URL provided
-        if config.get("voiceSampleUrl"):
-            voice_sample_path = await self.download_voice_sample(
-                config["voiceSampleUrl"], 
-                config_id
-            )
-            if voice_sample_path:
-                self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
-                self.cleanup_old_samples()
-                config["local_voice_sample"] = voice_sample_path
+        try:
+            config_id = config["configId"]
+            print(f"Adding config for config_id: {config_id}")
+            print(f"Config contents: {config}")
+            
+            # Download voice sample if URL provided
+            if config.get("voiceSampleUrl"):
+                print(f"Downloading voice sample from URL: {config['voiceSampleUrl']}")
+                voice_sample_path = await self.download_voice_sample(
+                    config["voiceSampleUrl"], 
+                    config_id
+                )
+                if voice_sample_path:
+                    print(f"Voice sample downloaded to: {voice_sample_path}")
+                    self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+                    self.cleanup_old_samples()
+                    config["local_voice_sample"] = voice_sample_path
+                else:
+                    print("Failed to download voice sample")
 
-        self.agent_configs[config_id] = config
+            self.agent_configs[config_id] = config
+            print(f"Config added. Current configs: {self.agent_configs}")
+        except Exception as e:
+            print(f"Error adding agent config: {e}")
+            raise
 
     def get_agent_config(self, config_id: str) -> Tuple[list, str, str, str, str]:
         """Returns voice samples, system prompt, language, and voice IDs for the given config"""
-        print(f"Agent configs: {self.agent_configs}")
+        print(f"Getting config for config_id: {config_id}")
+        print(f"Available configs: {self.agent_configs}")
         
         if config_id not in self.agent_configs:
+            print(f"Config ID {config_id} not found in configs")
             return [], None, "en", None, None
             
         config = self.agent_configs[config_id]
-        print(f"Agent config: {config}")
+        print(f"Found config: {config}")
         
         # Update access time if we have a voice sample
         if "local_voice_sample" in config:
