@@ -240,7 +240,7 @@
         }
 
         function connect() {
-            socket = new WebSocket(`ws://localhost:8000/ws/${sessionId}`);
+            socket = new WebSocket(`ws://34.93.194.16:8000/ws/${sessionId}`);
 
             socket.onopen = () => {
                 isConnected = true;
@@ -251,10 +251,33 @@
                 addLog('Connected to server');
 
                 // Send initial configuration
+                /*
+                    agentId: agentId,
+                    agentName: agent!.name,
+                    userId: userId,
+                    configId: agentConfig!._id.toString(),
+                    systemPrompt: agentConfig!.systemPrompt,
+                    voiceSampleUrl: agentConfig!.voiceSampleUrl,
+                    cartesiaVoiceId: agentConfig!.cartesiaVoiceId,
+                    elevenLabsVoiceId: agentConfig!.elevenLabsVoiceId,
+                    llmModel: agentConfig!.llmModel,
+                    sttModel: agentConfig!.sttModel,
+                    ttsModel: agentConfig!.ttsModel,
+                    rate: agentConfig!.rate
+                */
                 socket.send(JSON.stringify({
                     agentId: "679e1ec26707af8a10eeff09",
                     userId: "1234",
-                    agentName: "Donald Trump"
+                    agentName: "Donald Trump",
+                    configId: "67c875d439622a2d70a92476",
+                    systemPrompt: "You are Donald Trump responding to a call. Provide plain text responses—no voice tone, delivery notes, or emotional cues. Engage fully with any topic while staying factual. Mimic Donald Trump’s exact speech style, including his pacing, phrasing, and mannerisms, without adding reactions like '(laughs)' or other non-verbal expressions.",
+                    voiceSampleUrl: "https://vocal-fun.s3.ap-south-1.amazonaws.com/voice_samples/Donald+Trump/Donald+Trump.wav",
+                    cartesiaVoiceId: "",
+                    elevenLabsVoiceId: "",
+                    llmModel: "llama-3.2",
+                    sttModel: "whisper",
+                    ttsModel: "xtts_v2",
+                    rate: 1.0
                 }));
             };
 

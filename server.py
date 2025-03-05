@@ -11,6 +11,7 @@ from datetime import datetime
 from speechdetector import AudioSpeechDetector
 from dotenv import load_dotenv
 import os
+from config.agents_config import agent_manager
 
 load_dotenv()
 
@@ -201,28 +202,33 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     session = await manager.connect(websocket, session_id)
     print(f"Client connected: {session_id}")
 
-     # Wait for the first message (which should contain agentId and userId)
+    # Wait for the first message (which should contain agent config)
     data = await websocket.receive_text()
-    message = json.loads(data)
+    config = json.loads(data)
 
-    # Extract agentId and userId from the message
-    agent_id = message.get("agentId")
-    user_id = message.get("userId")
-    agent_name = message.get("agentName")
+    # Store the configuration
+    await agent_manager.add_agent_config(config)
 
-    session.agent_id = agent_id
-    session.agent_name = agent_name
+    # Update session with agent info
+    session.agent_id = config["agentId"]
+    session.agent_name = config["agentName"]
+
+    # Send ready message back to client
+    await websocket.send_json({
+        "type": "call_ready",
+        "session_id": session_id
+    })
 
     speech_detector = AudioSpeechDetector(
         sample_rate=16000,
-        energy_threshold=0.15,  # Adjust based on your audio environment
-        min_speech_duration=0.4,  # Minimum speech to process
-        max_silence_duration=0.5,  # Pause length to trigger processing
+        energy_threshold=0.15,
+        min_speech_duration=0.4,
+        max_silence_duration=0.5,
         max_recording_duration=10.0,
-        debug=False  # Enable detailed logging
+        debug=False
     )
 
-    print(f"Received agentId: {agent_id}, userId: {user_id}")
+    print(f"Received agentId: {session.agent_id}, userId: {session.session_id}")
     
     try:
         while True:

@@ -1,44 +1,102 @@
 import json
 import random
 import os
+import aiohttp
+import asyncio
+from collections import OrderedDict
+from typing import Dict, Optional, Tuple
+import time
 
-# Get the absolute path of the current directory (where the script is running)
-current_dir = os.path.dirname(os.path.realpath(__file__))
+class AgentConfigManager:
+    def __init__(self):
+        self.voice_samples_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "voice_samples")
+        self.agent_configs: Dict[str, dict] = {}
+        self.voice_sample_access_times: OrderedDict[str, float] = OrderedDict()
+        self.max_samples = 100
+        os.makedirs(self.voice_samples_dir, exist_ok=True)
 
-# Path to the 'agents_output.json' file
-file_path = os.path.join(current_dir, 'agents_output.json')
+    async def download_voice_sample(self, url: str, config_id: str) -> Optional[str]:
+        """Download voice sample and return local file path"""
+        if not url:
+            return None
+            
+        file_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
+        
+        # Check if file already exists
+        if os.path.exists(file_path):
+            print(f"Voice sample already exists for config_id: {config_id}")
+            return file_path
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        with open(file_path, 'wb') as f:
+                            f.write(await response.read())
+                        print(f"Downloaded new voice sample for config_id: {config_id}")
+                        return file_path
+        except Exception as e:
+            print(f"Error downloading voice sample: {e}")
+            return None
 
-# Load the JSON data
-with open(file_path, 'r') as file:
-    agents_data = json.load(file)
+    def cleanup_old_samples(self):
+        """Remove oldest voice samples if we exceed max_samples"""
+        while len(self.voice_sample_access_times) > self.max_samples:
+            oldest_file = next(iter(self.voice_sample_access_times))
+            file_path = os.path.join(self.voice_samples_dir, oldest_file)
+            try:
+                os.remove(file_path)
+                del self.voice_sample_access_times[oldest_file]
+            except:
+                pass
 
-def get_agent_data(agent_name):
-    """Returns voice samples and one random system prompt for the given agent name."""
-    if agent_name in agents_data:
-        agent = agents_data[agent_name]
+    async def add_agent_config(self, config: dict) -> None:
+        """Add or update agent configuration"""
+        agent_name = config["agentName"]
+        config_id = config["configId"]
         
-        # Get all voice samples for the agent
-        voice_samples = agent.get("voice_samples", [])
+        # Download voice sample if URL provided
+        if config.get("voiceSampleUrl"):
+            voice_sample_path = await self.download_voice_sample(
+                config["voiceSampleUrl"], 
+                config_id
+            )
+            if voice_sample_path:
+                self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+                self.cleanup_old_samples()
+                config["local_voice_sample"] = voice_sample_path
+
+        self.agent_configs[agent_name] = config
+
+    def get_agent_data(self, agent_name: str) -> Tuple[list, str, str, str, str]:
+        """Returns voice samples, system prompt, language, and voice IDs for the given agent"""
+        if agent_name not in self.agent_configs:
+            return [], None, "en", None, None
+            
+        config = self.agent_configs[agent_name]
         
-        # Convert relative paths in voice_samples to absolute paths
-        absolute_voice_samples = [
-            os.path.join(current_dir, sample) if sample.startswith("./") else sample
-            for sample in voice_samples
-        ]
-        
-        # Get a random system prompt for the agent
-        system_prompts = agent.get("system_prompts", [])
-        
-        if system_prompts:
-            random_system_prompt = random.choice(system_prompts)
+        # Update access time if we have a voice sample
+        if "local_voice_sample" in config:
+            filename = os.path.basename(config["local_voice_sample"])
+            self.voice_sample_access_times.move_to_end(filename)
+            voice_samples = [config["local_voice_sample"]]
         else:
-            random_system_prompt = None
+            voice_samples = []
 
-        language = agent.get("language", "en")
-        
-        return absolute_voice_samples, random_system_prompt, language, agent.get("cartesia_voice_id"), agent.get("elevenlabs_voice_id")
-    else:
-        return None, None
+        return (
+            voice_samples,
+            config.get("systemPrompt"),
+            config.get("language", "en"),
+            config.get("cartesiaVoiceId"),
+            config.get("elevenLabsVoiceId")
+        )
+
+# Global singleton instance
+agent_manager = AgentConfigManager()
+
+# Backwards compatibility function
+def get_agent_data(agent_name):
+    return agent_manager.get_agent_data(agent_name)
 
 # Example Usage (you can call this function from another script)
 if __name__ == "__main__":
