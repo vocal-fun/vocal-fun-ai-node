@@ -168,8 +168,11 @@ async def process_audio_to_response(session: AudioSession) -> None:
 
         async with aiohttp.ClientSession() as http_session:
             # Get transcription
-            files = {'audio_file': open(audio_file, 'rb')}
-            async with http_session.post(STT_SERVICE_URL, data=files, json={"config_id": session.config_id}) as response:
+            form_data = aiohttp.FormData()
+            form_data.add_field('audio_file', open(audio_file, 'rb'))
+            form_data.add_field('config_id', session.config_id)
+            
+            async with http_session.post(STT_SERVICE_URL, data=form_data) as response:
                 transcript_result = await response.json()
                 transcript = transcript_result['text']
 
@@ -177,10 +180,6 @@ async def process_audio_to_response(session: AudioSession) -> None:
             if not transcript.strip():
                 session.is_responding = False
                 return
-
-            # if len(transcript) < 10:
-            #     session.is_responding = False
-            #     return
             
             if "thank you" in transcript.lower():
                 session.is_responding = False

@@ -27,10 +27,22 @@ model = WhisperModel(
 )
 
 @app.post("/transcribe")
-async def transcribe_audio(audio_file: UploadFile = File(...), config_id: str = Form(...)):
+async def transcribe_audio(
+    audio_file: UploadFile = File(..., description="The audio file to transcribe"),
+    config_id: str = Form(..., description="The configuration ID for the agent")
+):
     try:
         start_time = time.time()
-        _, _, language, _, _ = agent_manager.get_agent_config(config_id)
+        
+        # Validate config_id and get agent configuration
+        if not config_id:
+            return {"error": "config_id is required"}
+            
+        config = agent_manager.get_agent_config(config_id)
+        if not config:
+            return {"error": f"No configuration found for config_id: {config_id}"}
+            
+        _, _, language, _, _ = config
         
         # Save uploaded file temporarily
         temp_path = f"temp_{audio_file.filename}"
@@ -61,4 +73,7 @@ async def transcribe_audio(audio_file: UploadFile = File(...), config_id: str = 
         }
         
     except Exception as e:
+        import traceback
+        print(f"Error in transcribe_audio: {str(e)}")
+        print(traceback.format_exc())
         return {"error": str(e)}
