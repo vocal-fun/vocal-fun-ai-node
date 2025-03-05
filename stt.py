@@ -1,8 +1,9 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import time
 import torch
+from config.agents_config import agent_manager
 
 app = FastAPI()
 
@@ -26,9 +27,10 @@ model = WhisperModel(
 )
 
 @app.post("/transcribe")
-async def transcribe_audio(audio_file: UploadFile = File(...)):
+async def transcribe_audio(audio_file: UploadFile = File(...), config_id: str = Form(...)):
     try:
         start_time = time.time()
+        _, _, language, _, _ = agent_manager.get_agent_config(config_id)
         
         # Save uploaded file temporarily
         temp_path = f"temp_{audio_file.filename}"
@@ -36,10 +38,12 @@ async def transcribe_audio(audio_file: UploadFile = File(...)):
             content = await audio_file.read()
             f.write(content)
         
+        print(f"Transcribing audio with language: {language}")
         # Transcribe audio
         segments, info = model.transcribe(
             temp_path,
-            beam_size=5
+            beam_size=5,
+            language=language
         )
         
         transcribed_text = " ".join([segment.text for segment in segments])

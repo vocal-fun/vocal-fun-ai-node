@@ -169,7 +169,7 @@ async def process_audio_to_response(session: AudioSession) -> None:
         async with aiohttp.ClientSession() as http_session:
             # Get transcription
             files = {'audio_file': open(audio_file, 'rb')}
-            async with http_session.post(STT_SERVICE_URL, data=files) as response:
+            async with http_session.post(STT_SERVICE_URL, data=files, json={"config_id": session.config_id}) as response:
                 transcript_result = await response.json()
                 transcript = transcript_result['text']
 
