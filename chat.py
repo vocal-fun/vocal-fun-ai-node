@@ -354,7 +354,7 @@ async def chat_endpoint(request: dict):
     # Get the config using config_id
     voice_samples, system_prompt, language, cartesia_id, elevenlabs_id = agent_manager.get_agent_config(config_id)
     
-    print(f"Client {session_id} INPUT {text} PERSONALITY {config_id}")
+    print(f"Client {session_id} INPUT {user_text} PERSONALITY {config_id}")
     
     # Get conversation history
     history = conversation_manager.get_history(session_id)
