@@ -10,10 +10,31 @@ import time
 class AgentConfigManager:
     def __init__(self):
         self.voice_samples_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "voice_samples")
-        self.agent_configs: Dict[str, dict] = {}
+        self.configs_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "active_configs.json")
         self.voice_sample_access_times: OrderedDict[str, float] = OrderedDict()
         self.max_samples = 100
         os.makedirs(self.voice_samples_dir, exist_ok=True)
+        self._load_configs()
+
+    def _load_configs(self):
+        """Load configs from file"""
+        try:
+            if os.path.exists(self.configs_file):
+                with open(self.configs_file, 'r') as f:
+                    self.agent_configs = json.load(f)
+            else:
+                self.agent_configs = {}
+        except Exception as e:
+            print(f"Error loading configs: {e}")
+            self.agent_configs = {}
+
+    def _save_configs(self):
+        """Save configs to file"""
+        try:
+            with open(self.configs_file, 'w') as f:
+                json.dump(self.agent_configs, f)
+        except Exception as e:
+            print(f"Error saving configs: {e}")
 
     async def download_voice_sample(self, url: str, config_id: str) -> Optional[str]:
         """Download voice sample and return local file path"""
@@ -55,31 +76,37 @@ class AgentConfigManager:
         try:
             config_id = config["configId"]
             print(f"Adding config for config_id: {config_id}")
-            print(f"Config contents: {config}")
             
             # Download voice sample if URL provided
             if config.get("voiceSampleUrl"):
-                print(f"Downloading voice sample from URL: {config['voiceSampleUrl']}")
                 voice_sample_path = await self.download_voice_sample(
                     config["voiceSampleUrl"], 
                     config_id
                 )
                 if voice_sample_path:
-                    print(f"Voice sample downloaded to: {voice_sample_path}")
                     self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
                     self.cleanup_old_samples()
                     config["local_voice_sample"] = voice_sample_path
-                else:
-                    print("Failed to download voice sample")
 
+            # Load latest configs before updating
+            self._load_configs()
+            
+            # Update config
             self.agent_configs[config_id] = config
-            print(f"Config added. Current configs: {self.agent_configs}")
+            
+            # Save to file
+            self._save_configs()
+            
+            print(f"Config saved. Current configs: {self.agent_configs}")
         except Exception as e:
             print(f"Error adding agent config: {e}")
             raise
 
     def get_agent_config(self, config_id: str) -> Tuple[list, str, str, str, str]:
         """Returns voice samples, system prompt, language, and voice IDs for the given config"""
+        # Load latest configs before reading
+        self._load_configs()
+        
         print(f"Getting config for config_id: {config_id}")
         print(f"Available configs: {self.agent_configs}")
         
@@ -88,7 +115,6 @@ class AgentConfigManager:
             return [], None, "en", None, None
             
         config = self.agent_configs[config_id]
-        print(f"Found config: {config}")
         
         # Update access time if we have a voice sample
         if "local_voice_sample" in config:
