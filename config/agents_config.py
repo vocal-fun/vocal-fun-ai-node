@@ -97,7 +97,7 @@ class AgentConfigManager:
             # Save to file
             self._save_configs()
             
-            print(f"Config saved. Current configs: {self.agent_configs}")
+            # print(f"Config saved. Current configs: {self.agent_configs}")
         except Exception as e:
             print(f"Error adding agent config: {e}")
             raise
@@ -107,8 +107,8 @@ class AgentConfigManager:
         # Load latest configs before reading
         self._load_configs()
         
-        print(f"Getting config for config_id: {config_id}")
-        print(f"Available configs: {self.agent_configs}")
+        # print(f"Getting config for config_id: {config_id}")
+        # print(f"Available configs: {self.agent_configs}")
         
         if config_id not in self.agent_configs:
             print(f"Config ID {config_id} not found in configs")
@@ -119,7 +119,11 @@ class AgentConfigManager:
         # Update access time if we have a voice sample
         if "local_voice_sample" in config:
             filename = os.path.basename(config["local_voice_sample"])
-            self.voice_sample_access_times.move_to_end(filename)
+            # Initialize or update access time
+            if filename not in self.voice_sample_access_times:
+                self.voice_sample_access_times[filename] = time.time()
+            else:
+                self.voice_sample_access_times.move_to_end(filename)
             voice_samples = [config["local_voice_sample"]]
         else:
             voice_samples = []
