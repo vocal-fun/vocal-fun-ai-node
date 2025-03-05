@@ -69,6 +69,8 @@ class AgentConfigManager:
 
     def get_agent_config(self, config_id: str) -> Tuple[list, str, str, str, str]:
         """Returns voice samples, system prompt, language, and voice IDs for the given config"""
+        print(f"Agent configs: {self.agent_configs}")
+        
         if config_id not in self.agent_configs:
             return [], None, "en", None, None
             
