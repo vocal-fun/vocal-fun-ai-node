@@ -210,6 +210,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     data = await websocket.receive_text()
     config = json.loads(data)
 
+    print(f"Received config: {config}")
+    
     # Store the configuration
     await agent_manager.add_agent_config(config)
 

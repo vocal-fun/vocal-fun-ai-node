@@ -212,7 +212,9 @@ def extract_assistant_response(full_response: str, transcript: str) -> str:
 
 def format_messages(config_id: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
+    print(f"Formatting messages for config_id: {config_id}")
     voice_samples, system_prompt, language, _, _ = agent_manager.get_agent_config(config_id)
+    print(f"Formatting messages for system_prompt: {system_prompt}")
     system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
 
     if language == "hi":
