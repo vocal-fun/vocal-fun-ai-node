@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPExceptio
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from TTS.tts.models.xtts import Xtts
-from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.configs.xtts_config import XttsConfig, XttsAudioConfig, XttsArgs
 from fastapi.responses import JSONResponse
 import base64
 import os
@@ -152,7 +152,16 @@ ws_manager = CartesiaWebSocketManager(api_key=CARTESIA_API_KEY)
 if ENABLE_LOCAL_MODEL:
     xttsPath = os.getenv('XTTS_MODEL_PATH')
     print("Loading local model...")
-    config = XttsConfig()
+    config = XttsConfig(
+        model_args=XttsArgs(
+            input_sample_rate=24000,
+        
+        ),
+        audio=XttsAudioConfig(
+            sample_rate=24000,
+            output_sample_rate=24000
+        )
+    )
     config.load_json(xttsPath + "/config.json")
     model = Xtts.init_from_config(config)
     model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=device == "cuda")
@@ -214,7 +223,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
                 language,
                 gpt_cond_latent,
                 speaker_embedding,
-                temperature=0.7
+                temperature=0.7,
+                enable_text_splitting=True
             )
 
             chunk_counter = 0
