@@ -215,7 +215,13 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
 
         print("Starting streaming inference...")
         t0 = time.time()
-        
+
+        speed = 1.0
+
+        if (language == "hi"):
+            speed = 1.4
+       
+    
         # Add lock for the inference
         async with xtts_lock:
             chunks = model.inference_stream(
@@ -224,7 +230,8 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
                 gpt_cond_latent,
                 speaker_embedding,
                 temperature=0.7,
-                enable_text_splitting=True
+                enable_text_splitting=True,
+                speed=speed
             )
 
             chunk_counter = 0

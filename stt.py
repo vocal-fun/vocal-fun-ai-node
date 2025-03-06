@@ -55,7 +55,7 @@ async def transcribe_audio(
         segments, info = model.transcribe(
             temp_path,
             beam_size=5,
-            language=language
+            # language=language
         )
         
         transcribed_text = " ".join([segment.text for segment in segments])
