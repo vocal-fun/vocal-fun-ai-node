@@ -23,18 +23,18 @@ class TTS:
         self._setup_tts()
 
     def _setup_tts(self):
-        use_external = os.getenv("USE_EXTERNAL_TTS", "False").lower() == "true"
-        provider = os.getenv("EXTERNAL_TTS_PROVIDER", "").lower()
+        self.use_external = os.getenv("USE_EXTERNAL_TTS", "False").lower() == "true"
+        self.provider = os.getenv("EXTERNAL_TTS_PROVIDER", "").lower()
 
-        print(f"Setting up TTS: use_external: {use_external}, provider: {provider}")
+        print(f"Setting up TTS: use_external: {self.use_external}, provider: {self.provider}")
 
-        if use_external:
-            if provider == "cartesia":
+        if self.use_external:
+            if self.provider == "cartesia":
                 self.tts = CartesiaTTS(api_key=os.getenv("CARTESIA_API_KEY"))
-            elif provider == "elevenlabs":
+            elif self.provider == "elevenlabs":
                 self.tts = ElevenLabsTTS(api_key=os.getenv("ELEVENLABS_API_KEY"))
             else:
-                raise ValueError(f"Unsupported external TTS provider: {provider}")
+                raise ValueError(f"Unsupported external TTS provider: {self.provider}")
         else:
             self.tts = LocalTTS()
 
@@ -88,9 +88,14 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
             "timestamp": time.time()
         })
 
-        voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
+        voice_samples, _, language, cartesia_voice_id, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
         
-        async for chunk in tts_instance.generate_speech_stream(text, language, '', voice_samples):
+        if tts_instance.use_external:
+            voice_id = cartesia_voice_id if tts_instance.provider == "cartesia" else elevenlabs_voice_id
+        else:
+            voice_id = None
+        
+        async for chunk in await tts_instance.generate_speech_stream(text, language, voice_id, voice_samples):
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk.chunk,

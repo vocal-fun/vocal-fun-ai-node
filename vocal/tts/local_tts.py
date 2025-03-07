@@ -18,7 +18,7 @@ class LocalTTS(BaseTTS):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = None
         self.tts_lock = asyncio.Lock()
-        self.speaker_latents_cache: Dict = {}
+        self.speaker_latents_cache: Dict[str, tuple] = {}
         
     def setup(self):
         """Initialize the TTS system"""
@@ -28,7 +28,6 @@ class LocalTTS(BaseTTS):
         config = XttsConfig(
             model_args=XttsArgs(
                 input_sample_rate=24000,
-            
             ),
             audio=XttsAudioConfig(
                 sample_rate=24000,
@@ -36,10 +35,10 @@ class LocalTTS(BaseTTS):
             )
         )
         config.load_json(xttsPath + "/config.json")
-        model = Xtts.init_from_config(config)
-        model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=self.device == "cuda")
+        self.model = Xtts.init_from_config(config)
+        self.model.load_checkpoint(config, checkpoint_dir=xttsPath, use_deepspeed=self.device == "cuda")
         if self.device == "cuda":
-            model.cuda()
+            self.model.cuda()
                 
     async def cleanup(self):
         """Clean up resources"""
@@ -47,13 +46,16 @@ class LocalTTS(BaseTTS):
         
     async def get_speaker_latents(self, voice_samples: str) -> tuple:
         """Get or compute speaker latents"""
-        if voice_samples not in self.speaker_latents_cache:
+        # Convert list to tuple if voice_samples is a list
+        cache_key = voice_samples if isinstance(voice_samples, str) else tuple(voice_samples)
+        
+        if cache_key not in self.speaker_latents_cache:
             print("Computing speaker latents...")
-            async with self.xtts_lock:  # Add lock for computing latents
+            async with self.tts_lock:  # Using tts_lock instead of xtts_lock
                 gpt_cond_latent, speaker_embedding = self.model.get_conditioning_latents(audio_path=voice_samples)
-                self.speaker_latents_cache[voice_samples] = (gpt_cond_latent, speaker_embedding)
+                self.speaker_latents_cache[cache_key] = (gpt_cond_latent, speaker_embedding)
         else:
-            gpt_cond_latent, speaker_embedding = self.speaker_latents_cache[voice_samples]
+            gpt_cond_latent, speaker_embedding = self.speaker_latents_cache[cache_key]
         return gpt_cond_latent, speaker_embedding
         
     
@@ -65,7 +67,7 @@ class LocalTTS(BaseTTS):
         print("Starting full audio generation...")
         t0 = time.time()
         
-        async with self.xtts_lock:
+        async with self.tts_lock:
             # Generate the complete audio
             audio = self.model.inference(
                 text,
@@ -99,7 +101,7 @@ class LocalTTS(BaseTTS):
             speed = 1.4
 
         chunk_counter = 0
-        async with self.xtts_lock:
+        async with self.tts_lock:
             for chunk in self.model.inference_stream(
                 text,
                 language,
