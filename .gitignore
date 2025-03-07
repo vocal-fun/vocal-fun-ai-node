@@ -7,3 +7,5 @@ models/
 audio_files/
 logs/
 *.egg-info
+voice_samples/
+active_configs.json
