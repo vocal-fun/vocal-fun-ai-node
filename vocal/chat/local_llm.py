@@ -82,10 +82,13 @@ class LocalLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        chat = prompt
+        
+        formatted_chat = self.tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+        inputs = self.tokenizer(formatted_chat, return_tensors="pt").to(self.device)
         
         outputs = self.model.generate(
-            inputs["input_ids"],
+            **inputs,
             max_new_tokens=kwargs.get("max_new_tokens", 40),
             temperature=kwargs.get("temperature", 0.7),
             top_p=kwargs.get("top_p", 0.9),
@@ -98,7 +101,8 @@ class LocalLLM(BaseLLM):
             stopping_criteria=self.stopping_criteria
         )
         
-        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        decoded_output = self.tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+        response = decoded_output
         
         # Clean up response
         response = re.sub(r'^.*?:', '', response).strip()
