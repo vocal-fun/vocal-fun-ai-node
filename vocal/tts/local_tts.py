@@ -98,8 +98,9 @@ class LocalTTS(BaseTTS):
         if language == "hi":
             speed = 1.4
 
+        chunk_counter = 0
         async with self.xtts_lock:
-            chunks = self.model.inference_stream(
+            for chunk in self.model.inference_stream(
                 text,
                 language,
                 gpt_cond_latent,
@@ -107,10 +108,7 @@ class LocalTTS(BaseTTS):
                 temperature=0.7,
                 enable_text_splitting=True,
                 speed=speed
-            )
-
-            chunk_counter = 0
-            for chunk in chunks:
+            ):
                 if chunk_counter == 0:
                     print(f"Time to first chunk: {time.time() - t0}")
                 

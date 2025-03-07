@@ -1,8 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from TTS.tts.models.xtts import Xtts
-from TTS.tts.configs.xtts_config import XttsConfig, XttsAudioConfig, XttsArgs
 from fastapi.responses import JSONResponse
 import os
 import time
@@ -54,13 +52,13 @@ class TTS:
         if not self.tts:
             raise RuntimeError("TTS not initialized")
         
-        return await self.tts.generate_speech(text, language, voice_id, voice_samples)
+        return self.tts.generate_speech(text, language, voice_id, voice_samples)
 
     async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
         if not self.tts:
             raise RuntimeError("TTS not initialized")
         
-        return await self.tts.generate_speech_stream(text, language, voice_id, voice_samples)
+        return self.tts.generate_speech_stream(text, language, voice_id, voice_samples)
                 
 
     async def cleanup(self):
