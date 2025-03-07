@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 import os
 from vocal.config.agents_config import agent_manager
 from fastapi import Request, HTTPException
-from vocal.chat import Chat
 
 load_dotenv()
 
@@ -319,19 +318,3 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     finally:
         print(f"Cleaning up session: {session_id}")
         await manager.disconnect(session_id)
-
-@app.post("/api/chat")
-async def chat(request: Request):
-    try:
-        data = await request.json()
-        prompt = data.get("prompt")
-        
-        if not prompt:
-            raise HTTPException(status_code=400, detail="Prompt is required")
-
-        response = await chat_instance.generate_response(prompt)
-        return {"response": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Remove any provider-specific endpoints
