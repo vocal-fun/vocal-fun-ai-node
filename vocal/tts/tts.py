@@ -92,7 +92,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
 
         voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
         
-        async for chunk in await tts_instance.generate_speech_stream(text, language, '', voice_samples):
+        async for chunk in tts_instance.generate_speech_stream(text, language, '', voice_samples):
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk.chunk,
