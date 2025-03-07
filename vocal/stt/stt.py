@@ -58,7 +58,7 @@ async def transcribe_audio(
     config_id: str = Form(..., description="The configuration ID for the agent")
 ):
     try:
-                # Validate config_id and get agent configuration
+        # Validate config_id and get agent configuration
         if not config_id:
             return {"error": "config_id is required"}
             
