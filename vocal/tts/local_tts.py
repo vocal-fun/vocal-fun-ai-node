@@ -87,7 +87,7 @@ class LocalTTS(BaseTTS):
             
             return TTSChunk(audio_base64, 24000, "wav")
         
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech in streaming mode using local TTS model"""
         gpt_cond_latent, speaker_embedding = await self.get_speaker_latents(voice_samples)
 
