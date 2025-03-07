@@ -66,6 +66,10 @@ class TTS:
         if self.tts:
             await self.tts.cleanup()
 
+    def get_voice_id(self, config_id: str) -> Optional[str]:
+        voice_samples, _, _, cartesia_voice_id, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
+        return cartesia_voice_id if self.provider == "cartesia" else elevenlabs_voice_id
+
 # Initialize tts instance
 tts_instance = TTS()
 
@@ -90,10 +94,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
 
         voice_samples, _, language, cartesia_voice_id, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
         
-        if tts_instance.use_external:
-            voice_id = cartesia_voice_id if tts_instance.provider == "cartesia" else elevenlabs_voice_id
-        else:
-            voice_id = None
+        voice_id = tts_instance.get_voice_id(config_id)
         
         async for chunk in await tts_instance.generate_speech_stream(text, language, voice_id, voice_samples):
             await websocket.send_json({
@@ -154,7 +155,9 @@ async def generate_tts(
     try:
         voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
 
-        tts_chunk = await tts_instance.generate_speech(text, language, voice_samples)
+        voice_id = tts_instance.get_voice_id(config_id)
+
+        tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples)
 
         return JSONResponse({
             "audio": tts_chunk.chunk,

@@ -8,164 +8,113 @@ from typing import Dict, Optional, Tuple
 import time
 from pydub import AudioSegment
 import tempfile
+from dotenv import load_dotenv
+import threading
 
-class AgentConfigManager:
+load_dotenv()
+
+class AgentManager:
     def __init__(self):
-        self.voice_samples_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "voice_samples")
-        self.configs_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "active_configs.json")
-        self.voice_sample_access_times: OrderedDict[str, float] = OrderedDict()
-        self.max_samples = 100
-        self.max_audio_duration = 15000  # 15 seconds in milliseconds
-        os.makedirs(self.voice_samples_dir, exist_ok=True)
-        self._load_configs()
-
-    def _load_configs(self):
-        """Load configs from file"""
-        try:
-            if os.path.exists(self.configs_file):
-                with open(self.configs_file, 'r') as f:
-                    self.agent_configs = json.load(f)
-            else:
-                self.agent_configs = {}
-        except Exception as e:
-            print(f"Error loading configs: {e}")
-            self.agent_configs = {}
-
-    def _save_configs(self):
-        """Save configs to file"""
-        try:
-            with open(self.configs_file, 'w') as f:
-                json.dump(self.agent_configs, f)
-        except Exception as e:
-            print(f"Error saving configs: {e}")
-
-    async def download_voice_sample(self, url: str, config_id: str) -> Optional[str]:
-        """Download voice sample, convert to wav, limit duration and return local file path"""
-        if not url:
-            return None
-            
-        # Ensure voice samples directory exists
-        os.makedirs(self.voice_samples_dir, exist_ok=True)
+        self.fast_mode = os.getenv("FAST_MODE", "False").lower() == "true"
+        self.config_dir = "configs"
+        self.configs: Dict[str, Tuple[str, str, str, str, str]] = {}  # config_id -> (voice_samples, system_prompt, language, cartesia_voice_id, elevenlabs_voice_id)
+        self.lock = threading.Lock()
         
-        final_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
-        
-        # Check if file already exists
-        if os.path.exists(final_path):
-            print(f"Voice sample already exists for config_id: {config_id}")
-            return final_path
-        
-        try:
-            # Create a temporary file to store the downloaded audio
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        if response.status == 200:
-                            temp_file.write(await response.read())
-                            temp_file.flush()
-                            
-                            # Convert to wav and limit duration
-                            try:
-                                audio = AudioSegment.from_file(temp_file.name)
-                                # Limit duration to 15 seconds
-                                if len(audio) > self.max_audio_duration:
-                                    audio = audio[:self.max_audio_duration]
-                                # Export as wav
-                                audio.export(final_path, format='wav')
-                                print(f"Downloaded and converted voice sample for config_id: {config_id}")
-                                return final_path
-                            except Exception as e:
-                                print(f"Error converting audio: {e}")
-                                return None
-                            finally:
-                                # Clean up temporary file
-                                if os.path.exists(temp_file.name):
-                                    os.unlink(temp_file.name)
-        except Exception as e:
-            print(f"Error downloading voice sample: {e}")
-            return None
-
-    def cleanup_old_samples(self):
-        """Remove oldest voice samples if we exceed max_samples"""
-        while len(self.voice_sample_access_times) > self.max_samples:
-            oldest_file = next(iter(self.voice_sample_access_times))
-            file_path = os.path.join(self.voice_samples_dir, oldest_file)
-            try:
-                os.remove(file_path)
-                del self.voice_sample_access_times[oldest_file]
-            except:
-                pass
+        if not self.fast_mode:
+            # Only create directory if we're in normal mode
+            os.makedirs(self.config_dir, exist_ok=True)
 
     async def add_agent_config(self, config: dict) -> None:
         """Add or update agent configuration"""
-        try:
-            config_id = config["configId"]
-            print(f"Adding config for config_id: {config_id}")
-            
-            # Download voice sample if URL provided
-            if config.get("voiceSampleUrl"):
-                voice_sample_path = await self.download_voice_sample(
-                    config["voiceSampleUrl"], 
-                    config_id
-                )
-                if voice_sample_path:
-                    self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
-                    self.cleanup_old_samples()
-                    config["local_voice_sample"] = voice_sample_path
+        config_id = config.get("configId")
+        if not config_id:
+            raise ValueError("Config ID is required")
 
-            # Load latest configs before updating
-            self._load_configs()
-            
-            # Update config
-            self.agent_configs[config_id] = config
-            
-            # Save to file
-            self._save_configs()
-            
-            # print(f"Config saved. Current configs: {self.agent_configs}")
-        except Exception as e:
-            print(f"Error adding agent config: {e}")
-            raise
-
-    def get_agent_config(self, config_id: str) -> Tuple[list, str, str, str, str]:
-        """Returns voice samples, system prompt, language, and voice IDs for the given config"""
-        # Load latest configs before reading
-        self._load_configs()
+        voice_samples = config.get("voiceSamples", "")
+        system_prompt = config.get("systemPrompt", "")
+        language = config.get("language", "en")
+        cartesia_voice_id = config.get("cartesiaVoiceId", "")
+        elevenlabs_voice_id = config.get("elevenlabsVoiceId", "")
         
-        # print(f"Getting config for config_id: {config_id}")
-        # print(f"Available configs: {self.agent_configs}")
-        
-        if config_id not in self.agent_configs:
-            print(f"Config ID {config_id} not found in configs")
-            return [], None, "en", None, None
+        with self.lock:
+            # Always update in-memory config
+            self.configs[config_id] = (voice_samples, system_prompt, language, cartesia_voice_id, elevenlabs_voice_id)
             
-        config = self.agent_configs[config_id]
-        
-        # Update access time if we have a voice sample
-        if "local_voice_sample" in config:
-            filename = os.path.basename(config["local_voice_sample"])
-            # Initialize or update access time
-            if filename not in self.voice_sample_access_times:
-                self.voice_sample_access_times[filename] = time.time()
-            else:
-                self.voice_sample_access_times.move_to_end(filename)
-            voice_samples = [config["local_voice_sample"]]
-        else:
-            voice_samples = []
+            if not self.fast_mode:
+                # In normal mode, also write to file
+                config_path = os.path.join(self.config_dir, f"{config_id}.json")
+                with open(config_path, 'w') as f:
+                    json.dump({
+                        "voiceSamples": voice_samples,
+                        "systemPrompt": system_prompt,
+                        "language": language,
+                        "cartesiaVoiceId": cartesia_voice_id,
+                        "elevenlabsVoiceId": elevenlabs_voice_id
+                    }, f)
 
-        return (
-            voice_samples,
-            config.get("systemPrompt"),
-            config.get("language", "en"),
-            config.get("cartesiaVoiceId"),
-            config.get("elevenLabsVoiceId")
-        )
-    
-    def get_agent_name(self, config_id: str) -> str:
-        """Returns the agent name for the given config"""
-        if config_id not in self.agent_configs:
-            return ""
-        return self.agent_configs[config_id]["agentName"]
+    def get_agent_config(self, config_id: str) -> Optional[Tuple[str, str, str, str, str]]:
+        """Get agent configuration"""
+        with self.lock:
+            if self.fast_mode:
+                # In fast mode, return directly from memory
+                return self.configs.get(config_id)
+            
+            # In normal mode, try memory first, then file
+            if config_id in self.configs:
+                return self.configs[config_id]
+            
+            # Try loading from file
+            config_path = os.path.join(self.config_dir, f"{config_id}.json")
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, 'r') as f:
+                        config_data = json.load(f)
+                        config_tuple = (
+                            config_data.get("voiceSamples", ""),
+                            config_data.get("systemPrompt", ""),
+                            config_data.get("language", "en"),
+                            config_data.get("cartesiaVoiceId", ""),
+                            config_data.get("elevenlabsVoiceId", "")
+                        )
+                        # Cache in memory
+                        self.configs[config_id] = config_tuple
+                        return config_tuple
+                except Exception as e:
+                    print(f"Error loading config {config_id}: {e}")
+                    return None
+            
+            return None
 
-# Only keep the singleton instance
-agent_manager = AgentConfigManager()
+    def remove_agent_config(self, config_id: str) -> bool:
+        """Remove agent configuration"""
+        with self.lock:
+            # Always remove from memory
+            self.configs.pop(config_id, None)
+            
+            if not self.fast_mode:
+                # In normal mode, also remove file
+                config_path = os.path.join(self.config_dir, f"{config_id}.json")
+                try:
+                    if os.path.exists(config_path):
+                        os.remove(config_path)
+                except Exception as e:
+                    print(f"Error removing config file {config_id}: {e}")
+                    return False
+            return True
 
+    def clear_configs(self) -> None:
+        """Clear all configurations"""
+        with self.lock:
+            self.configs.clear()
+            
+            if not self.fast_mode:
+                # In normal mode, also clear files
+                for filename in os.listdir(self.config_dir):
+                    if filename.endswith('.json'):
+                        try:
+                            os.remove(os.path.join(self.config_dir, filename))
+                        except Exception as e:
+                            print(f"Error removing config file {filename}: {e}")
+
+
+agent_manager = AgentManager()

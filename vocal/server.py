@@ -1,9 +1,17 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi import Query
+
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 from vocal.config.agents_config import agent_manager
-from vocal.processor import AudioProcessor
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+fast_mode = os.getenv("FAST_MODE", "False").lower() == "true"
 
 app = FastAPI()
 
@@ -21,7 +29,7 @@ class AudioSession:
         self.agent_id = ""
         self.config_id = ""
         self.websocket: Optional[WebSocket] = None
-        self.processor: Optional[AudioProcessor] = None
+        self.processor = None
 
 class ConnectionManager:
     def __init__(self):
@@ -66,7 +74,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         
         session.agent_id = config["agentId"]
         session.config_id = config["configId"]
-        session.processor = AudioProcessor(session_id, config["configId"])
+        
+        # Create appropriate processor based on mode
+        from vocal.processor import AudioProcessor
+        from vocal.fastprocessor import FastProcessor
+        ProcessorClass = FastProcessor if fast_mode else AudioProcessor
+        session.processor = ProcessorClass(session_id, config["configId"])
 
         await websocket.send_json({
             "type": "call_ready",
@@ -106,3 +119,44 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     finally:
         print(f"Cleaning up session: {session_id}")
         await manager.disconnect(session_id)
+
+if fast_mode:
+    # initialize all services
+    print("Initializing services")
+    print("Initializing STT")
+    import vocal.stt.stt
+    print("Initializing Chat")
+    import vocal.chat.chat
+    print("Initializing TTS")
+    import vocal.tts.tts
+
+    stt_instance = vocal.stt.stt.stt_instance
+    chat_instance = vocal.chat.chat.chat_instance
+    tts_instance = vocal.tts.tts.tts_instance
+
+    print("Services initialized")
+
+    # start individual tts server (used for creating previews with text, which doesnt use socket)
+    # if in fast mode, this will be used for tts
+    # if not in fast mode, the tts server will be started as a separate process
+    @app.get("/tts")
+    async def generate_tts(
+        text: str = Query(..., description="Text to convert to speech"),
+        config_id: str = Query(..., description="Config ID to use")
+    ):        
+        try:
+            voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
+
+            voice_id = tts_instance.get_voice_id(config_id)
+
+            tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples)
+
+            return JSONResponse({
+                "audio": tts_chunk.chunk,
+                "format": tts_chunk.format,
+                "sample_rate": tts_chunk.sample_rate
+            })
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+

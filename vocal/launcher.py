@@ -7,6 +7,7 @@ import time
 import logging
 from typing import Dict, List
 import os
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(
@@ -18,6 +19,7 @@ logger = logging.getLogger('service_launcher')
 class ServiceLauncher:
     def __init__(self, show_combined_logs=False):
         self.show_combined_logs = show_combined_logs
+        self.fast_mode = os.environ.get('FAST_MODE', '').lower() in ('true', '1', 'yes')
         self.services: Dict[str, dict] = {
             'server': {
                 'command': ['uvicorn', 'vocal.server:app', '--host', '0.0.0.0', '--port', '8000', '--log-level', 'info', '--access-log'],
@@ -27,17 +29,17 @@ class ServiceLauncher:
             'stt': {
                 'command': ['uvicorn', 'vocal.stt.stt:app', '--host', '0.0.0.0', '--port', '8001', '--log-level', 'info', '--access-log'],
                 'process': None,
-                'required': True
+                'required': not self.fast_mode
             },
             'chat': {
                 'command': ['uvicorn', 'vocal.chat.chat:app', '--host', '0.0.0.0', '--port', '8002', '--log-level', 'info', '--access-log'],
                 'process': None,
-                'required': True
+                'required': not self.fast_mode
             },
             'tts': {
                 'command': ['uvicorn', 'vocal.tts.tts:app', '--host', '0.0.0.0', '--port', '8003', '--log-level', 'info', '--access-log'],
                 'process': None,
-                'required': True
+                'required': not self.fast_mode
             }
         }
         self.running = False
@@ -138,6 +140,11 @@ class ServiceLauncher:
 
         services_to_start = selected_services or self.services.keys()
         
+        # If in fast mode, only start the server
+        if self.fast_mode:
+            services_to_start = ['server']
+            logger.info("Running in FAST_MODE - only starting server service")
+
         # First start non-server services
         for service_name in services_to_start:
             if service_name != 'server':
@@ -183,6 +190,9 @@ class ServiceLauncher:
             time.sleep(5)
 
 def main():
+    # Load environment variables from .env file
+    load_dotenv()
+    
     parser = argparse.ArgumentParser(description='Service Launcher')
     parser.add_argument(
         '--services', 
@@ -199,16 +209,15 @@ def main():
     
     args = parser.parse_args()
     
-    launcher = ServiceLauncher()
-    
-    selected_services = []
-    if 'all' in args.services:
-        selected_services = list(launcher.services.keys())
-    else:
-        selected_services = args.services
-
     try:
         launcher = ServiceLauncher(show_combined_logs=args.combined_logs)
+        
+        selected_services = []
+        if 'all' in args.services:
+            selected_services = list(launcher.services.keys())
+        else:
+            selected_services = args.services
+            
         launcher.start_all(selected_services)
         launcher.monitor_services()
     except KeyboardInterrupt:
