@@ -10,7 +10,7 @@ class GroqLLM(BaseLLM):
         self.client = None
         self.model = "llama3-70b-8192"  # Default model
 
-    async def setup(self):
+    def setup(self):
         if self.is_setup:
             return
         

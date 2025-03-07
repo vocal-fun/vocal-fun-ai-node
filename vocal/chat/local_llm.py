@@ -32,7 +32,7 @@ class LocalLLM(BaseLLM):
         self.stopping_criteria = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    async def setup(self):
+    def setup(self):
         if self.is_setup:
             return
             

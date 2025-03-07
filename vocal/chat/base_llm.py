@@ -6,7 +6,7 @@ class BaseLLM(ABC):
         self.is_setup = False
 
     @abstractmethod
-    async def setup(self):
+    def setup(self):
         """Initialize any necessary resources for the LLM"""
         pass
 
