@@ -58,15 +58,20 @@ class FastProcessor:
         print("Processing speech...")
         self.is_responding = True
         try:
-           
-            # Direct call to STT service
-            transcript = await self.stt_service.transcribe(self.audio_chunks, self.language)
+            # Convert audio chunks list to a single numpy array and then to bytes
+            if self.audio_chunks:
+                combined_audio = np.concatenate(self.audio_chunks)
+                audio_bytes = combined_audio.tobytes()
+                # Direct call to STT service
+                transcript = await self.stt_service.transcribe(audio_bytes, self.language)
 
-            if not transcript.strip() or "thank you" in transcript.lower():
+                if not transcript.strip() or "thank you" in transcript.lower():
+                    self.is_responding = False
+                    return
+                    
+                await self.process_text(transcript, websocket)
+            else:
                 self.is_responding = False
-                return
-                
-            await self.process_text(transcript, websocket)
 
         except Exception as e:
             self.is_responding = False
