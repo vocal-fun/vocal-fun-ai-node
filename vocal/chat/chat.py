@@ -136,80 +136,6 @@ if ENBALE_LOCAL_MODEL:
 # Initialize conversation manager and stopping criteria
 conversation_manager = ConversationManager(max_history=1)
 
-client_selected_personality = {}
-
-def format_conversation(config_id: str, conversation_history: list, current_message: str) -> str:
-    voice_samples, system_prompt, _, _, _ = agent_manager.get_agent_config(config_id)
-    agent_name = agent_manager.get_agent_name(config_id)
-    print(system_prompt)
-    system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
-    
-    formatted_text = [
-        f"### System:\n{system_prompt}\n",
-        "### Conversation:\n"
-    ]
-    
-    for msg in conversation_history[-2:]:
-        formatted_text.extend([
-            f"User: {msg['user']}",
-            f"{agent_name}: {msg['assistant']}\n"
-        ])
-    
-    formatted_text.extend([
-        f"User: {current_message}",
-        f"{agent_name}: "
-    ])
-    
-    return "\n".join(formatted_text)
-
-def extract_assistant_response2(conversation, prompt, agent_name):
-    lines = conversation.split('\n')
-    
-    for i, line in enumerate(lines):
-        if f"User: {prompt}" in line:
-            for j in range(i + 1, len(lines)):
-                current_line = lines[j].strip()
-                
-                if current_line.startswith(f"{agent_name}:"):
-                    response = current_line.replace(f"{agent_name}:", "").strip()
-                    if not response and j + 1 < len(lines):
-                        response = lines[j + 1].strip()
-                    return response
-                
-                if j > 0 and lines[j - 1].strip() == f"{agent_name}:":
-                    return current_line.strip()
-    
-    return ""
-
-def extract_assistant_response(full_response: str, transcript: str) -> str:
-    """Extract and clean the assistant's response"""
-    try:
-        response = re.split(r'(?i)Assistant:', full_response)[-1]
-        user_markers = ['User:', 'USER:', 'Human:', 'HUMAN:']
-        for marker in user_markers:
-            if marker in response:
-                response = response.split(marker)[0]
-        
-        response = re.sub(r'\([^)]*\)', '', response)
-        response = re.sub(r'^.*?:', '', response)
-        response = response.replace('###', '')
-        response = re.sub(r'\s+', ' ', response)
-        response = re.sub(r'\s*(?:User|USER|Human|HUMAN|user|USERS|Users)s?:?\s*$', '', response, flags=re.IGNORECASE)
-        
-        # Split the response into lines and find the relevant part
-        lines = response.split('\n')
-        for i, line in enumerate(lines):
-            if f"User: {transcript}" in line:
-                if i + 1 < len(lines) and lines[i + 1].startswith("Assistant:"):
-                    return lines[i + 1].replace("Assistant:", "").strip()
-                elif i + 2 < len(lines) and lines[i + 2].startswith("Assistant:"):
-                    return lines[i + 2].strip()
-        
-        return response.strip()
-    except Exception as e:
-        print(f"Error extracting response: {e}")
-        return full_response.strip()
-
 def format_messages(config_id: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
     """Format conversation history into Groq API message format"""
     voice_samples, system_prompt, language, _, _ = agent_manager.get_agent_config(config_id)
@@ -286,7 +212,7 @@ async def generate_response(data: dict):
     while retry_count < max_retries and not text:
         # Tokenization time
         token_start = time.time()
-        formatted_input = format_conversation(
+        formatted_input = format_messages(
             config_id,
             history,
             transcript
@@ -317,7 +243,7 @@ async def generate_response(data: dict):
         full_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(f"Full response (attempt {retry_count + 1}): {full_response}")
         
-        text = extract_assistant_response2(full_response, transcript, agent_name)
+        text = full_response
         text = re.sub(r'^.*?:', '', text).strip() if text else ""
         text = check_uncensored(text)
         text = remove_emotions(text)
