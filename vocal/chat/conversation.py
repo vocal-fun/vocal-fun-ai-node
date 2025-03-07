@@ -39,14 +39,17 @@ class ConversationFormatter:
 
     def format_messages(self, config_id: str, conversation_history: list, current_message: str) -> List[Dict[str, str]]:
         """Format conversation history into Groq API message format"""
-        voice_samples, system_prompt, language, _, _ = agent_manager.get_agent_config(config_id)
+        config = agent_manager.get_agent_config(config_id)
+        if not config:
+            raise ValueError("Config not found for config_id: " + config_id)
 
+        system_prompt = config.system_prompt
         if not system_prompt:
             raise ValueError("System prompt not found for config_id: " + config_id)
         
         system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
 
-        if language == "hi":
+        if config.language == "hi":
             system_prompt = system_prompt.replace("Please reply in no more than 30 words. ", "")
             system_prompt = system_prompt + " आपका जवाब हिंदी में होना चाहिए।"
         

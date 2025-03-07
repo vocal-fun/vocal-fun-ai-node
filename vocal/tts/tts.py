@@ -67,8 +67,11 @@ class TTS:
             await self.tts.cleanup()
 
     def get_voice_id(self, config_id: str) -> Optional[str]:
-        voice_samples, _, _, cartesia_voice_id, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
-        return cartesia_voice_id if self.provider == "cartesia" else elevenlabs_voice_id
+        config = agent_manager.get_agent_config(config_id)
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+
+        return config.cartesia_voice_id if self.provider == "cartesia" else config.elevenlabs_voice_id
 
 # Initialize tts instance
 tts_instance = TTS()
@@ -92,7 +95,12 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
             "timestamp": time.time()
         })
 
-        voice_samples, _, language, cartesia_voice_id, elevenlabs_voice_id = agent_manager.get_agent_config(config_id)
+        config = agent_manager.get_agent_config(config_id)
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+
+        voice_samples = config.voice_samples
+        language = config.language
         
         voice_id = tts_instance.get_voice_id(config_id)
         
@@ -153,8 +161,12 @@ async def generate_tts(
     config_id: str = Query(..., description="Config ID to use")
 ):        
     try:
-        voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
+        config = agent_manager.get_agent_config(config_id)
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
 
+        voice_samples = config.voice_samples
+        language = config.language
         voice_id = tts_instance.get_voice_id(config_id)
 
         tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples)

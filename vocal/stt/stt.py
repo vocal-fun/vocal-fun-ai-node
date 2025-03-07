@@ -66,11 +66,10 @@ async def transcribe_audio(
         if not config:
             return {"error": f"No configuration found for config_id: {config_id}"}
             
-        _, _, language, _, _ = config
         
         content = await audio_file.read()
         
-        transcribed_text = await stt_instance.transcribe(content, language)
+        transcribed_text = await stt_instance.transcribe(content, config.language)
         
         return {
             "text": transcribed_text,

@@ -28,9 +28,9 @@ class FastProcessor:
         self.tts_service = tts_instance
 
         self.config = agent_manager.get_agent_config(config_id)
-        self.voice_samples = self.config[0]
-        self.language = self.config[2]
-        self.system_prompt = self.config[1]
+        self.voice_samples = self.config.voice_samples
+        self.language = self.config.language
+        self.system_prompt = self.config.system_prompt
         
         self.speech_detector = AudioSpeechDetector(
             sample_rate=16000,

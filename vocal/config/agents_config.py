@@ -4,20 +4,48 @@ import os
 import aiohttp
 import asyncio
 from collections import OrderedDict
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 import time
 from pydub import AudioSegment
 import tempfile
 from dotenv import load_dotenv
 import threading
+from dataclasses import dataclass
 
 load_dotenv()
+
+@dataclass
+class AgentConfig:
+    voice_samples: str
+    system_prompt: str
+    language: str
+    cartesia_voice_id: str
+    elevenlabs_voice_id: str
+    
+    def to_dict(self) -> dict:
+        return {
+            "voiceSamples": self.voice_samples,
+            "systemPrompt": self.system_prompt,
+            "language": self.language,
+            "cartesiaVoiceId": self.cartesia_voice_id,
+            "elevenlabsVoiceId": self.elevenlabs_voice_id
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'AgentConfig':
+        return cls(
+            voice_samples=data.get("voiceSamples", ""),
+            system_prompt=data.get("systemPrompt", ""),
+            language=data.get("language", "en"),
+            cartesia_voice_id=data.get("cartesiaVoiceId", ""),
+            elevenlabs_voice_id=data.get("elevenlabsVoiceId", "")
+        )
 
 class AgentManager:
     def __init__(self):
         self.fast_mode = os.getenv("FAST_MODE", "False").lower() == "true"
         self.config_dir = "configs"
-        self.configs: Dict[str, Tuple[str, str, str, str, str]] = {}  # config_id -> (voice_samples, system_prompt, language, cartesia_voice_id, elevenlabs_voice_id)
+        self.configs: Dict[str, AgentConfig] = {}
         self.lock = threading.Lock()
         
         if not self.fast_mode:
@@ -30,29 +58,24 @@ class AgentManager:
         if not config_id:
             raise ValueError("Config ID is required")
 
-        voice_samples = config.get("voiceSamples", "")
-        system_prompt = config.get("systemPrompt", "")
-        language = config.get("language", "en")
-        cartesia_voice_id = config.get("cartesiaVoiceId", "")
-        elevenlabs_voice_id = config.get("elevenlabsVoiceId", "")
+        agent_config = AgentConfig(
+            voice_samples=config.get("voiceSamples", ""),
+            system_prompt=config.get("systemPrompt", ""),
+            language=config.get("language", "en"),
+            cartesia_voice_id=config.get("cartesiaVoiceId", ""),
+            elevenlabs_voice_id=config.get("elevenlabsVoiceId", "")
+        )
         
         with self.lock:
-            # Always update in-memory config
-            self.configs[config_id] = (voice_samples, system_prompt, language, cartesia_voice_id, elevenlabs_voice_id)
+            self.configs[config_id] = agent_config
             
             if not self.fast_mode:
                 # In normal mode, also write to file
                 config_path = os.path.join(self.config_dir, f"{config_id}.json")
                 with open(config_path, 'w') as f:
-                    json.dump({
-                        "voiceSamples": voice_samples,
-                        "systemPrompt": system_prompt,
-                        "language": language,
-                        "cartesiaVoiceId": cartesia_voice_id,
-                        "elevenlabsVoiceId": elevenlabs_voice_id
-                    }, f)
+                    json.dump(agent_config.to_dict(), f)
 
-    def get_agent_config(self, config_id: str) -> Optional[Tuple[str, str, str, str, str]]:
+    def get_agent_config(self, config_id: str) -> Optional[AgentConfig]:
         """Get agent configuration"""
         with self.lock:
             if self.fast_mode:
@@ -69,16 +92,10 @@ class AgentManager:
                 try:
                     with open(config_path, 'r') as f:
                         config_data = json.load(f)
-                        config_tuple = (
-                            config_data.get("voiceSamples", ""),
-                            config_data.get("systemPrompt", ""),
-                            config_data.get("language", "en"),
-                            config_data.get("cartesiaVoiceId", ""),
-                            config_data.get("elevenlabsVoiceId", "")
-                        )
+                        agent_config = AgentConfig.from_dict(config_data)
                         # Cache in memory
-                        self.configs[config_id] = config_tuple
-                        return config_tuple
+                        self.configs[config_id] = agent_config
+                        return agent_config
                 except Exception as e:
                     print(f"Error loading config {config_id}: {e}")
                     return None
