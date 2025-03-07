@@ -1,6 +1,9 @@
 from faster_whisper import WhisperModel
 import torch
 from .base_stt import BaseSTT
+import numpy as np
+import io
+from typing import Union
 
 class LocalWhisperSTT(BaseSTT):
     def __init__(self):
@@ -18,28 +21,25 @@ class LocalWhisperSTT(BaseSTT):
             download_root="./models"
         )
 
-    async def transcribe(self, audio_data: bytes, language: str) -> str:
+    async def transcribe(self, audio_data: Union[bytes, np.ndarray], language: str) -> str:
         if self.model is None:
-            self.setup()
+            raise Exception("Whisper model not initialized")
             
         try:
-            # Save audio data to temporary file
-            temp_path = "temp_audio_file"
-            with open(temp_path, "wb") as f:
-                f.write(audio_data)
-
+            # If input is bytes, convert to numpy array
+            if isinstance(audio_data, bytes):
+                audio_data = np.frombuffer(audio_data, dtype=np.int16)
+            
+            # Convert to float32 and normalize
+            audio_np = audio_data.astype(np.float32) / 32768.0
+            
             # Transcribe using local model
             segments, info = self.model.transcribe(
-                temp_path,
+                audio_np,
                 beam_size=5
             )
             
             transcribed_text = " ".join([segment.text for segment in segments])
-
-            # Clean up temp file
-            import os
-            os.remove(temp_path)
-
             return transcribed_text
 
         except Exception as e:

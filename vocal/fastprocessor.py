@@ -59,25 +59,13 @@ class FastProcessor:
         print("Processing speech...")
         self.is_responding = True
         try:
-            # Convert audio chunks list to a single numpy array and then to WAV format
+            # Convert audio chunks list to a single numpy array
             if self.audio_chunks:
                 combined_audio = np.concatenate(self.audio_chunks)
-                
-                # Create WAV file in memory
-                wav_buffer = io.BytesIO()
-                with wave.open(wav_buffer, 'wb') as wav_file:
-                    wav_file.setnchannels(1)  # Mono
-                    wav_file.setsampwidth(2)  # 16-bit
-                    wav_file.setframerate(16000)  # 16kHz
-                    wav_file.writeframes(combined_audio.tobytes())
-                
-                # Get the WAV bytes
-                wav_bytes = wav_buffer.getvalue()
-
                 self.audio_chunks = []
                 
-                # Direct call to STT service
-                transcript = await self.stt_service.transcribe(wav_bytes, self.language)
+                # Pass the numpy array directly to STT service
+                transcript = await self.stt_service.transcribe(combined_audio, self.language)
 
                 if not transcript.strip() or "thank you" in transcript.lower():
                     self.is_responding = False
