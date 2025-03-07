@@ -45,12 +45,72 @@ class AgentManager:
     def __init__(self):
         self.fast_mode = os.getenv("FAST_MODE", "False").lower() == "true"
         self.config_dir = "configs"
+        self.voice_samples_dir = "voice_samples"
         self.configs: Dict[str, AgentConfig] = {}
         self.lock = threading.Lock()
+        self.max_audio_duration = 15000  # 15 seconds in milliseconds
+        self.max_samples = 100
+        self.voice_sample_access_times: OrderedDict[str, float] = OrderedDict()
         
+        os.makedirs(self.voice_samples_dir, exist_ok=True)
+
         if not self.fast_mode:
-            # Only create directory if we're in normal mode
+            # Only create config directories if we're in normal mode
             os.makedirs(self.config_dir, exist_ok=True)
+
+    def cleanup_old_samples(self):
+        """Remove oldest voice samples if we exceed max_samples"""
+        while len(self.voice_sample_access_times) > self.max_samples:
+            oldest_file = next(iter(self.voice_sample_access_times))
+            file_path = os.path.join(self.voice_samples_dir, oldest_file)
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                del self.voice_sample_access_times[oldest_file]
+            except Exception as e:
+                print(f"Error removing old sample {oldest_file}: {e}")
+
+    async def download_voice_sample(self, url: str, config_id: str) -> Optional[str]:
+        """Download voice sample, convert to wav, limit duration and return local file path"""
+        if not url or not (url.startswith('http://') or url.startswith('https://')):
+            return url  # Return original path if not a HTTP(S) URL
+            
+        final_path = os.path.join(self.voice_samples_dir, f"{config_id}.wav")
+        
+        # Check if file already exists
+        if os.path.exists(final_path):
+            # Update access time
+            self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+            print(f"Voice sample already exists for config_id: {config_id}")
+            return final_path
+        
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            temp_file.write(await response.read())
+                            temp_file.flush()
+                            
+                            try:
+                                audio = AudioSegment.from_file(temp_file.name)
+                                if len(audio) > self.max_audio_duration:
+                                    audio = audio[:self.max_audio_duration]
+                                audio.export(final_path, format='wav')
+                                # Add to access times and cleanup if needed
+                                self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+                                self.cleanup_old_samples()
+                                print(f"Downloaded and converted voice sample for config_id: {config_id}")
+                                return final_path
+                            except Exception as e:
+                                print(f"Error converting audio: {e}")
+                                return None
+                            finally:
+                                if os.path.exists(temp_file.name):
+                                    os.unlink(temp_file.name)
+        except Exception as e:
+            print(f"Error downloading voice sample: {e}")
+            return None
 
     async def add_agent_config(self, config: dict) -> None:
         """Add or update agent configuration"""
@@ -65,6 +125,16 @@ class AgentManager:
             cartesia_voice_id=config.get("cartesiaVoiceId", ""),
             elevenlabs_voice_id=config.get("elevenlabsVoiceId", "")
         )
+
+        voice_sample_path = await self.download_voice_sample(
+            agent_config.voice_samples, 
+            config_id
+        )
+
+        if voice_sample_path:
+            self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+            self.cleanup_old_samples()
+            agent_config.voice_samples = voice_sample_path
         
         with self.lock:
             self.configs[config_id] = agent_config
