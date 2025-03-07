@@ -5,6 +5,7 @@ from vocal.config.agents_config import agent_manager
 import os
 from .base_stt import BaseSTT
 from .whisper_stt import LocalWhisperSTT
+from .whisper_vllm import WhisperVLLM
 from typing import Optional
 
 app = FastAPI()
@@ -23,7 +24,7 @@ class STT:
         self._setup_stt()
 
     def _setup_stt(self):
-        self.stt = LocalWhisperSTT()
+        self.stt = WhisperVLLM()
         self.setup()
 
     def setup(self):
