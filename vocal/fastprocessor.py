@@ -9,6 +9,7 @@ from fastapi import WebSocket
 from vocal.utils.speechdetector import AudioSpeechDetector
 from vocal.config.agents_config import agent_manager
 import time
+import io
 
 class FastProcessor:
     def __init__(self, session_id: str, config_id: str):
@@ -58,12 +59,25 @@ class FastProcessor:
         print("Processing speech...")
         self.is_responding = True
         try:
-            # Convert audio chunks list to a single numpy array and then to bytes
+            # Convert audio chunks list to a single numpy array and then to WAV format
             if self.audio_chunks:
                 combined_audio = np.concatenate(self.audio_chunks)
-                audio_bytes = combined_audio.tobytes()
+                
+                # Create WAV file in memory
+                wav_buffer = io.BytesIO()
+                with wave.open(wav_buffer, 'wb') as wav_file:
+                    wav_file.setnchannels(1)  # Mono
+                    wav_file.setsampwidth(2)  # 16-bit
+                    wav_file.setframerate(16000)  # 16kHz
+                    wav_file.writeframes(combined_audio.tobytes())
+                
+                # Get the WAV bytes
+                wav_bytes = wav_buffer.getvalue()
+
+                self.audio_chunks = []
+                
                 # Direct call to STT service
-                transcript = await self.stt_service.transcribe(audio_bytes, self.language)
+                transcript = await self.stt_service.transcribe(wav_bytes, self.language)
 
                 if not transcript.strip() or "thank you" in transcript.lower():
                     self.is_responding = False
