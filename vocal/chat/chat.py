@@ -45,6 +45,8 @@ class Chat:
         else:
             self.llm = LocalLLM()
 
+        self.setup()
+
     async def setup(self):
         """Initialize the LLM"""
         if self.llm:

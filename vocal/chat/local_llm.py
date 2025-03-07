@@ -80,7 +80,7 @@ class LocalLLM(BaseLLM):
 
     async def generate(self, prompt: str, **kwargs) -> str:
         if not self.is_setup:
-            await self.setup()
+            raise RuntimeError("LLM not initialized")
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         

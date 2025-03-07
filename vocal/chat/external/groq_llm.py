@@ -21,7 +21,7 @@ class GroqLLM(BaseLLM):
 
     async def generate(self, prompt: str, **kwargs) -> str:
         if not self.is_setup:
-            await self.setup()
+            raise RuntimeError("LLM not initialized")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
