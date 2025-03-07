@@ -11,7 +11,7 @@ class BaseTTS(ABC):
     """Base class for all TTS implementations"""
     
     @abstractmethod
-    async def setup(self):
+    def setup(self):
         """Initialize the TTS system"""
         pass
         

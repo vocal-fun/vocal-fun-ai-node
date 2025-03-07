@@ -117,9 +117,9 @@ class CartesiaTTS(BaseTTS):
             "sample_rate": 24000,
         }
         
-    async def setup(self):
+    def setup(self):
         """Initialize the TTS system"""
-        await self.ws_manager.initialize_pool()
+        self.ws_manager.initialize_pool()
         asyncio.create_task(self.ws_manager.maintain_pool())
 
     async def cleanup(self):

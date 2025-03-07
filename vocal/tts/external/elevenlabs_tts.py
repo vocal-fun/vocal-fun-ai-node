@@ -11,7 +11,7 @@ class ElevenLabsTTS(BaseTTS):
         self.base_url = "https://api.elevenlabs.io/v1"
         self.chunk_size = 1024
         
-    async def setup(self):
+    def setup(self):
         """Initialize the TTS system"""
         pass  # No setup needed for ElevenLabs
         

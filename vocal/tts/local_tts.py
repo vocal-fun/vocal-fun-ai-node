@@ -20,7 +20,7 @@ class LocalTTS(BaseTTS):
         self.tts_lock = asyncio.Lock()
         self.speaker_latents_cache: Dict = {}
         
-    async def setup(self):
+    def setup(self):
         """Initialize the TTS system"""
        
         xttsPath = os.getenv('XTTS_MODEL_PATH')
