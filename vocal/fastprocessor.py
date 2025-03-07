@@ -7,9 +7,6 @@ from typing import Optional, List
 import asyncio
 from fastapi import WebSocket
 from vocal.utils.speechdetector import AudioSpeechDetector
-from vocal.stt.stt import stt_instance
-from vocal.chat.chat import chat_instance
-from vocal.tts.tts import tts_instance
 from vocal.config.agents_config import agent_manager
 import time
 
@@ -21,6 +18,11 @@ class FastProcessor:
         self.is_speaking = False
         self.is_responding = False
         self.tts_lock = asyncio.Lock()
+        
+        # Lazy import services only when FastProcessor is actually used
+        from vocal.stt.stt import stt_instance
+        from vocal.chat.chat import chat_instance
+        from vocal.tts.tts import tts_instance
         
         # Initialize services directly
         self.stt_service = stt_instance
