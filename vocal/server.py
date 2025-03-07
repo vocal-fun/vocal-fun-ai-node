@@ -145,7 +145,12 @@ if fast_mode:
         config_id: str = Query(..., description="Config ID to use")
     ):        
         try:
-            voice_samples, _, language, _, _ = agent_manager.get_agent_config(config_id)
+            config = agent_manager.get_agent_config(config_id)
+            if not config:
+                raise HTTPException(status_code=404, detail="Config not found")
+
+            voice_samples = config.voice_samples
+            language = config.language
 
             voice_id = tts_instance.get_voice_id(config_id)
 

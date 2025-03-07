@@ -59,7 +59,7 @@ class AgentManager:
             raise ValueError("Config ID is required")
 
         agent_config = AgentConfig(
-            voice_samples=config.get("voiceSamples", ""),
+            voice_samples=config.get("voiceSampleUrl", ""),
             system_prompt=config.get("systemPrompt", ""),
             language=config.get("language", "en"),
             cartesia_voice_id=config.get("cartesiaVoiceId", ""),
