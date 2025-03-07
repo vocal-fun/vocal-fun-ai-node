@@ -1,8 +1,9 @@
 venv/
 __pycache__/
-TTS/
 *.log
 .env
 *.DS_Store
 models/
 audio_files/
+logs/
+*.egg-info
