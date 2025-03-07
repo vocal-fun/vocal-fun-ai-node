@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import torch
 from typing import Optional
 import os
+import time
 from dotenv import load_dotenv
 from .base_llm import BaseLLM
 from .local_llm import LocalLLM
@@ -61,6 +62,7 @@ class Chat:
         user_message = data["text"]
         config_id = data.get("config_id", "default")
         
+        t0 = time.time()
         print(f"Client {session_id} INPUT {user_message}")
                 
         history = conversation_manager.get_history(session_id)
@@ -80,6 +82,7 @@ class Chat:
     
         conversation_manager.add_conversation(session_id, user_message, response)
 
+        print("Chat response time: ", time.time() - t0)
         print(f"Client {session_id} RESPONSE {response}")
         return response
 
