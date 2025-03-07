@@ -47,10 +47,10 @@ class Chat:
 
         self.setup()
 
-    async def setup(self):
+    def setup(self):
         """Initialize the LLM"""
         if self.llm:
-            await self.llm.setup()
+            self.llm.setup()
 
     async def generate_response(self, data: dict, **kwargs) -> str:
         """Generate response for the given prompt"""

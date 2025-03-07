@@ -1,9 +1,11 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from faster_whisper import WhisperModel
 import time
-import torch
 from vocal.config.agents_config import agent_manager
+import os
+from .base_stt import BaseSTT
+from .whisper_stt import LocalWhisperSTT
+from typing import Optional
 
 app = FastAPI()
 
@@ -15,16 +17,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+class STT:
+    def __init__(self):
+        self.stt: Optional[BaseSTT] = None
+        self._setup_stt()
 
-# Initialize Whisper model
-print("Loading Whisper model...")
-model = WhisperModel(
-    "small",
-    device="auto",
-    compute_type="int8",
-    download_root="./models"
-)
+    def _setup_stt(self):
+        self.stt = LocalWhisperSTT()
+        self.setup()
+
+    def setup(self):
+        """Initialize the STT"""
+        if self.stt:
+            self.stt.setup()
+    
+    async def transcribe(self, audio_data: bytes, language: str) -> str:
+        """
+        Transcribe audio data to text using the configured STT provider
+        
+        Args:
+            audio_data (bytes): Raw audio data to transcribe
+            
+        Returns:
+            str: Transcribed text
+        """
+        start_time = time.time()
+
+        transcribed_text = await self.stt.transcribe(audio_data, language)
+
+        end_time = time.time()
+        print(f"Transcription completed in {end_time - start_time:.2f} seconds: {transcribed_text}")
+
+        return transcribed_text
+
+stt_instance = STT()
 
 @app.post("/transcribe")
 async def transcribe_audio(
@@ -32,9 +58,7 @@ async def transcribe_audio(
     config_id: str = Form(..., description="The configuration ID for the agent")
 ):
     try:
-        start_time = time.time()
-        
-        # Validate config_id and get agent configuration
+                # Validate config_id and get agent configuration
         if not config_id:
             return {"error": "config_id is required"}
             
@@ -44,32 +68,12 @@ async def transcribe_audio(
             
         _, _, language, _, _ = config
         
-        # Save uploaded file temporarily
-        temp_path = f"temp_{audio_file.filename}"
-        with open(temp_path, "wb") as f:
-            content = await audio_file.read()
-            f.write(content)
+        content = await audio_file.read()
         
-        print(f"Transcribing audio with language: {language}")
-        # Transcribe audio
-        segments, info = model.transcribe(
-            temp_path,
-            beam_size=5,
-            # language=language
-        )
-        
-        transcribed_text = " ".join([segment.text for segment in segments])
-        
-        # Clean up temp file
-        import os
-        os.remove(temp_path)
-        
-        end_time = time.time()
-        print(f"Transcription completed in {end_time - start_time:.2f} seconds")
+        transcribed_text = await stt_instance.transcribe(content, language)
         
         return {
             "text": transcribed_text,
-            "processing_time": end_time - start_time
         }
         
     except Exception as e:
