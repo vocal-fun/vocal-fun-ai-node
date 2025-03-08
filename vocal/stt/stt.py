@@ -25,7 +25,7 @@ class STT:
         self._setup_stt()
 
     def _setup_stt(self):
-        self.stt = STTLLMCombined()
+        self.stt = WhisperVLLM()
         self.setup()
 
     def setup(self):

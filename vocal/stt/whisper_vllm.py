@@ -46,7 +46,7 @@ class WhisperVLLM(BaseSTT):
             sampling_params = SamplingParams(
                 temperature=0,
                 top_p=1.0,
-                max_tokens=200,
+                max_tokens=200
             )
 
             start_time = time.time()

@@ -46,7 +46,7 @@ class Chat:
             else:
                 raise ValueError(f"Unsupported external chat provider: {provider}")
         else:
-            self.llm = EmptyLLM()
+            self.llm = VLLM()
 
         self.setup()
 

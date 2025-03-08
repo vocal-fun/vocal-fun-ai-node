@@ -14,7 +14,7 @@ class EmptyLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
-        return prompt
+        return prompt[-1]['content']
        
 
     async def cleanup(self):

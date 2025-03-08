@@ -7,6 +7,7 @@ from vllm.inputs.data import TextPrompt
 from typing import Union
 import uuid
 import time
+from transformers import AutoTokenizer
 import re
 from vllm import LLM
 
@@ -19,7 +20,12 @@ class STTLLMCombined(BaseSTT):
     def setup(self) -> None:
         """Initialize the Whisper model"""
         print("Loading Whisper model VLLM...")
+        self.model_name = "fixie-ai/ultravox-v0_5-llama-3_2-1b"
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+            use_fast=True
+        )
         self.llm = AsyncLLMEngine.from_engine_args(
             AsyncEngineArgs(
                 model="fixie-ai/ultravox-v0_5-llama-3_2-1b",
@@ -28,7 +34,9 @@ class STTLLMCombined(BaseSTT):
                 dtype="float16",
                 max_num_seqs=20,
                 quantization="fp8",
-                max_model_len=2048
+                max_model_len=2048,
+                trust_remote_code=True,
+                enable_prefix_caching=True
             )
         )
 
@@ -46,10 +54,15 @@ class STTLLMCombined(BaseSTT):
 
             audio_asset = (audio_np, 16000)
 
-            messages = [{
-                'role': 'user',
-                'content': "<|audio|>\n" * 1 + "You are Donald Trump. Please respond to the attached audio."
-            }]
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are Donald Trump."
+                },
+                {
+                    'role': 'user',
+                    'content': "<|audio|>\n" * 1
+                }]
             
             prompt = self.tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
@@ -58,7 +71,7 @@ class STTLLMCombined(BaseSTT):
             sampling_params = SamplingParams(
                 temperature=0,
                 top_p=1.0,
-                max_tokens=200,
+                max_tokens=90,
             )
 
             start_time = time.time()
@@ -70,9 +83,9 @@ class STTLLMCombined(BaseSTT):
 
             text_prompt = TextPrompt(
                 prompt=prompt,
-                multi_modal_data=[{
-                    "audio": audio_asset,
-                }]
+                multi_modal_data={
+                    "audio": audio_asset
+                }
             )
 
             async for request_output in self.llm.generate(text_prompt, sampling_params, request_id=request_id):
