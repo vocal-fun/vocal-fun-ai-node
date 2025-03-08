@@ -8,7 +8,6 @@ from typing import Union
 import uuid
 import time
 import re
-from vllm import LLM
 
 
 class WhisperVLLM(BaseSTT):
