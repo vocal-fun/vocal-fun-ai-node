@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from .base_llm import BaseLLM
 from .local_llm import LocalLLM
 from .vllm import VLLM
+from .empty_llm import EmptyLLM
 from .external.groq_llm import GroqLLM
 from .conversation import ConversationManager, ConversationFormatter
 
@@ -45,7 +46,7 @@ class Chat:
             else:
                 raise ValueError(f"Unsupported external chat provider: {provider}")
         else:
-            self.llm = VLLM()
+            self.llm = EmptyLLM()
 
         self.setup()
 
