@@ -123,12 +123,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 if fast_mode:
     # initialize all services
     print("Initializing services")
-    print("Initializing STT")
-    import vocal.stt.stt
+
     print("Initializing Chat")
     import vocal.chat.chat
     print("Initializing TTS")
     import vocal.tts.tts
+    print("Initializing STT")
+    import vocal.stt.stt
 
     stt_instance = vocal.stt.stt.stt_instance
     chat_instance = vocal.chat.chat.chat_instance

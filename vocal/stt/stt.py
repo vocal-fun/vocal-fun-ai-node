@@ -8,6 +8,7 @@ from .whisper_stt import LocalWhisperSTT
 from .whisper_vllm import WhisperVLLM
 from .stt_llm_combined import STTLLMCombined
 from .whisper_jax import WhisperJax
+from .whisper_hf import WhisperHF
 from typing import Optional
 
 app = FastAPI()
@@ -26,7 +27,7 @@ class STT:
         self._setup_stt()
 
     def _setup_stt(self):
-        self.stt = WhisperJax()
+        self.stt = WhisperHF()
         self.setup()
 
     def setup(self):

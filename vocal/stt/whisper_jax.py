@@ -20,7 +20,7 @@ class WhisperJax(BaseSTT):
         # jit the pipeline with empty audio bytes
         print("Pipeline JIT..")
         self.pipeline({
-                "array": np.zeros(16000),
+                "array": np.zeros(1),
                 "sampling_rate": 16000
             })
         print("Pipeline setup complete")
