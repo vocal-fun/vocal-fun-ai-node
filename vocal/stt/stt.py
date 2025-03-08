@@ -27,7 +27,7 @@ class STT:
         self._setup_stt()
 
     def _setup_stt(self):
-        self.stt = WhisperHF()
+        self.stt = WhisperJax()
         self.setup()
 
     def setup(self):
