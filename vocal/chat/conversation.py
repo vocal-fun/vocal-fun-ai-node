@@ -50,7 +50,7 @@ class ConversationFormatter:
         system_prompt = MAIN_SYSTEM_PROMPT + system_prompt
 
         if config.language == "hi":
-            system_prompt = system_prompt.replace("Please reply in no more than 30 words. ", "")
+            # system_prompt = system_prompt.replace("Please reply in no more than 30 words. ", "")
             system_prompt = system_prompt + " आपका जवाब हिंदी में होना चाहिए।"
         
         messages = [

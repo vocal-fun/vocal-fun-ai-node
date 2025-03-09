@@ -35,7 +35,7 @@ class GroqLLM(BaseLLM):
                 json={
                     "model": self.model,
                     "messages": prompt,
-                    "max_tokens": kwargs.get("max_tokens", 90),
+                    "max_tokens": kwargs.get("max_tokens", 120),
                     "temperature": kwargs.get("temperature", 0.7),
                     "top_p": kwargs.get("top_p", 0.9),
                     "frequency_penalty": kwargs.get("frequency_penalty", 0.0),

@@ -73,7 +73,7 @@ class VLLM(BaseLLM):
 
         # vLLM sampling parameters
         sampling_params = SamplingParams(
-            max_tokens=kwargs.get("max_new_tokens", 90),
+            max_tokens=kwargs.get("max_new_tokens", 120),
             temperature=kwargs.get("temperature", 0.7),
             top_p=kwargs.get("top_p", 0.9),
             top_k=kwargs.get("top_k", 50),

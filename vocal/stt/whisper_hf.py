@@ -49,7 +49,12 @@ class WhisperHF(BaseSTT):
             # Convert to float32 and normalize
             audio_np = audio_data.astype(np.float32) / 32768.0
             
-            result = self.pipe(audio_np, batch_size=8)
+            # forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=language, task="transcribe")
+            # print(f"Transcribing audio with language: {language}")
+            
+            # result = self.pipe(audio_np, generate_kwargs = {"forced_decoder_ids":forced_decoder_ids})
+
+            result = self.pipe(audio_np)
             transcribed_text = result["text"]
             return transcribed_text
 
