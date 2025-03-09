@@ -7,6 +7,7 @@ from .base_stt import BaseSTT
 from .whisper_stt import LocalWhisperSTT
 from .whisper_vllm import WhisperVLLM
 from .stt_llm_combined import STTLLMCombined
+from .sensevoice_stt import SenseVoiceSTT
 from .whisper_jax import WhisperJax
 from .whisper_hf import WhisperHF
 from typing import Optional
@@ -27,7 +28,7 @@ class STT:
         self._setup_stt()
 
     def _setup_stt(self):
-        self.stt = WhisperJax()
+        self.stt = SenseVoiceSTT()
         self.setup()
 
     def setup(self):
