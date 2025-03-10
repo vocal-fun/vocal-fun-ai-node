@@ -85,7 +85,7 @@ class Chat:
 
         # stream response
         async for chunk in self.llm.generate_stream(messages, **kwargs):
-            response += chunk
+            response = chunk
             if chunk_counter == 0:
                 print("Chat: Time to first chunk: ", time.time() - t0)
             yield chunk
