@@ -38,7 +38,7 @@ class LatencyMetrics:
     
     def get_tts_first_chunk_latency(self) -> Optional[float]:
         """Calculate time to first TTS chunk."""
-        if self.tts_start_time and self.first_chunk_time:
+        if self.tts_start_time and self.tts_first_chunk_time:
             return self.tts_first_chunk_time - self.tts_start_time
         return None
     
