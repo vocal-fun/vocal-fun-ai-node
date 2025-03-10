@@ -10,6 +10,7 @@ from vocal.utils.speechdetector import AudioSpeechDetector
 from vocal.config.agents_config import agent_manager
 import time
 import io
+from vocal.utils.metrics import metrics_manager
 
 class FastProcessor:
     def __init__(self, session_id: str, config_id: str):
@@ -19,7 +20,10 @@ class FastProcessor:
         self.is_speaking = False
         self.is_responding = False
         self.tts_lock = asyncio.Lock()
-        
+        self.current_turn_id = 0
+        self.current_metrics = None
+        self.metrics = []
+
         # Lazy import services only when FastProcessor is actually used
         from vocal.stt.stt import stt_instance
         from vocal.chat.chat import chat_instance
@@ -29,7 +33,6 @@ class FastProcessor:
         self.stt_service = stt_instance
         self.chat_service = chat_instance
         self.tts_service = tts_instance
-
         self.config = agent_manager.get_agent_config(config_id)
         self.voice_samples = self.config.voice_samples
         self.language = self.config.language
@@ -59,15 +62,20 @@ class FastProcessor:
     async def process_speech(self, websocket: WebSocket) -> None:
         """Handle speech processing and response generation"""
         print("Processing speech...")
+        self.current_turn_id += 1
+        self.current_metrics = metrics_manager.create_metrics(self.session_id, self.current_turn_id)
+        self.current_metrics.silence_detected_time = time.time()
+        self.metrics.append(self.current_metrics)
         self.is_responding = True
         try:
             # Convert audio chunks list to a single numpy array
             if self.audio_chunks:
                 combined_audio = np.concatenate(self.audio_chunks)
                 self.audio_chunks = []
-                
+                self.current_metrics.transcription_start_time = time.time()
                 # Pass the numpy array directly to STT service
                 transcript = await self.stt_service.transcribe(combined_audio, self.language)
+                self.current_metrics.transcription_end_time = time.time()
 
                 if not transcript.strip() or "thank you" in transcript.lower():
                     self.is_responding = False
@@ -87,6 +95,7 @@ class FastProcessor:
         print(f"Processing text: {text}")
         async with self.tts_lock:
             self.is_responding = True
+            self.current_metrics.llm_start_time = time.time()
             try:
                 data = {    
                     "text": text,
@@ -112,10 +121,12 @@ class FastProcessor:
                     # if current_sentence.strip():
                     #     await self.stream_tts(current_sentence, websocket)
                     print("Final sentence: ", current_sentence)
+                    self.current_metrics.llm_end_time = time.time()
                     await self.stream_tts(current_sentence, websocket)
 
                 else:
                     chat_response = await self.chat_service.generate_response(data)
+                    self.current_metrics.llm_end_time = time.time()
                     await self.stream_tts(chat_response, websocket)
                 
             except Exception as e:
@@ -126,8 +137,14 @@ class FastProcessor:
     async def stream_tts(self, text: str, websocket: WebSocket) -> None:
         """Stream TTS audio directly"""
         try:
+            self.current_metrics.tts_start_time = time.time()
             voice_id = self.tts_service.get_voice_id(self.config_id)
+            is_first_chunk = False
             async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples):
+                if not is_first_chunk:
+                    self.current_metrics.tts_first_chunk_time = time.time()
+                    is_first_chunk = True
+                    print("VoiceChat: Total latency: ", self.current_metrics.get_total_latency())
                 data = {
                     "type": "audio_chunk",
                     "chunk": chunk.chunk,
