@@ -13,7 +13,7 @@ import re
 import os
 import time
 from threading import Thread
-
+from typing import AsyncGenerator
 
 class ChatStoppingCriteria(StoppingCriteria):
     def __init__(self, tokenizer, stops=None):
@@ -72,6 +72,14 @@ class LocalLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
+        response = await self.generate_stream(prompt, **kwargs)
+        return response
+        
+    
+    async def generate_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+        if not self.is_setup:
+            raise RuntimeError("LLM not initialized")
+
         start_time = time.time()
         first_token_time = None
         token_count = 0
@@ -107,6 +115,8 @@ class LocalLLM(BaseLLM):
                 first_token_time = time.time() - start_time
                 print(f"Time to first token: {first_token_time:.3f}s")
 
+            yield new_text
+            
             token_count += 1
             response += new_text  # Accumulate final response
 

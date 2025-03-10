@@ -10,6 +10,8 @@ from .conversation import ConversationManager, ConversationFormatter
 from fastapi import APIRouter
 from vocal.config.agents_config import agent_manager
 import uuid
+from typing import AsyncGenerator, List, Dict
+
 
 load_dotenv()
 
@@ -62,11 +64,49 @@ class Chat:
         if not self.llm:
             raise RuntimeError("LLM not initialized")
         
+        t0 = time.time()
+        messages = self.handle_prompt(data)
+        response = await self.llm.generate(messages, **kwargs)
+        response = self.handle_response(response, data)
+
+        print("Chat: response time: ", time.time() - t0)
+        return response
+    
+    async def generate_stream(self, data: dict, **kwargs) -> AsyncGenerator[str, None]:
+        """Generate response for the given prompt"""
+        if not self.llm:
+            raise RuntimeError("LLM not initialized")
+        
+        t0 = time.time()
+        messages = self.handle_prompt(data)
+
+        response = ""
+        chunk_counter = 0
+
+        # stream response
+        async for chunk in self.llm.generate_stream(messages, **kwargs):
+            response += chunk
+            if chunk_counter == 0:
+                print("Chat: Time to first chunk: ", time.time() - t0)
+            yield chunk
+            chunk_counter += 1
+
+        response = self.handle_response(response, data)
+
+        print("Chat: total response time: ", time.time() - t0)
+
+
+    async def cleanup(self):
+        """Cleanup resources"""
+        if self.llm:
+            await self.llm.cleanup()
+
+    def handle_prompt(self, data: dict) -> List[Dict[str, str]]:
+        """Parse the message"""
         session_id = data.get("session_id", str(uuid.uuid4()))
         user_message = data.get("text", "")
         config_id = data.get("config_id", "default")
     
-        t0 = time.time()
         print(f"Client {session_id} INPUT {user_message}")
                 
         history = conversation_manager.get_history(session_id)
@@ -77,23 +117,16 @@ class Chat:
             user_message
         )
 
-        print(f"Client {session_id} MESSAGES {messages}")
-        # Generate response
-        response = await self.llm.generate(messages, **kwargs)
-
-        # Clean up response if needed
-        response = conversation_formatter.cleanup_response(response)
+        return messages
     
+    def handle_response(self, response: str, data: dict):
+        """Handle the response"""
+        session_id = data.get("session_id", str(uuid.uuid4()))
+        user_message = data.get("text", "")
+        response = conversation_formatter.cleanup_response(response)
         conversation_manager.add_conversation(session_id, user_message, response)
-
-        print("Chat response time: ", time.time() - t0)
         print(f"Client {session_id} RESPONSE {response}")
         return response
-
-    async def cleanup(self):
-        """Cleanup resources"""
-        if self.llm:
-            await self.llm.cleanup()
 
 # Initialize chat instance
 chat_instance = Chat()
