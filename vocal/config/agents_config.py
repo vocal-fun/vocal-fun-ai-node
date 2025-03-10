@@ -11,7 +11,7 @@ import tempfile
 from dotenv import load_dotenv
 import threading
 from dataclasses import dataclass
-import subprocess
+import ffmpeg
 
 load_dotenv()
 
@@ -98,16 +98,18 @@ class AgentManager:
                             temp_file.flush()
                             
                             try:
-                                # Use ffmpeg to convert to wav
+                                # Use ffmpeg-python to convert to wav
                                 print(f"Converting audio file using ffmpeg: {temp_file.name}")
-                                subprocess.run([
-                                    'ffmpeg', 
-                                    '-i', temp_file.name,
-                                    '-ar', '44100',  # Set sample rate
-                                    '-ac', '1',      # Convert to mono
-                                    '-y',            # Overwrite output file if exists
-                                    final_path
-                                ], check=True, capture_output=True)
+                                stream = ffmpeg.input(temp_file.name)
+                                stream = ffmpeg.output(
+                                    stream, 
+                                    final_path,
+                                    acodec='pcm_s16le',  # Standard WAV codec
+                                    ar=44100,            # Sample rate
+                                    ac=1,                # Mono audio
+                                    loglevel='error'     # Reduce ffmpeg output
+                                )
+                                ffmpeg.run(stream, overwrite_output=True)
                                 
                                 if os.path.exists(final_path):
                                     # Add to access times and cleanup if needed
@@ -119,8 +121,8 @@ class AgentManager:
                                     print("FFmpeg conversion failed - output file not created")
                                     return None
                                     
-                            except subprocess.CalledProcessError as e:
-                                print(f"FFmpeg error: {e.stderr.decode()}")
+                            except ffmpeg.Error as e:
+                                print(f"FFmpeg error: {e.stderr.decode() if e.stderr else str(e)}")
                                 return None
                             except Exception as e:
                                 print(f"Error converting audio: {str(e)}")
