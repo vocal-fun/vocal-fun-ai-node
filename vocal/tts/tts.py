@@ -172,8 +172,9 @@ async def generate_tts(
 
         if config:
              await agent_manager.add_agent_config(config)
-        else:
-            config = agent_manager.get_agent_config(config_id)
+        
+        # get latest config from agent manager
+        config = agent_manager.get_agent_config(config_id)
 
         if not config:
             raise HTTPException(status_code=404, detail="Config not found")
