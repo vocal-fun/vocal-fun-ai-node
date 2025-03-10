@@ -54,7 +54,7 @@ class TTS:
         if not self.tts:
             raise RuntimeError("TTS not initialized")
         
-        return self.tts.generate_speech(text, language, voice_id, voice_samples)
+        return await self.tts.generate_speech(text, language, voice_id, voice_samples)
 
     async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
         if not self.tts:

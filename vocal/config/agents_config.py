@@ -89,27 +89,41 @@ class AgentManager:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
                         if response.status == 200:
-                            temp_file.write(await response.read())
+                            content = await response.read()
+                            if not content:
+                                print(f"Downloaded empty content from URL: {url}")
+                                return None
+                                
+                            temp_file.write(content)
                             temp_file.flush()
                             
                             try:
+                                # Try to load the audio file and print its format
                                 audio = AudioSegment.from_file(temp_file.name)
+                                print(f"Successfully loaded audio file. Duration: {len(audio)}ms")
+                                
                                 if len(audio) > self.max_audio_duration:
+                                    print(f"Trimming audio from {len(audio)}ms to {self.max_audio_duration}ms")
                                     audio = audio[:self.max_audio_duration]
+                                
                                 audio.export(final_path, format='wav')
                                 # Add to access times and cleanup if needed
                                 self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
                                 self.cleanup_old_samples()
-                                print(f"Downloaded and converted voice sample for config_id: {config_id}")
+                                print(f"Successfully converted and saved voice sample to: {final_path}")
                                 return final_path
                             except Exception as e:
-                                print(f"Error converting audio: {e}")
+                                print(f"Error converting audio: {str(e)}")
+                                print(f"Temp file size: {os.path.getsize(temp_file.name)} bytes")
                                 return None
                             finally:
                                 if os.path.exists(temp_file.name):
                                     os.unlink(temp_file.name)
+                        else:
+                            print(f"Failed to download voice sample. Status code: {response.status}")
+                            return None
         except Exception as e:
-            print(f"Error downloading voice sample: {e}")
+            print(f"Error downloading voice sample: {str(e)}")
             return None
 
     async def add_agent_config(self, config: dict) -> None:
