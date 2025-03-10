@@ -10,9 +10,6 @@ from vocal.config.agents_config import agent_manager
 from typing import AsyncGenerator
 from dotenv import load_dotenv
 from .base_tts import BaseTTS
-from .local_tts import LocalTTS
-from .external.cartesia_tts import CartesiaTTS
-from .external.elevenlabs_tts import ElevenLabsTTS
 from .base_tts import TTSChunk
 
 load_dotenv()
@@ -30,12 +27,15 @@ class TTS:
 
         if self.use_external:
             if self.provider == "cartesia":
+                from .external.cartesia_tts import CartesiaTTS
                 self.tts = CartesiaTTS(api_key=os.getenv("CARTESIA_API_KEY"))
             elif self.provider == "elevenlabs":
+                from .external.elevenlabs_tts import ElevenLabsTTS
                 self.tts = ElevenLabsTTS(api_key=os.getenv("ELEVENLABS_API_KEY"))
             else:
                 raise ValueError(f"Unsupported external TTS provider: {self.provider}")
         else:
+            from .local_tts import LocalTTS
             self.tts = LocalTTS()
 
         self.setup()

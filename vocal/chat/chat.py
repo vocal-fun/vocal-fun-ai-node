@@ -6,10 +6,6 @@ import os
 import time
 from dotenv import load_dotenv
 from .base_llm import BaseLLM
-from .local_llm import LocalLLM
-from .vllm import VLLM
-from .empty_llm import EmptyLLM
-from .external.groq_llm import GroqLLM
 from .conversation import ConversationManager, ConversationFormatter
 
 load_dotenv()
@@ -42,10 +38,13 @@ class Chat:
 
         if use_external:
             if provider == "groq":
+                from .external.groq_llm import GroqLLM
                 self.llm = GroqLLM()
             else:
                 raise ValueError(f"Unsupported external chat provider: {provider}")
         else:
+            from .vllm import VLLM
+            from .local_llm import LocalLLM
             self.llm = VLLM()
 
         self.setup()
