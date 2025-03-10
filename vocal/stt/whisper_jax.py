@@ -16,12 +16,22 @@ class WhisperJax(BaseSTT):
     def setup(self) -> None:
         """Initialize the Whisper model"""
         print("Loading Whisper model...")
-        self.pipeline = FlaxWhisperPipline("openai/whisper-small",  
+        self.pipeline = FlaxWhisperPipline("openai/whisper-base.en",  
             dtype=jnp.bfloat16,
             max_length=70)
         # jit the pipeline with empty audio bytes
         print("Pipeline JIT..")
         self.pipeline({
+                "array": np.zeros(1),
+                "sampling_rate": 16000
+            })
+        print("Pipeline setup complete")
+        self.pipelineHi = FlaxWhisperPipline("sanchit-gandhi/whisper-small-hi-flax",  
+            dtype=jnp.bfloat16,
+            max_length=70)
+        # jit the pipeline with empty audio bytes
+        print("Pipeline JIT..")
+        self.pipelineHi({
                 "array": np.zeros(1),
                 "sampling_rate": 16000
             })
@@ -39,10 +49,16 @@ class WhisperJax(BaseSTT):
             # Convert to float32 and normalize
             audio_np = audio_data.astype(np.float32) / 32768.0
             
-            text = self.pipeline({
-                "array": audio_np,
-                "sampling_rate": 16000,
-            })
+            if language == "hi":
+                text = self.pipelineHi({
+                    "array": audio_np,
+                    "sampling_rate": 16000,
+                })
+            else:
+                text = self.pipeline({
+                    "array": audio_np,
+                    "sampling_rate": 16000,
+                })
             print("Text: ", text)
             return text["text"]
 
