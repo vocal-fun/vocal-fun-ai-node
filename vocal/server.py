@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi import Query
@@ -137,32 +137,14 @@ if fast_mode:
 
     print("Services initialized")
 
-    # start individual tts server (used for creating previews with text, which doesnt use socket)
-    # if in fast mode, this will be used for tts
+    # start individual tts and chat endpoints
     # if not in fast mode, the tts server will be started as a separate process
-    @app.get("/tts")
-    async def generate_tts(
-        text: str = Query(..., description="Text to convert to speech"),
-        config_id: str = Query(..., description="Config ID to use")
-    ):        
-        try:
-            config = agent_manager.get_agent_config(config_id)
-            if not config:
-                raise HTTPException(status_code=404, detail="Config not found")
 
-            voice_samples = config.voice_samples
-            language = config.language
+    from vocal.chat.chat import chat_router
+    from vocal.tts.tts import tts_router
 
-            voice_id = tts_instance.get_voice_id(config_id)
+    app.include_router(chat_router)
+    app.include_router(tts_router)
 
-            tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples)
-
-            return JSONResponse({
-                "audio": tts_chunk.chunk,
-                "format": tts_chunk.format,
-                "sample_rate": tts_chunk.sample_rate
-            })
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-
+    print("Chat and TTS routers added")
+        

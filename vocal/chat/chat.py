@@ -7,6 +7,8 @@ import time
 from dotenv import load_dotenv
 from .base_llm import BaseLLM
 from .conversation import ConversationManager, ConversationFormatter
+from fastapi import APIRouter
+from vocal.config.agents_config import agent_manager
 
 load_dotenv()
 
@@ -95,10 +97,16 @@ class Chat:
 # Initialize chat instance
 chat_instance = Chat()
 
+chat_router = APIRouter()
+
 @app.post("/chat")
 async def generate_response(data: dict):
     try:
-        # Generate response
+        # if client sends config, add it to the agent manager
+        config = data.get("config", {})
+        if config:
+             await agent_manager.add_agent_config(config)
+
         response = await chat_instance.generate_response(data)
         return {"response": response}
         

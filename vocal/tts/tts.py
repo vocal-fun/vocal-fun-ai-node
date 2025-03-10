@@ -11,6 +11,8 @@ from typing import AsyncGenerator
 from dotenv import load_dotenv
 from .base_tts import BaseTTS
 from .base_tts import TTSChunk
+from fastapi import APIRouter
+
 
 load_dotenv()
 
@@ -154,14 +156,25 @@ async def tts_stream(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
 
+tts_router = APIRouter()
     
-@app.get("/tts")
+@app.post("/tts")
 async def generate_tts(
-    text: str = Query(..., description="Text to convert to speech"),
-    config_id: str = Query(..., description="Config ID to use")
+    data: dict
 ):        
     try:
-        config = agent_manager.get_agent_config(config_id)
+        text = data.get("text", "")
+
+        # send either config_id or config
+        # if sending config_id, then make sure config has been added to the agent manager before calling this
+        config_id = data.get("config_id", "")
+        config = data.get("config", {})
+
+        if config:
+             await agent_manager.add_agent_config(config)
+        else:
+            config = agent_manager.get_agent_config(config_id)
+
         if not config:
             raise HTTPException(status_code=404, detail="Config not found")
 
