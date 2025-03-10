@@ -14,6 +14,8 @@ class LatencyMetrics:
     transcription_start_time: Optional[float] = None
     transcription_end_time: Optional[float] = None
     llm_start_time: Optional[float] = None
+    llm_first_chunk_time: Optional[float] = None
+    llm_first_sentence_time: Optional[float] = None
     llm_end_time: Optional[float] = None
     tts_start_time: Optional[float] = None
     tts_first_chunk_time: Optional[float] = None
@@ -44,11 +46,17 @@ class LatencyMetrics:
     
     def log_metrics(self):
         """Log metrics for a specific conversation turn."""
+        print("--------------------------------")
         print(f"VoiceChat: Metrics for conversation {self.conversation_id}, turn {self.turn_id}:")
         print("VoiceChat: Total latency: ", self.get_total_latency())
         print("VoiceChat: Transcription latency: ", self.get_transcription_latency())
+        if self.llm_first_sentence_time:
+            print("VoiceChat: LLM first sentence latency: ", self.llm_first_sentence_time - self.llm_start_time)
+        if self.llm_first_chunk_time:
+            print("VoiceChat: LLM first chunk latency: ", self.llm_first_chunk_time - self.llm_start_time)
         print("VoiceChat: LLM latency: ", self.get_llm_latency())
         print("VoiceChat: TTS first chunk latency: ", self.get_tts_first_chunk_latency())
+        print("--------------------------------")
 
 class MetricsManager:
     """Manages latency metrics collection across the system."""

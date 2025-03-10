@@ -19,6 +19,8 @@ class VLLM(BaseLLM):
         self.llm = None
         self.engine = None
         self.is_setup = False
+        self.is_async = False
+        self.gpu_memory_utilization = 0.5
 
     def setup(self):
         if self.is_setup:
@@ -33,27 +35,31 @@ class VLLM(BaseLLM):
             use_fast=True
         )
 
-        self.engine = AsyncLLMEngine.from_engine_args(
-            AsyncEngineArgs(
-               model=self.model_name,
+        if self.is_async:
+            self.engine = AsyncLLMEngine.from_engine_args(
+                AsyncEngineArgs(
+                    model=self.model_name,
+                    tensor_parallel_size=1,  # Adjust based on your setup
+                    gpu_memory_utilization=self.gpu_memory_utilization,  # Optimize GPU usage
+                    dtype="float16",
+                    max_model_len=2048,
+                    max_num_seqs=20,
+                    quantization="fp8",
+                    enable_prefix_caching=True
+                )
+            )
+        else:
+            # Initialize vLLM engine
+            self.engine = LLM(
+                model=self.model_name,
                 tensor_parallel_size=1,  # Adjust based on your setup
-                gpu_memory_utilization=0.5,  # Optimize GPU usage
+                gpu_memory_utilization=self.gpu_memory_utilization,  # Optimize GPU usage
                 dtype="float16",
                 max_model_len=2048,
                 max_num_seqs=20,
                 quantization="fp8",
                 enable_prefix_caching=True
             )
-    )
-
-        # Initialize vLLM engine
-        # self.llm = LLM(
-        #     model=self.model_name,
-        #     tensor_parallel_size=1,  # Adjust based on your setup
-        #     gpu_memory_utilization=0.9,  # Optimize GPU usage
-        #     dtype="float16",
-        #     max_model_len=2048,
-        # )
 
         self.is_setup = True
 
@@ -61,15 +67,40 @@ class VLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
-        response = ""
-        async for chunk in self.generate_stream(prompt, **kwargs):
-            response = chunk
-        return response
+        start_time = time.time()
+        formatted_chat = self.tokenizer.apply_chat_template(
+            prompt, tokenize=False, add_generation_prompt=True
+        )
+
+        sampling_params = SamplingParams(
+            max_tokens=kwargs.get("max_new_tokens", 120),
+            temperature=kwargs.get("temperature", 0.7),
+            top_p=kwargs.get("top_p", 0.9),
+            top_k=kwargs.get("top_k", 50),
+            repetition_penalty=kwargs.get("repetition_penalty", 1.2),
+            stop=["User:", "USER:", "Human:", "HUMAN:"],  # Custom stopping criteria
+        )
+
+        response = self.engine.generate(formatted_chat, sampling_params)
+
+
+        generated_text = response[0].outputs[0].text
+        token_count = len(response[0].outputs[0].token_ids)
+
+        total_time = time.time() - start_time
         
+        tokens_per_second = token_count / total_time if total_time > 0 else 0
+        print(f"\nTotal generation time: {total_time:.3f}s")
+        print(f"Tokens per second: {tokens_per_second:.2f}")
+           
+        return generated_text
 
     async def generate_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
+        
+        if not self.is_async:
+            raise RuntimeError("Async generation is not enabled. Please set is_async to True.")
 
         start_time = time.time()
         first_token_time = None

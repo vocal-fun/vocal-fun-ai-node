@@ -72,10 +72,19 @@ class LocalLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
-        response = ""
-        async for chunk in self.generate_stream(prompt, **kwargs):
-            response = chunk
-        return response
+        formatted_chat = self.tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True)
+        inputs = self.tokenizer(formatted_chat, return_tensors="pt").to(self.device)
+        outputs = self.model.generate(
+            inputs["input_ids"], 
+            max_new_tokens=kwargs.get("max_new_tokens", 100),
+            temperature=kwargs.get("temperature", 0.7), 
+            repetition_penalty=kwargs.get("repetition_penalty", 1.2), 
+            top_p=kwargs.get("top_p", 0.9), top_k=kwargs.get("top_k", 50),
+            no_repeat_ngram_size=kwargs.get("no_repeat_ngram_size", 3), 
+            use_cache=True, 
+            do_sample=True, 
+            stopping_criteria=self.stopping_criteria)
+        return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
     
     async def generate_stream(self, prompt: str, **kwargs) -> AsyncGenerator[str, None]:

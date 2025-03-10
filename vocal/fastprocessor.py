@@ -38,7 +38,7 @@ class FastProcessor:
         self.language = self.config.language
         self.system_prompt = self.config.system_prompt
 
-        self.chat_tts_stream = True
+        self.chat_tts_stream = False
         
         self.speech_detector = AudioSpeechDetector(
             sample_rate=16000,
@@ -104,25 +104,35 @@ class FastProcessor:
                 }
                 
                 if self.chat_tts_stream:
-                    # Buffer to accumulate sentence
+                    # Buffer to accumulate text
+                    previous_text = ""
                     current_sentence = ""
-                    
+                    is_first_chunk = False
+                    sentence_index = 0
                     # Stream chat response and process sentences as they come
                     async for chunk in self.chat_service.generate_stream(data):
-                        current_sentence = chunk
+                        # Get only the new content by removing the previous text
+                        if not is_first_chunk:
+                            is_first_chunk = True
+                            self.current_metrics.llm_first_chunk_time = time.time()
+                            
+                        new_content = chunk[len(previous_text):]
+                        current_sentence += new_content
+                        previous_text = chunk
                         
                         # Check if we have a complete sentence
-                        # if any(current_sentence.rstrip().endswith(p) for p in ['.', '!', '?', "|"]):
-                        #     # Process complete sentence with TTS
-                        #     await self.stream_tts(current_sentence, websocket)
-                        #     current_sentence = ""
-                    
+                        if any(current_sentence.rstrip().endswith(p) for p in ['.', '!', '?', '|']):
+                            self.current_metrics.llm_first_sentence_time = time.time()
+                            # Process complete sentence with TTS
+                            await self.stream_tts(current_sentence, websocket, sentence_index=sentence_index)
+                            current_sentence = ""
+                            sentence_index += 1
+        
                     # Process any remaining text
-                    # if current_sentence.strip():
-                    #     await self.stream_tts(current_sentence, websocket)
-                    print("Final sentence: ", current_sentence)
+                    if current_sentence.strip():
+                        await self.stream_tts(current_sentence, websocket)
+                    
                     self.current_metrics.llm_end_time = time.time()
-                    await self.stream_tts(current_sentence, websocket)
 
                 else:
                     chat_response = await self.chat_service.generate_response(data)
@@ -134,7 +144,7 @@ class FastProcessor:
                 print(f"Error processing text: {e}")
                 await self.send_error(websocket, str(e))
 
-    async def stream_tts(self, text: str, websocket: WebSocket) -> None:
+    async def stream_tts(self, text: str, websocket: WebSocket, sentence_index: int = 0) -> None:
         """Stream TTS audio directly"""
         try:
             self.current_metrics.tts_start_time = time.time()
@@ -142,7 +152,7 @@ class FastProcessor:
             is_first_chunk = False
             async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples):
                 
-                if not is_first_chunk:
+                if not is_first_chunk and sentence_index == 0:
                     self.current_metrics.tts_first_chunk_time = time.time()
                     is_first_chunk = True
                     self.current_metrics.log_metrics()

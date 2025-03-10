@@ -118,7 +118,7 @@ class LocalTTS(BaseTTS):
                 chunk_bytes = chunk.squeeze().cpu().numpy().tobytes()
                 chunk_base64 = base64.b64encode(chunk_bytes).decode("utf-8")
                 
-                print('sending chunk: ' + str(chunk_counter))
+                # print('sending chunk: ' + str(chunk_counter))
                 yield TTSChunk(
                     chunk=chunk_base64,
                     sample_rate=24000,
