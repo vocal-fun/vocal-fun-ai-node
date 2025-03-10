@@ -63,9 +63,9 @@ class Chat:
             raise RuntimeError("LLM not initialized")
         
         session_id = data.get("session_id", str(uuid.uuid4()))
-        user_message = data["text"]
+        user_message = data.get("text", "")
         config_id = data.get("config_id", "default")
-        
+    
         t0 = time.time()
         print(f"Client {session_id} INPUT {user_message}")
                 
