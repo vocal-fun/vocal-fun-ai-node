@@ -85,7 +85,9 @@ class AgentManager:
             return final_path
         
         try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+            # Get the original file extension from URL
+            original_ext = os.path.splitext(url)[1].lower() or '.audio'
+            with tempfile.NamedTemporaryFile(delete=False, suffix=original_ext) as temp_file:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
                         if response.status == 200:
@@ -98,8 +100,23 @@ class AgentManager:
                             temp_file.flush()
                             
                             try:
-                                # Try to load the audio file and print its format
-                                audio = AudioSegment.from_file(temp_file.name)
+                                print(f"Attempting to load audio file: {temp_file.name}")
+                                # Try different methods to load the audio
+                                try:
+                                    audio = AudioSegment.from_file(temp_file.name)
+                                except:
+                                    # If from_file fails, try to detect format from header
+                                    with open(temp_file.name, 'rb') as f:
+                                        header = f.read(16)
+                                    if header.startswith(b'ID3') or header.startswith(b'\xff\xfb'):
+                                        audio = AudioSegment.from_mp3(temp_file.name)
+                                    elif header.startswith(b'RIFF'):
+                                        audio = AudioSegment.from_wav(temp_file.name)
+                                    elif header.startswith(b'OggS'):
+                                        audio = AudioSegment.from_ogg(temp_file.name)
+                                    else:
+                                        raise Exception("Unrecognized audio format")
+
                                 print(f"Successfully loaded audio file. Duration: {len(audio)}ms")
                                 
                                 if len(audio) > self.max_audio_duration:
@@ -115,6 +132,9 @@ class AgentManager:
                             except Exception as e:
                                 print(f"Error converting audio: {str(e)}")
                                 print(f"Temp file size: {os.path.getsize(temp_file.name)} bytes")
+                                with open(temp_file.name, 'rb') as f:
+                                    header = f.read(16).hex()
+                                print(f"File header (first 16 bytes): {header}")
                                 return None
                             finally:
                                 if os.path.exists(temp_file.name):
