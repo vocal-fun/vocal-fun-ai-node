@@ -16,7 +16,7 @@ class WhisperJax(BaseSTT):
     def setup(self) -> None:
         """Initialize the Whisper model"""
         print("Loading Whisper model...")
-        self.pipeline = FlaxWhisperPipline("openai/whisper-medium", dtype=jnp.bfloat16)
+        self.pipeline = FlaxWhisperPipline("openai/whisper-small", dtype=jnp.bfloat16)
         # jit the pipeline with empty audio bytes
         print("Pipeline JIT..")
         self.pipeline({
