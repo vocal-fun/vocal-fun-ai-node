@@ -42,7 +42,7 @@ class VLLM(BaseLLM):
                     tensor_parallel_size=1,  # Adjust based on your setup
                     gpu_memory_utilization=self.gpu_memory_utilization,  # Optimize GPU usage
                     dtype="float16",
-                    max_model_len=2048,
+                    max_model_len=1024,
                     max_num_seqs=20,
                     quantization="fp8",
                     enable_prefix_caching=True
@@ -55,7 +55,7 @@ class VLLM(BaseLLM):
                 tensor_parallel_size=1,  # Adjust based on your setup
                 gpu_memory_utilization=self.gpu_memory_utilization,  # Optimize GPU usage
                 dtype="float16",
-                max_model_len=2048,
+                max_model_len=1024,
                 max_num_seqs=20,
                 quantization="fp8",
                 enable_prefix_caching=True
@@ -88,7 +88,7 @@ class VLLM(BaseLLM):
         token_count = len(response[0].outputs[0].token_ids)
 
         total_time = time.time() - start_time
-        
+
         tokens_per_second = token_count / total_time if total_time > 0 else 0
         print(f"\nTotal generation time: {total_time:.3f}s")
         print(f"Tokens per second: {tokens_per_second:.2f}")

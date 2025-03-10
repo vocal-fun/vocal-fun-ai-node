@@ -23,6 +23,9 @@ class FastProcessor:
         self.current_turn_id = 0
         self.current_metrics = None
         self.metrics = []
+        # Add interruption handling
+        self.current_task = None
+        self.should_interrupt = False
 
         # Lazy import services only when FastProcessor is actually used
         from vocal.stt.stt import stt_instance
@@ -56,8 +59,25 @@ class FastProcessor:
             detection_result = self.speech_detector.add_audio_chunk(audio_data)
             
             if detection_result['action'] == 'process':
+                print("New conversation turn started")
+                # notify client that a new conversation turn has started
+                # useful for client to discard any existing queued audio chunks from previous turn
+                await websocket.send_json({
+                    "type": "new_conversation_turn",
+                    "session_id": self.session_id
+                })
+                # This is where we've detected a complete speech segment
+                # If we're currently responding, we should interrupt
+                if self.is_responding:
+                    print("Interrupting current response...")
+                    self.should_interrupt = True
+                    if self.current_task and not self.current_task.done():
+                        self.current_task.cancel()
+
                 self.audio_chunks = detection_result.get('audio_chunks', [])
-                await self.process_speech(websocket)
+                # Create new task for processing
+                self.should_interrupt = False
+                self.current_task = asyncio.create_task(self.process_speech(websocket))
 
     async def process_speech(self, websocket: WebSocket) -> None:
         """Handle speech processing and response generation"""
@@ -73,6 +93,12 @@ class FastProcessor:
                 combined_audio = np.concatenate(self.audio_chunks)
                 self.audio_chunks = []
                 self.current_metrics.transcription_start_time = time.time()
+                
+                # Check for interruption
+                if self.should_interrupt:
+                    self.is_responding = False
+                    return
+
                 # Pass the numpy array directly to STT service
                 transcript = await self.stt_service.transcribe(combined_audio, self.language)
                 self.current_metrics.transcription_end_time = time.time()
@@ -85,6 +111,9 @@ class FastProcessor:
             else:
                 self.is_responding = False
 
+        except asyncio.CancelledError:
+            self.is_responding = False
+            print("Speech processing was interrupted")
         except Exception as e:
             self.is_responding = False
             print(f"Error processing audio: {e}")
@@ -151,7 +180,10 @@ class FastProcessor:
             voice_id = self.tts_service.get_voice_id(self.config_id)
             is_first_chunk = False
             async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples):
-                
+                # Check for interruption
+                if self.should_interrupt:
+                    break
+
                 if not is_first_chunk and sentence_index == 0:
                     self.current_metrics.tts_first_chunk_time = time.time()
                     is_first_chunk = True
@@ -170,10 +202,13 @@ class FastProcessor:
                     "session_id": self.session_id
                 })
                 
-            await websocket.send_json({
+            if not self.should_interrupt:
+                await websocket.send_json({
                     "type": "tts_stream_end",
                     "session_id": self.session_id
                 })
+        except asyncio.CancelledError:
+            print("TTS streaming was interrupted")
         except Exception as e:
             print(f"Error in TTS streaming: {e}")
             await self.send_error(websocket, str(e))
