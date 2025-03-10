@@ -11,6 +11,7 @@ import tempfile
 from dotenv import load_dotenv
 import threading
 from dataclasses import dataclass
+import subprocess
 
 load_dotenv()
 
@@ -79,15 +80,12 @@ class AgentManager:
         
         # Check if file already exists
         if os.path.exists(final_path):
-            # Update access time
             self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
             print(f"Voice sample already exists for config_id: {config_id}")
             return final_path
         
         try:
-            # Get the original file extension from URL
-            original_ext = os.path.splitext(url)[1].lower() or '.audio'
-            with tempfile.NamedTemporaryFile(delete=False, suffix=original_ext) as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
                         if response.status == 200:
@@ -100,41 +98,32 @@ class AgentManager:
                             temp_file.flush()
                             
                             try:
-                                print(f"Attempting to load audio file: {temp_file.name}")
-                                # Try different methods to load the audio
-                                try:
-                                    audio = AudioSegment.from_file(temp_file.name)
-                                except:
-                                    # If from_file fails, try to detect format from header
-                                    with open(temp_file.name, 'rb') as f:
-                                        header = f.read(16)
-                                    if header.startswith(b'ID3') or header.startswith(b'\xff\xfb'):
-                                        audio = AudioSegment.from_mp3(temp_file.name)
-                                    elif header.startswith(b'RIFF'):
-                                        audio = AudioSegment.from_wav(temp_file.name)
-                                    elif header.startswith(b'OggS'):
-                                        audio = AudioSegment.from_ogg(temp_file.name)
-                                    else:
-                                        raise Exception("Unrecognized audio format")
-
-                                print(f"Successfully loaded audio file. Duration: {len(audio)}ms")
+                                # Use ffmpeg to convert to wav
+                                print(f"Converting audio file using ffmpeg: {temp_file.name}")
+                                subprocess.run([
+                                    'ffmpeg', 
+                                    '-i', temp_file.name,
+                                    '-ar', '44100',  # Set sample rate
+                                    '-ac', '1',      # Convert to mono
+                                    '-y',            # Overwrite output file if exists
+                                    final_path
+                                ], check=True, capture_output=True)
                                 
-                                if len(audio) > self.max_audio_duration:
-                                    print(f"Trimming audio from {len(audio)}ms to {self.max_audio_duration}ms")
-                                    audio = audio[:self.max_audio_duration]
-                                
-                                audio.export(final_path, format='wav')
-                                # Add to access times and cleanup if needed
-                                self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
-                                self.cleanup_old_samples()
-                                print(f"Successfully converted and saved voice sample to: {final_path}")
-                                return final_path
+                                if os.path.exists(final_path):
+                                    # Add to access times and cleanup if needed
+                                    self.voice_sample_access_times[f"{config_id}.wav"] = time.time()
+                                    self.cleanup_old_samples()
+                                    print(f"Successfully converted and saved voice sample to: {final_path}")
+                                    return final_path
+                                else:
+                                    print("FFmpeg conversion failed - output file not created")
+                                    return None
+                                    
+                            except subprocess.CalledProcessError as e:
+                                print(f"FFmpeg error: {e.stderr.decode()}")
+                                return None
                             except Exception as e:
                                 print(f"Error converting audio: {str(e)}")
-                                print(f"Temp file size: {os.path.getsize(temp_file.name)} bytes")
-                                with open(temp_file.name, 'rb') as f:
-                                    header = f.read(16).hex()
-                                print(f"File header (first 16 bytes): {header}")
                                 return None
                             finally:
                                 if os.path.exists(temp_file.name):
