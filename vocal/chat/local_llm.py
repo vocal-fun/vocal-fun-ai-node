@@ -72,7 +72,9 @@ class LocalLLM(BaseLLM):
         if not self.is_setup:
             raise RuntimeError("LLM not initialized")
 
-        response = await self.generate_stream(prompt, **kwargs)
+        response = ""
+        async for chunk in self.generate_stream(prompt, **kwargs):
+            response = chunk
         return response
         
     
@@ -127,10 +129,6 @@ class LocalLLM(BaseLLM):
         tokens_per_second = token_count / total_time if total_time > 0 else 0
         print(f"\nTotal generation time: {total_time:.3f}s")
         print(f"Tokens per second: {tokens_per_second:.2f}")
-
-        # Clean up response
-        response = re.sub(r'^.*?:', '', response).strip()
-        return response  # Return only the final response
 
     async def cleanup(self):
         if self.model:
