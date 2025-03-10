@@ -98,18 +98,25 @@ class AgentManager:
                             temp_file.flush()
                             
                             try:
-                                # Use ffmpeg-python to convert to wav
                                 print(f"Converting audio file using ffmpeg: {temp_file.name}")
-                                stream = ffmpeg.input(temp_file.name)
-                                stream = ffmpeg.output(
-                                    stream, 
-                                    final_path,
-                                    acodec='pcm_s16le',  # Standard WAV codec
-                                    ar=44100,            # Sample rate
-                                    ac=1,                # Mono audio
-                                    loglevel='error'     # Reduce ffmpeg output
+                                stream = (
+                                    ffmpeg
+                                    .input(temp_file.name)
+                                    .output(
+                                        final_path,
+                                        f='wav',          # Force WAV format
+                                        acodec='pcm_s16le',
+                                        ar=44100,
+                                        ac=1,
+                                        vn=None,          # No video
+                                        loglevel='error'
+                                    )
                                 )
-                                ffmpeg.run(stream, overwrite_output=True)
+                                
+                                # Print the ffmpeg command for debugging
+                                print(f"FFmpeg command: {' '.join(stream.compile())}")
+                                
+                                ffmpeg.run(stream, overwrite_output=True, capture_stderr=True)
                                 
                                 if os.path.exists(final_path):
                                     # Add to access times and cleanup if needed
@@ -123,6 +130,9 @@ class AgentManager:
                                     
                             except ffmpeg.Error as e:
                                 print(f"FFmpeg error: {e.stderr.decode() if e.stderr else str(e)}")
+                                # Print the actual error message
+                                if hasattr(e, 'stderr'):
+                                    print(f"Detailed error: {e.stderr.decode()}")
                                 return None
                             except Exception as e:
                                 print(f"Error converting audio: {str(e)}")
