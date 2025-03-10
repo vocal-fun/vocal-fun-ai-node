@@ -141,10 +141,12 @@ class FastProcessor:
             voice_id = self.tts_service.get_voice_id(self.config_id)
             is_first_chunk = False
             async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples):
+                
                 if not is_first_chunk:
                     self.current_metrics.tts_first_chunk_time = time.time()
                     is_first_chunk = True
-                    print("VoiceChat: Total latency: ", self.current_metrics.get_total_latency())
+                    self.current_metrics.log_metrics()
+
                 data = {
                     "type": "audio_chunk",
                     "chunk": chunk.chunk,

@@ -41,6 +41,14 @@ class LatencyMetrics:
         if self.tts_start_time and self.first_chunk_time:
             return self.tts_first_chunk_time - self.tts_start_time
         return None
+    
+    def log_metrics(self):
+        """Log metrics for a specific conversation turn."""
+        print(f"VoiceChat: Metrics for conversation {self.conversation_id}, turn {self.turn_id}:")
+        print("VoiceChat: Total latency: ", self.get_total_latency())
+        print("VoiceChat: Transcription latency: ", self.get_transcription_latency())
+        print("VoiceChat: LLM latency: ", self.get_llm_latency())
+        print("VoiceChat: TTS first chunk latency: ", self.get_tts_first_chunk_latency())
 
 class MetricsManager:
     """Manages latency metrics collection across the system."""
@@ -57,6 +65,7 @@ class MetricsManager:
     def get_metrics(self, conversation_id: str, turn_id: int) -> Optional[LatencyMetrics]:
         """Retrieve metrics for a specific conversation turn."""
         return self.metrics.get(f"{conversation_id}_{turn_id}")
+    
 
     @contextmanager
     def measure_time(self, conversation_id: str, turn_id: int, stage: str):
