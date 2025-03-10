@@ -5,7 +5,7 @@ import re
 import random
 
 # System prompts and configurations
-MAIN_SYSTEM_PROMPT = "Please reply in no more than 30 words. "
+MAIN_SYSTEM_PROMPT = "You are a Voice agent on Vocal.fun platform. Detailed instructions to follow. "
 
 class ConversationManager:
     def __init__(self, max_history=1):
