@@ -99,7 +99,7 @@ chat_instance = Chat()
 
 chat_router = APIRouter()
 
-@app.post("/chat")
+@chat_router.post("/chat")
 async def generate_response(data: dict):
     try:
         # if client sends config, add it to the agent manager

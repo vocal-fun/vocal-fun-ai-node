@@ -157,8 +157,8 @@ async def tts_stream(websocket: WebSocket):
         print(f"WebSocket error: {e}")
 
 tts_router = APIRouter()
-    
-@app.post("/tts")
+
+@tts_router.post("/tts")
 async def generate_tts(
     data: dict
 ):        
