@@ -62,7 +62,7 @@ class Chat:
         if not self.llm:
             raise RuntimeError("LLM not initialized")
         
-        session_id = data["session_id", str(uuid.uuid4())]
+        session_id = data.get("session_id", str(uuid.uuid4()))
         user_message = data["text"]
         config_id = data.get("config_id", "default")
         
