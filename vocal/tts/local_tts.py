@@ -59,7 +59,7 @@ class LocalTTS(BaseTTS):
         return gpt_cond_latent, speaker_embedding
         
     
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Generate speech using local TTS model"""
 
         gpt_cond_latent, speaker_embedding = await self.get_speaker_latents(voice_samples)
@@ -74,7 +74,8 @@ class LocalTTS(BaseTTS):
                 language,
                 gpt_cond_latent,
                 speaker_embedding,
-                temperature=0.7
+                temperature=0.7,
+                speed=speed
             )
 
             # Convert audio tensor to WAV format in memory
@@ -89,16 +90,12 @@ class LocalTTS(BaseTTS):
             
             return TTSChunk(audio_base64, 24000, "wav")
         
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech in streaming mode using local TTS model"""
         gpt_cond_latent, speaker_embedding = await self.get_speaker_latents(voice_samples)
 
-        print("Starting streaming inference...")
+        print("Starting streaming inference, language: " + language + ", speed: " + str(speed))
         t0 = time.time()
-
-        speed = 1.0
-        if language == "hi":
-            speed = 1.4
 
         chunk_counter = 0
         async with self.tts_lock:

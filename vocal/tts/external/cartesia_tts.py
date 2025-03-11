@@ -126,7 +126,7 @@ class CartesiaTTS(BaseTTS):
         """Clean up resources"""
         await self.ws_manager.cleanup()
 
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Cartesia endpoint for single audio generation"""
 
         if not self.cartesia_client:
@@ -147,7 +147,7 @@ class CartesiaTTS(BaseTTS):
         return TTSChunk(audio_base64, self.cartesia_bytes_format["sample_rate"], "wav")
         
         
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech in streaming mode using Cartesia TTS API"""
 
         ws = await self.ws_manager.get_connection()

@@ -22,6 +22,7 @@ class AgentConfig:
     language: str
     cartesia_voice_id: str
     elevenlabs_voice_id: str
+    speed: float
     
     def to_dict(self) -> dict:
         return {
@@ -29,7 +30,8 @@ class AgentConfig:
             "systemPrompt": self.system_prompt,
             "language": self.language,
             "cartesiaVoiceId": self.cartesia_voice_id,
-            "elevenlabsVoiceId": self.elevenlabs_voice_id
+            "elevenlabsVoiceId": self.elevenlabs_voice_id,
+            "speed": self.speed
         }
     
     @classmethod
@@ -39,7 +41,8 @@ class AgentConfig:
             system_prompt=data.get("systemPrompt", ""),
             language=data.get("language", "en"),
             cartesia_voice_id=data.get("cartesiaVoiceId", ""),
-            elevenlabs_voice_id=data.get("elevenlabsVoiceId", "")
+            elevenlabs_voice_id=data.get("elevenlabsVoiceId", ""),
+            speed=data.get("speed", 1.0)
         )
 
 class AgentManager:
@@ -158,7 +161,8 @@ class AgentManager:
             system_prompt=config.get("systemPrompt", ""),
             language=config.get("language", "en"),
             cartesia_voice_id=config.get("cartesiaVoiceId", ""),
-            elevenlabs_voice_id=config.get("elevenlabsVoiceId", "")
+            elevenlabs_voice_id=config.get("elevenlabsVoiceId", ""),
+            speed=config.get("speed", 1.0)
         )
 
         voice_sample_path = await self.download_voice_sample(

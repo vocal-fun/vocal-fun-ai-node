@@ -93,7 +93,7 @@ class LocalTTSPool(BaseTTS):
             gpt_cond_latent, speaker_embedding = self.speaker_latents_cache[cache_key]
         return gpt_cond_latent, speaker_embedding
     
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Generate speech using local TTS model"""
         model, model_lock, _ = await self.get_model()
         async with model_lock:
@@ -109,7 +109,8 @@ class LocalTTSPool(BaseTTS):
                     language,
                     gpt_cond_latent,
                     speaker_embedding,
-                    temperature=0.7
+                    temperature=0.7,
+                    speed=speed
                 )
 
                 # Convert audio tensor to WAV format in memory
@@ -126,7 +127,7 @@ class LocalTTSPool(BaseTTS):
             except Exception as e:
                 print(f"Error during speech generation: {e}")
         
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech in streaming mode using local TTS model"""
         model, model_lock, model_index = await self.get_model()
         async with model_lock:
@@ -136,9 +137,6 @@ class LocalTTSPool(BaseTTS):
                 print("Starting streaming inference with model index: " + str(model_index))
                 t0 = time.time()
 
-                speed = 1.0
-                if language == "hi":
-                    speed = 1.4
 
                 chunk_counter = 0
                 for chunk in model.inference_stream(

@@ -21,7 +21,7 @@ class BaseTTS(ABC):
         pass
     
     @abstractmethod
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Generate speech from text synchronously
         
         Args:
@@ -36,7 +36,7 @@ class BaseTTS(ABC):
         pass
         
     @abstractmethod
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech from text in streaming mode
         
         Args:

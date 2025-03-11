@@ -50,18 +50,18 @@ class TTS:
         if self.tts:
             self.tts.setup()
 
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Generate speech for the given prompt"""
         if not self.tts:
             raise RuntimeError("TTS not initialized")
         
-        return await self.tts.generate_speech(text, language, voice_id, voice_samples)
+        return await self.tts.generate_speech(text, language, voice_id, voice_samples, speed)
 
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         if not self.tts:
             raise RuntimeError("TTS not initialized")
         
-        return self.tts.generate_speech_stream(text, language, voice_id, voice_samples)
+        return self.tts.generate_speech_stream(text, language, voice_id, voice_samples, speed)
                 
 
     async def cleanup(self):
@@ -90,7 +90,7 @@ app.add_middleware(
 )
 
 
-async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
+async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str, speed: float = 1.0):
     """TTS streaming implementation with voice conversion and raw PCM output"""
     try:
         await websocket.send_json({
@@ -107,7 +107,7 @@ async def stream_audio_chunks(websocket: WebSocket, text: str, config_id: str):
         
         voice_id = tts_instance.get_voice_id(config_id)
         
-        async for chunk in await tts_instance.generate_speech_stream(text, language, voice_id, voice_samples):
+        async for chunk in await tts_instance.generate_speech_stream(text, language, voice_id, voice_samples, speed):
             await websocket.send_json({
                 "type": "audio_chunk",
                 "chunk": chunk.chunk,
@@ -148,9 +148,10 @@ async def tts_stream(websocket: WebSocket):
             text = data.get("text")
             config_id = data.get("config_id", "")
             session_id = data.get("session_id", "")
+            speed = data.get("speed", 1.0)
             
             if text:
-                await stream_audio_chunks(websocket, text, config_id)
+                await stream_audio_chunks(websocket, text, config_id, speed)
             
     except WebSocketDisconnect:
         print("WebSocket connection closed normally")
@@ -183,8 +184,9 @@ async def generate_tts(
         voice_samples = config.voice_samples
         language = config.language
         voice_id = tts_instance.get_voice_id(config_id)
+        speed = config.speed
 
-        tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples)
+        tts_chunk = await tts_instance.generate_speech(text, language, voice_id, voice_samples, speed)
 
         return JSONResponse({
             "audio": tts_chunk.chunk,

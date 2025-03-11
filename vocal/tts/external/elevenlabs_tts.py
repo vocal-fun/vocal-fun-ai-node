@@ -19,7 +19,7 @@ class ElevenLabsTTS(BaseTTS):
         """Clean up resources"""
         pass  # No cleanup needed for ElevenLabs
         
-    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> TTSChunk:
+    async def generate_speech(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> TTSChunk:
         """Generate speech using ElevenLabs API"""
         url = f"{self.base_url}/text-to-speech/{voice_id}"
         headers = {
@@ -46,7 +46,7 @@ class ElevenLabsTTS(BaseTTS):
                 return TTSChunk(audio_base64, 24000, "wav")
             
         
-    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None) -> AsyncGenerator[TTSChunk, None]:
+    async def generate_speech_stream(self, text: str, language: str, voice_id: Optional[str] = None, voice_samples: Optional[str] = None, speed: float = 1.0) -> AsyncGenerator[TTSChunk, None]:
         """Generate speech in streaming mode using ElevenLabs API"""
         url = f"{self.base_url}/text-to-speech/{voice_id}/stream?output_format=pcm_24000"
         headers = {
