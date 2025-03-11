@@ -27,8 +27,8 @@ class STT:
         # from .whisper_vllm import WhisperVLLM
         # from .stt_llm_combined import STTLLMCombined
         # from .sensevoice_stt import SenseVoiceSTT
-        # from .whisper_hf import WhisperHF
-        self.stt = WhisperJax()
+        from .whisper_hf import WhisperHF
+        self.stt = WhisperHF()
         self.setup()
 
     def setup(self):

@@ -23,6 +23,8 @@ class FastProcessor:
         self.current_turn_id = 0
         self.current_metrics = None
         self.metrics = []
+        self.allow_interruptions = False
+
         # Add interruption handling
         self.current_task = None
         self.should_interrupt = False
@@ -60,19 +62,22 @@ class FastProcessor:
             
             if detection_result['action'] == 'process':
                 print("New conversation turn started")
+                
                 # notify client that a new conversation turn has started
                 # useful for client to discard any existing queued audio chunks from previous turn
-                await websocket.send_json({
-                    "type": "new_conversation_turn",
-                    "session_id": self.session_id
-                })
-                # This is where we've detected a complete speech segment
-                # If we're currently responding, we should interrupt
-                if self.is_responding:
-                    print("Interrupting current response...")
-                    self.should_interrupt = True
-                    if self.current_task and not self.current_task.done():
-                        self.current_task.cancel()
+
+                if self.allow_interruptions:
+                    await websocket.send_json({
+                        "type": "new_conversation_turn",
+                        "session_id": self.session_id
+                    })
+                    # This is where we've detected a complete speech segment
+                    # If we're currently responding, we should interrupt
+                    if self.is_responding:
+                        print("Interrupting current response...")
+                        self.should_interrupt = True
+                        if self.current_task and not self.current_task.done():
+                            self.current_task.cancel()
 
                 self.audio_chunks = detection_result.get('audio_chunks', [])
                 # Create new task for processing

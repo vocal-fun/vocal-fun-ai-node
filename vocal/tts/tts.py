@@ -37,8 +37,8 @@ class TTS:
             else:
                 raise ValueError(f"Unsupported external TTS provider: {self.provider}")
         else:
-            from .local_tts import LocalTTS
-            self.tts = LocalTTS()
+            from .local_tts_pool import LocalTTSPool
+            self.tts = LocalTTSPool()
 
         self.setup()
 
