@@ -41,6 +41,7 @@ class FastProcessor:
         self.config = agent_manager.get_agent_config(config_id)
         self.voice_samples = self.config.voice_samples
         self.language = self.config.language
+        self.speed = self.config.speed
         self.system_prompt = self.config.system_prompt
 
         self.chat_tts_stream = False
@@ -188,7 +189,7 @@ class FastProcessor:
             self.current_metrics.tts_start_time = time.time()
             voice_id = self.tts_service.get_voice_id(self.config_id)
             is_first_chunk = False
-            async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples):
+            async for chunk in await self.tts_service.generate_speech_stream(text, self.language, voice_id, self.voice_samples, self.speed):
                 # Check for interruption
                 if self.should_interrupt:
                     break
