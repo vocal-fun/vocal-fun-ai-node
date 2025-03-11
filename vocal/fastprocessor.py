@@ -54,6 +54,10 @@ class FastProcessor:
             debug=False
         )
 
+        # create metrics
+        self.current_metrics = metrics_manager.create_metrics(self.session_id, self.current_turn_id)
+
+
     async def process_audio_chunk(self, binary_data: bytes, websocket: WebSocket) -> None:
         """Process incoming audio chunks and handle VAD internally"""
         if len(binary_data) > 0:
