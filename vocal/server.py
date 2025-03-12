@@ -30,6 +30,7 @@ class AudioSession:
         self.config_id = ""
         self.websocket: Optional[WebSocket] = None
         self.processor = None
+        self.allow_interruptions = False
 
 class ConnectionManager:
     def __init__(self):
@@ -70,6 +71,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             print(f"Error: Missing required fields in config: {missing_fields}")
             return
 
+        if "allowInterruptions" in config and config["allowInterruptions"]:
+            session.allow_interruptions = True
+
         await agent_manager.add_agent_config(config)
         
         session.agent_id = config["agentId"]
@@ -79,7 +83,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         from vocal.processor import AudioProcessor
         from vocal.fastprocessor import FastProcessor
         ProcessorClass = FastProcessor if fast_mode else AudioProcessor
-        session.processor = ProcessorClass(session_id, config["configId"])
+        session.processor = ProcessorClass(session_id, config["configId"], session.allow_interruptions)
 
         await websocket.send_json({
             "type": "call_ready",

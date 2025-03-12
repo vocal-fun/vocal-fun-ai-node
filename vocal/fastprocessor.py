@@ -13,7 +13,7 @@ import io
 from vocal.utils.metrics import metrics_manager
 
 class FastProcessor:
-    def __init__(self, session_id: str, config_id: str):
+    def __init__(self, session_id: str, config_id: str, allow_interruptions: bool = False):
         self.session_id = session_id
         self.config_id = config_id
         self.audio_chunks: List[np.ndarray] = []
@@ -23,7 +23,7 @@ class FastProcessor:
         self.current_turn_id = 0
         self.current_metrics = None
         self.metrics = []
-        self.allow_interruptions = False
+        self.allow_interruptions = allow_interruptions
 
         # Add interruption handling
         self.current_task = None
