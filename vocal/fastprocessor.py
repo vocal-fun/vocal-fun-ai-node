@@ -57,10 +57,10 @@ class FastProcessor:
             }
         self.speech_detector = AudioSpeechDetector(
             sample_rate=16000,
-            energy_threshold=self.speech_detector_config.energy_threshold,
-            min_speech_duration=self.speech_detector_config.min_speech_duration,
-            max_silence_duration=self.speech_detector_config.max_silence_duration,
-            max_recording_duration=self.speech_detector_config.max_recording_duration,
+            energy_threshold=self.speech_detector_config["energy_threshold"],
+            min_speech_duration=self.speech_detector_config["min_speech_duration"],
+            max_silence_duration=self.speech_detector_config["max_silence_duration"],
+            max_recording_duration=self.speech_detector_config["max_recording_duration"],
             debug=False
         )
 
