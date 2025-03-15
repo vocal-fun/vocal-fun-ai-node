@@ -31,6 +31,7 @@ class AudioSession:
         self.websocket: Optional[WebSocket] = None
         self.processor = None
         self.allow_interruptions = False
+        self.speech_detector_config = None
 
 class ConnectionManager:
     def __init__(self):
@@ -74,6 +75,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         if "allowInterruptions" in config and config["allowInterruptions"]:
             session.allow_interruptions = True
 
+        if "speechDetectorConfig" in config:
+            session.speech_detector_config = config["speechDetectorConfig"]
+
         await agent_manager.add_agent_config(config)
         
         session.agent_id = config["agentId"]
@@ -83,7 +87,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         from vocal.processor import AudioProcessor
         from vocal.fastprocessor import FastProcessor
         ProcessorClass = FastProcessor if fast_mode else AudioProcessor
-        session.processor = ProcessorClass(session_id, config["configId"], session.allow_interruptions)
+        session.processor = ProcessorClass(session_id, config["configId"], session)
 
         await websocket.send_json({
             "type": "call_ready",

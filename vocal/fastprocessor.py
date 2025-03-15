@@ -11,9 +11,10 @@ from vocal.config.agents_config import agent_manager
 import time
 import io
 from vocal.utils.metrics import metrics_manager
+from vocal.server import AudioSession
 
 class FastProcessor:
-    def __init__(self, session_id: str, config_id: str, allow_interruptions: bool = False):
+    def __init__(self, session_id: str, config_id: str, session: AudioSession):
         self.session_id = session_id
         self.config_id = config_id
         self.audio_chunks: List[np.ndarray] = []
@@ -23,7 +24,8 @@ class FastProcessor:
         self.current_turn_id = 0
         self.current_metrics = None
         self.metrics = []
-        self.allow_interruptions = allow_interruptions
+        self.allow_interruptions = session.allow_interruptions
+        self.speech_detector_config = session.speech_detector_config
 
         # Add interruption handling
         self.current_task = None
@@ -46,12 +48,19 @@ class FastProcessor:
 
         self.chat_tts_stream = False
         
+        if not self.speech_detector_config:
+            self.speech_detector_config = {
+                "energy_threshold": 0.15,
+                "min_speech_duration": 0.4,
+                "max_silence_duration": 0.5,
+                "max_recording_duration": 10.0
+            }
         self.speech_detector = AudioSpeechDetector(
             sample_rate=16000,
-            energy_threshold=0.15,
-            min_speech_duration=0.4,
-            max_silence_duration=0.5,
-            max_recording_duration=10.0,
+            energy_threshold=self.speech_detector_config.energy_threshold,
+            min_speech_duration=self.speech_detector_config.min_speech_duration,
+            max_silence_duration=self.speech_detector_config.max_silence_duration,
+            max_recording_duration=self.speech_detector_config.max_recording_duration,
             debug=False
         )
 
